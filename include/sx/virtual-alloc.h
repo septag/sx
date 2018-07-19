@@ -1,0 +1,47 @@
+// virtual-alloc.h - v1.0 - Virtual memory allocator
+//
+// Uses OS specific virtual memory functions
+//
+// virtualalloc: standard sequential virtual memory allocator 
+//               Virtual memory can be reserved in large sizes and commited later on demand
+//               Very useful for large buffer allocations, instead of allocating directly from heap
+//               Memory is only allocate sequentially and will not be reused
+//               so the limitation is not to hit the 'reserve_sz' max
+//
+//      sx_virtualalloc_init        Initialize and reserves virtual memory for the allocator
+//                                  Reserved size will not be commited until it's alloacated and touched
+//                                  'reserved_sz' value will grow to OS-specific aligned page size
+//
+//      sx_virtualalloc_release     Releases memory commited and reserved by virtual-allocator
+//                                  
+// NOTE: When you use the sx_alloc object for allocating, the memory will be commited and you will get a valid pointer
+//       But still the memory is not allocated from heap until you touch the contents of the memory block
+//       Also the allocation sizes will grow to OS-specific aligned page size (for example 4k), 
+//       .. so try to allocate in larger chunks from this type of allocator
+//
+#pragma once
+
+#ifndef SX_VIRTUAL_ALLOC_H_
+#define SX_VISTUAL_ALLOC_H_
+
+#include "allocator.h"
+
+typedef struct sx_virtualalloc
+{
+    sx_alloc alloc;
+    uint8_t* ptr;               // Pointer to reserved memory address
+    size_t   offset;
+    size_t   reserved_sz;       // Total memory that is reserved (mapped) on init
+} sx_virtualalloc;
+
+SX_API bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz);
+SX_API void sx_virtualalloc_release(sx_virtualalloc* valloc);
+
+// TODO: low-level virtual memory api
+SX_API void* sx_virtual_reserve(size_t reserve_sz);
+SX_API void  sx_virtual_release(void* ptr);
+SX_API void  sx_virtual_protect(void* ptr, size_t sz);
+SX_API void  sx_virtual_commit();
+SX_API void  sx_virtual_decommit(); 
+
+#endif  // SX_VIRTUAL_ALLOC_H_

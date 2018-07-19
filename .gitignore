@@ -1,0 +1,75 @@
+# External junk
+.DS_Store
+_ReSharper*
+*.opensdf
+*.sdf
+*.dir
+*.suo
+*.user
+*.bak
+Win32
+Win64
+Debug
+Release
+Profile
+Development
+Obj
+Bin
+Lib
+.tags
+.tags_sorted_by_file
+*.lnk
+ipch
+__pycache__
+Thumbs.db
+.build*
+
+# Gradle
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+/build
+/captures
+
+
+# Generated files
+docs/Doxyfile
+docs/html
+docs/warnings.txt
+imgui.ini
+install
+out
+*.log
+.vscode/launch.json
+.vscode/c_cpp_properties.json
+
+
+# Downloaded
+deps/assimp
+deps/libuv
+deps/SDL2
+deps/SDL2_android
+deps/libuv_android_arm
+deps/bgfx_ios_arm
+deps/sdl2_ios_arm
+deps/curl
+deps/curl_android
+
+# Compiled binaries
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+.build
+*.fso
+*.vso
+*.pyc
+*.obj
+
+# external projects
+digger
+fisherboy
+model_viewer

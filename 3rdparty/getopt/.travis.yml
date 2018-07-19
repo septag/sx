@@ -1,0 +1,16 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+
+install:
+  - git clone https://github.com/matricks/bam.git
+  - cd bam
+  - ./make_unix.sh
+  - cd ..
+
+script:
+  - bam/bam compiler=$CC config=debug
+  - bam/bam compiler=$CC config=release
+  - ./local/linux_x86_64/debug/getopt_tests
+  - ./local/linux_x86_64/release/getopt_tests
