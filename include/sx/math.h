@@ -11,21 +11,26 @@
 
 #include "sx.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 // Some math constants
-SX_API const float SX_PI;
-SX_API const float SX_PI2;
-SX_API const float SX_INVPI;
-SX_API const float SX_PIHALF;
-SX_API const float SX_PIQUARTER;
-SX_API const float SX_E;
-SX_API const float SX_FLOAT_MAX;
-SX_API const float SX_FLOAT_MIN;
-SX_API const float SX_LOG_NAT10;
-SX_API const float SX_INVLOG_NAT2;
-SX_API const float SX_LOG_NAT2H;
-SX_API const float SX_LOG_NAT2L;
-SX_API const float SX_NEAR_ZERO;
-SX_API const float SX_SQRT2;
+const float SX_PI;
+const float SX_PI2;
+const float SX_INVPI;
+const float SX_PIHALF;
+const float SX_PIQUARTER;
+const float SX_E;
+const float SX_FLOAT_MAX;
+const float SX_FLOAT_MIN;
+const float SX_LOG_NAT10;
+const float SX_INVLOG_NAT2;
+const float SX_LOG_NAT2H;
+const float SX_LOG_NAT2L;
+const float SX_NEAR_ZERO;
+const float SX_SQRT2;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Types/Primitives
@@ -469,5 +474,9 @@ SX_CONST_FUNC float sx_color_tolinear(float _a);
 SX_CONST_FUNC float sx_color_togamma(float _a);
 
 #include "inline/math.inl"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_MATH_H_

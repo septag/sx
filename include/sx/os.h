@@ -16,10 +16,11 @@ int sx_os_maxstacksz();
 int sx_os_pagesz();
 size_t sx_os_align_pagesz(size_t size);
 
+#include "inline/os.inl"
+
 #ifdef __cplusplus
 }
 #endif  // extern "C"
 
-#include "inline/os.inl"
 
 #endif

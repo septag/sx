@@ -4,9 +4,67 @@
 #   define VC_EXTRALEAN
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
+#elif SX_PLATFORM_POSIX
+#   include <unistd.h>
+#   include <sys/mman.h>
+#if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
+#   define MAP_ANONYMOUS MAP_ANON
+#endif
 #endif
 
+// TODO: posix version may have problems, test it
+
 #include "sx/os.h"
+
+void* sx_virtual_reserve(size_t reserve_sz)
+{
+    assert(reserve_sz % sx_os_pagesz() == 0);
+#if SX_PLATFORM_WINDOWS
+    return VirtualAlloc(NULL, reserve_sz, MEM_RESERVE, PAGE_READWRITE);
+#elif SX_PLATFORM_POSIX
+    return mmap(NULL, reserve_sz, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+#endif
+}
+
+void  sx_virtual_release(void* ptr)
+{
+#if SX_PLATFORM_WINDOWS
+    VirtualFree(ptr, 0, MEM_RELEASE);
+#elif SX_PLATFORM_POSIX
+    munmap(ptr, 0);
+#endif
+}
+
+void  sx_virtual_protect(void* ptr, size_t sz)
+{
+
+}
+
+void* sx_virtual_commit(void* addr, size_t sz)
+{
+    int page_sz = sx_os_pagesz();
+    assert((uintptr_t)addr % page_sz == 0);
+    assert(sz % page_sz == 0);
+
+#if SX_PLATFORM_WINDOWS
+    return VirtualAlloc(addr, sz, MEM_COMMIT, PAGE_READWRITE) != NULL;
+#elif SX_PLATFORM_POSIX
+    return mmap(addr, sz, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
+#endif
+}
+
+void  sx_virtual_decommit(void* addr, size_t sz)
+{
+    int page_sz = sx_os_pagesz();
+    assert((uintptr_t)addr % page_sz == 0);
+    assert(sz % page_sz == 0);
+
+#if SX_PLATFORM_WINDOWS
+    VirtualFree(addr, sz, MEM_DECOMMIT);
+#elif SX_PLATFORM_POSIX
+    munmap(addr, sz);
+#endif
+}
 
 // TODO: VirtualProtect allocations
 
@@ -22,7 +80,7 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_
     const size_t total = sx_os_align_pagesz(size + sizeof(size_t) + align);
     if (valloc->offset + size <= valloc->reserved_sz) {
         // Commit the memory requested and save it's size
-        uint8_t* ptr = VirtualAlloc(valloc->ptr + valloc->offset, total, MEM_COMMIT, PAGE_READWRITE);
+        uint8_t* ptr = sx_virtual_commit(valloc->ptr + valloc->offset, total);
         if (!ptr) {
             SX_OUT_OF_MEMORY;
             return NULL;
@@ -49,7 +107,7 @@ static void* sx__virtualalloc_cb(void* ptr, size_t size, size_t align, const cha
         if (ptr) {
             sx__virtualalloc_hdr* hdr = (sx__virtualalloc_hdr*)ptr - 1;
             void* old_ptr = (uint8_t*)ptr - hdr->padding;
-            VirtualFree(old_ptr, hdr->size, MEM_DECOMMIT);
+            sx_virtual_decommit(old_ptr, hdr->size);
         }
         return NULL;
     } else if (ptr == NULL) {
@@ -62,7 +120,7 @@ static void* sx__virtualalloc_cb(void* ptr, size_t size, size_t align, const cha
             sx__virtualalloc_hdr* hdr = (sx__virtualalloc_hdr*)ptr - 1;
             memcpy(new_ptr, ptr, sx_min(size, hdr->size));
             void* old_ptr = (uint8_t*)ptr - hdr->padding;
-            VirtualFree(old_ptr, hdr->size, MEM_DECOMMIT);
+            sx_virtual_decommit(old_ptr, hdr->size);
         }
         return new_ptr;
     }
@@ -77,7 +135,7 @@ bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz)
 
     valloc->alloc.alloc_cb = sx__virtualalloc_cb;
     valloc->alloc.user_data = valloc;
-    valloc->ptr = (uint8_t*)VirtualAlloc(NULL, reserve_sz, MEM_RESERVE, PAGE_READWRITE);
+    valloc->ptr = (uint8_t*)sx_virtual_reserve(reserve_sz);
     if (!valloc->ptr) {
         SX_OUT_OF_MEMORY;
         return false;
@@ -90,7 +148,7 @@ bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz)
 void sx_virtualalloc_release(sx_virtualalloc* valloc)
 {
     if (valloc->ptr) {
-        VirtualFree(valloc->ptr, 0, MEM_RELEASE);
+        sx_virtual_release(valloc->ptr);
         valloc->ptr = NULL;
     }
 }

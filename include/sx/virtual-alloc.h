@@ -41,7 +41,7 @@ SX_API void sx_virtualalloc_release(sx_virtualalloc* valloc);
 SX_API void* sx_virtual_reserve(size_t reserve_sz);
 SX_API void  sx_virtual_release(void* ptr);
 SX_API void  sx_virtual_protect(void* ptr, size_t sz);
-SX_API void  sx_virtual_commit();
-SX_API void  sx_virtual_decommit(); 
+SX_API void* sx_virtual_commit(void* addr, size_t sz);
+SX_API void  sx_virtual_decommit(void* addr, size_t sz); 
 
 #endif  // SX_VIRTUAL_ALLOC_H_

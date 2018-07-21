@@ -106,8 +106,7 @@ endif()
 set(ASM_SOURCES "asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "asm/ontop_${CPU_ARCH}_${ASM_EXT}")
-set_source_files_properties(${ASM_SOURCES} 
-                            PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
+set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
 ####################################################################################################
 
 add_definitions(-D__STDC_LIMIT_MACROS)
@@ -117,13 +116,22 @@ if(MSVC)
     add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
     add_definitions(-D_HAS_EXCEPTIONS=0)
 endif()
-add_compile_options(-fno-rtti -fno-exceptions -nostdlib -Wno-deprecated-declarations)
-add_compile_options("$<$<CONFIG:Debug>:-DSX_DEBUG=1;-g;>")
+
+if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU"))
+    add_compile_options(-nostdlib -Wno-deprecated-declarations)
+
+    # MSVC + Clang_C2
+    if (MSVC)
+        add_compile_options("$<$<CONFIG:Debug>:-DSX_DEBUG=1;-g;>")
+    endif()
+    
+    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=gnu11")
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11" "-fno-rtti" "-fno-exceptions")
+endif()
 
 #if (MSVC) 
 #    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /nodefaultlib")
 #endif()
-
 function(sx_remove_compile_options DEST_VAR COMPILER_FLAGS FLAGS)
     separate_arguments(FLAGS)
     foreach(FLAG ${FLAGS})
@@ -132,7 +140,7 @@ function(sx_remove_compile_options DEST_VAR COMPILER_FLAGS FLAGS)
     set(${DEST_VAR} ${COMPILER_FLAGS} PARENT_SCOPE)
 endfunction()
 
-sx_remove_compile_options(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fexceptions -frtti")
+sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "-fexceptions -frtti")
 # sx_remove_compile_options(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "/MDd" "/MD")
 # sx_remove_compile_options(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "/MDd" "/MD")
 
@@ -149,6 +157,7 @@ elseif(APPLE)
 endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
+target_link_libraries(sx PUBLIC GL GLEW)
 
 # Tests
 if (SX_BUILD_TESTS)

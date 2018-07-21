@@ -1,7 +1,9 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#if SX_PLATFORM_WINDOWS
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include <conio.h>
+#endif
 #include <stdio.h>
-#include <conio.h>
 
 #include "sx/atomic.h"
 #include "sx/threads.h"

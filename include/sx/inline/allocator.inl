@@ -9,7 +9,7 @@ inline bool sx_is_aligned(const void* ptr, size_t align)
     return 0 == (un.addr & (align-1));    
 }
 
-inline void* sx_align_ptr(void* ptr, size_t extra, size_t align)
+static inline void* sx_align_ptr(void* ptr, size_t extra, size_t align)
 {
     union { void* ptr; uintptr_t addr; } un;
     un.ptr = ptr;
@@ -22,22 +22,22 @@ inline void* sx_align_ptr(void* ptr, size_t extra, size_t align)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal
-inline void* sx__malloc(const sx_alloc* alloc, size_t size, size_t align, const char* file, uint32_t line) 
+static inline void* sx__malloc(const sx_alloc* alloc, size_t size, size_t align, const char* file, uint32_t line) 
 {
     return alloc->alloc_cb(NULL, size, align, file, line, alloc->user_data);
 }
 
-inline void sx__free(const sx_alloc* alloc, void* ptr, size_t align, const char* file, uint32_t line)
+static inline void sx__free(const sx_alloc* alloc, void* ptr, size_t align, const char* file, uint32_t line)
 {
     alloc->alloc_cb(ptr, 0, align, file, line, alloc->user_data);
 }
 
-inline void* sx__realloc(const sx_alloc* alloc, void* ptr, size_t size, size_t align, const char* file, uint32_t line)
+static inline void* sx__realloc(const sx_alloc* alloc, void* ptr, size_t size, size_t align, const char* file, uint32_t line)
 {
     return alloc->alloc_cb(ptr, size, align, file, line, alloc->user_data);
 }
 
-inline void* sx__aligned_alloc(const sx_alloc* alloc, size_t size, size_t align, const char* file, uint32_t line)
+static inline void* sx__aligned_alloc(const sx_alloc* alloc, size_t size, size_t align, const char* file, uint32_t line)
 {
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     const size_t total = size + align + sizeof(uint32_t);
@@ -48,7 +48,7 @@ inline void* sx__aligned_alloc(const sx_alloc* alloc, size_t size, size_t align,
     return aligned;
 }
 
-inline void sx__aligned_free(const sx_alloc* alloc, void* ptr, size_t align, const char* file, uint32_t line)
+static inline void sx__aligned_free(const sx_alloc* alloc, void* ptr, size_t align, const char* file, uint32_t line)
 {
     uint8_t* aligned = (uint8_t*)ptr;
     uint32_t* header = (uint32_t*)aligned - 1;
@@ -56,7 +56,7 @@ inline void sx__aligned_free(const sx_alloc* alloc, void* ptr, size_t align, con
     sx__free(alloc, ptr, 0, file, line);    
 }
 
-inline void* sx__aligned_realloc(const sx_alloc* alloc, void* ptr, size_t size, size_t align, 
+static inline void* sx__aligned_realloc(const sx_alloc* alloc, void* ptr, size_t size, size_t align, 
                                  const char* file, uint32_t line)
 {
 		if (ptr == NULL)

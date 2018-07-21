@@ -33,17 +33,21 @@
 #	define sx_malloc(_allocator, _size)                        sx__malloc(_allocator, _size, 0, __FILE__, __LINE__)
 #	define sx_realloc(_allocator, _ptr, _size)                 sx__realloc(_allocator, _ptr, _size, 0, __FILE__, __LINE__)
 #	define sx_free(_allocator, _ptr)                           sx__free(_allocator, _ptr, 0, __FILE__, __LINE__)
-#	define sx_aligned_alloc(_allocator, _size, _align)         sx__malloc(_allocator, _size, _align, __FILE__, __LINE__)
+#	define sx_aligned_malloc(_allocator, _size, _align)        sx__malloc(_allocator, _size, _align, __FILE__, __LINE__)
 #	define sx_aligned_realloc(_allocator, _ptr, _size, _align) sx__realloc(_allocator, _ptr, _size, _align, __FILE__, __LINE__)
 #	define sx_aligned_free(_allocator, _ptr, _align)           sx__free(_allocator, _ptr, _align, __FILE__, __LINE__)
 #else
 #	define sx_malloc(_allocator, _size)                        sx__malloc(_allocator, _size, 0, NULL, 0)
 #	define sx_realloc(_allocator, _ptr, _size)                 sx__realloc(_allocator, _ptr, _size, 0, NULL, 0)
 #	define sx_free(_allocator, _ptr)                           sx__free(_allocator, _ptr, 0, NULL, 0)
-#	define sx_alloc_aligned(_allocator, _size, _align)         sx__malloc(_allocator, _size, _align, NULL, 0)
-#	define sx_realloc_aligned(_allocator, _ptr, _size, _align) sx__realloc(_allocator, _ptr, _size, _align, NULL, 0)
-#	define sx_free_aligned(_allocator, _ptr, _align)           sx__free(_allocator, _ptr, _align, NULL, 0)
+#	define sx_aligned_malloc(_allocator, _size, _align)        sx__malloc(_allocator, _size, _align, NULL, 0)
+#	define sx_aligned_realloc(_allocator, _ptr, _size, _align) sx__realloc(_allocator, _ptr, _size, _align, NULL, 0)
+#	define sx_aligned_free(_allocator, _ptr, _align)           sx__free(_allocator, _ptr, _align, NULL, 0)
 #endif // SX_CONFIG_ALLOCATOR_DEBUG
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct sx_alloc 
 {
@@ -51,17 +55,21 @@ typedef struct sx_alloc
     void* user_data;
 } sx_alloc;
 
-SX_API bool  sx_is_aligned(const void* ptr, size_t align);
-SX_API void* sx_align_ptr(void* ptr, size_t extra, size_t align);
+inline bool  sx_is_aligned(const void* ptr, size_t align);
+inline void* sx_align_ptr(void* ptr, size_t extra, size_t align);
 
 // Default allocator: allocate from heap
-SX_API const sx_alloc* sx_alloc_malloc;
+const sx_alloc* sx_alloc_malloc;
 
 // Leak checking allocator, useful for debug and SX_CONFIG_DEBUG_ALLOCATOR=1
-//SX_API sx_alloc* sx_alloc_malloc_leak_detect();
-SX_API const sx_alloc* sx_alloc_malloc_leak_detect;
-SX_API void sx_dump_leaks();
+//sx_alloc* sx_alloc_malloc_leak_detect();
+const sx_alloc* sx_alloc_malloc_leak_detect;
+void sx_dump_leaks();
 
 #include "inline/allocator.inl"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_ALLOCATOR_H_

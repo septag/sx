@@ -10,7 +10,7 @@
 #define _sx_sbmaybegrow(_alloc,a,n) (_sx_sbneedgrow(a,(n)) ? _sx_sbgrow(_alloc,a,n) : 0)
 #define _sx_sbgrow(_alloc,a,n)      (*((void **)&(a)) = _sx_sbgrowf((a), (n), sizeof(*(a)), (_alloc)))
 
-inline void* _sx_sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc)
+static inline void* _sx_sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc)
 {
    int dbl_cur = arr ? (_sx_sbm(arr)<<1) : 0;
    int min_needed = sx_array_count(arr) + increment;

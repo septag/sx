@@ -118,8 +118,6 @@ inline bool sx_trylock(sx_lock_t* lock)
     sx_compiler_barrier();
     return r == 0;
 }
-
-
 #elif SX_COMPILER_GCC || SX_COMPILER_CLANG
 inline void sx_yield_cpu()
 {

@@ -1,5 +1,6 @@
 #include "sx/timer.h"
 #include <stdio.h>
+
 #include "sx/math.h"
 
 int main(int argc, char* argv[])
@@ -12,7 +13,7 @@ int main(int argc, char* argv[])
     uint32_t b = 1;
     int N = 100000;
     for (int i = 0; i < N; i++) {
-        uint32_t f = a + b;
+        uint32_t f = a + b; 
         a = b;
         b = f;
     }

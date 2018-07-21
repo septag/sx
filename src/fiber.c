@@ -8,6 +8,9 @@
 #elif SX_PLATFORM_POSIX
 #   include <unistd.h>
 #   include <sys/mman.h>
+#if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
+#   define MAP_ANONYMOUS MAP_ANON
+#endif
 #endif
 
 #define DEFAULT_STACK_SIZE 131072   // 120kb
@@ -32,11 +35,7 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
     DWORD old_opts;
     VirtualProtect(ptr, sx_os_pagesz(), PAGE_READWRITE | PAGE_GUARD, &old_opts);
 #elif SX_PLATFORM_POSIX
-#   ifdef MAP_ANON
-    ptr = mmap(0, size_, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-#   else
-    ptr = mmap(0, size_, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#   endif
+    ptr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if (ptr == MAP_FAILED) {
         SX_OUT_OF_MEMORY;
         return false;
@@ -73,7 +72,7 @@ void sx_fiber_stack_release(sx_fiber_stack* fstack)
 #if SX_PLATFORM_WINDOWS
     VirtualFree(ptr, 0, MEM_RELEASE);
 #elif SX_PLATFORM_POSIX
-    mummap(ptr, fstack->ssize);
+    munmap(ptr, fstack->ssize);
 #else
     free(ptr);
 #endif

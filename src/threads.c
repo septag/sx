@@ -50,9 +50,12 @@ typedef struct sx__sem_s
 
 typedef struct sx__signal_s
 {
+#if SX_PLATFORM_WINDOWS
     CRITICAL_SECTION mutex;
     CONDITION_VARIABLE cond;
     int value;
+#elif SX_PLATFORM_POSIX
+#endif
 } sx__signal;
 
 typedef struct sx__thread_s

@@ -117,6 +117,18 @@ static uint64_t _stm_osx_start;
 static uint64_t _stm_posix_start;
 #endif
 
+/* prevent 64-bit overflow when computing relative timestamp
+    see https://gist.github.com/jspohr/3dc4f00033d79ec5bdaf67bc46c813e3
+*/
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+static int64_t int64_muldiv(int64_t value, int64_t numer, int64_t denom) {
+    int64_t q = value / denom;
+    int64_t r = value % denom;
+    return q * numer + r * numer / denom;
+}
+#endif
+
+
 void stm_setup(void) {
     SOKOL_ASSERT(0 == _stm_initialized);
     _stm_initialized = 1;
@@ -125,7 +137,7 @@ void stm_setup(void) {
         QueryPerformanceCounter(&_stm_win_start);
     #elif defined(__APPLE__) && defined(__MACH__)
         mach_timebase_info(&_stm_osx_timebase);
-        _stm_osx_start = (mach_absolute_time()*_stm_osx_timebase.numer)/_stm_osx_timebase.denom;
+        _stm_osx_start = mach_absolute_time();
     #else
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -139,9 +151,10 @@ uint64_t stm_now(void) {
     #if defined(_WIN32)
         LARGE_INTEGER qpc_t;
         QueryPerformanceCounter(&qpc_t);
-        now = ((qpc_t.QuadPart - _stm_win_start.QuadPart) * 1000000000) / _stm_win_freq.QuadPart;
+        now = int64_muldiv(qpc_t.QuadPart - _stm_win_start.QuadPart, 1000000000, _stm_win_freq.QuadPart);
     #elif defined(__APPLE__) && defined(__MACH__)
-        now = ((mach_absolute_time()*_stm_osx_timebase.numer)/_stm_osx_timebase.denom) - _stm_osx_start;
+        const uint64_t mach_now = mach_absolute_time() - _stm_osx_start;
+        now = int64_muldiv(mach_now, _stm_osx_timebase.numer, _stm_osx_timebase.denom);
     #else
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);

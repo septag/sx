@@ -27,6 +27,10 @@
 
 #include "sx.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 #include <stdatomic.h>  
 typedef atomic_flag sx_lock_t;
@@ -72,5 +76,9 @@ void sx_unlock(sx_lock_t* lock);
 bool sx_trylock(sx_lock_t* lock);
 
 #include "inline/atomic.inl"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_ATOMIC_H_
