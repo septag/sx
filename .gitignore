@@ -39,21 +39,8 @@ docs/html
 docs/warnings.txt
 imgui.ini
 install
-out
 *.log
 .vscode
-
-
-# Downloaded
-deps/assimp
-deps/libuv
-deps/SDL2
-deps/SDL2_android
-deps/libuv_android_arm
-deps/bgfx_ios_arm
-deps/sdl2_ios_arm
-deps/curl
-deps/curl_android
 
 # Compiled binaries
 *.so
@@ -67,8 +54,3 @@ deps/curl_android
 *.vso
 *.pyc
 *.obj
-
-# external projects
-digger
-fisherboy
-model_viewer

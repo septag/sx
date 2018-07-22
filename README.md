@@ -31,6 +31,17 @@ This library currently contains:
 - os.h: Common portable OS related routines
 
 ## Build
+### Windows
+On windows, I'm building with *clang_c2*, to choose clang_c2 toolchain with msvc run this cmake command:
+
+```
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -G "Visual Studio 14 2015 Win64" -T v140_clang_c2
+```
+
 ### Linux
 
+#### Dependencies
 - Install __glew__ _(libglew-dev)_
+
