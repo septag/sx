@@ -47,7 +47,7 @@ void* sx_virtual_commit(void* addr, size_t sz)
     assert(sz % page_sz == 0);
 
 #if SX_PLATFORM_WINDOWS
-    return VirtualAlloc(addr, sz, MEM_COMMIT, PAGE_READWRITE) != NULL;
+    return VirtualAlloc(addr, sz, MEM_COMMIT, PAGE_READWRITE);
 #elif SX_PLATFORM_POSIX
     return mmap(addr, sz, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
 #endif
@@ -80,7 +80,7 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_
     const size_t total = sx_os_align_pagesz(size + sizeof(size_t) + align);
     if (valloc->offset + size <= valloc->reserved_sz) {
         // Commit the memory requested and save it's size
-        uint8_t* ptr = sx_virtual_commit(valloc->ptr + valloc->offset, total);
+        uint8_t* ptr = (uint8_t*)sx_virtual_commit(valloc->ptr + valloc->offset, total);
         if (!ptr) {
             SX_OUT_OF_MEMORY;
             return NULL;

@@ -18,7 +18,10 @@
 #define SX_GFX_H_
 
 #include "allocator.h"
-#include "../../3rdparty/sokol/sokol_gfx.h"
+
+#ifndef _SX_GFX_PRIVATE
+#   include "../../3rdparty/sokol/sokol_gfx.h"
+#endif
 
 // Instead of using sg_setup, use this function to initialize the sokol_gfx
 SX_EXTERN void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc);

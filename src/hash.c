@@ -248,7 +248,7 @@ uint32_t sx_hash_crc32(const void *data, size_t len, uint32_t seed)
 SX_INLINE uint32_t sx__fib_hash(uint32_t h, int bits) 
 {
     h ^= h >> bits;
-    return ((uint64_t)h * 11400714819323198485llu) >> bits;
+    return (uint32_t)(((uint64_t)h * 11400714819323198485llu) >> bits);
 }
 
 // https://www.exploringbinary.com/number-of-bits-in-a-decimal-integer/

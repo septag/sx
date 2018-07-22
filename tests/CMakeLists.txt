@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 3.0)
 
+# Set all source compilation to CPP in MSVC
+set(SOURCE_FILES test-sokol.c
+                 test-ini.c
+                 test-fiber.c
+                 test-cmdline.c
+                 test-timer.c
+                 test-threads.c)
+if (MSVC)
+    set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
+endif()
+
 add_executable(test-sokol WIN32 test-sokol.c)
 target_link_libraries(test-sokol PRIVATE sx)
 

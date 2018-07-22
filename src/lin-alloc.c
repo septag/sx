@@ -16,14 +16,14 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, size_t align, 
     }
 
     uint8_t* ptr = alloc->ptr + alloc->offset;
-    uint8_t* aligned = sx_align_ptr(ptr, sizeof(sx__linalloc_hdr), align);
+    uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(sx__linalloc_hdr), align);
 
     // Fill header info
     sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)aligned - 1;
-    hdr->size = size;
+    hdr->size = (int)size;
     hdr->padding = (int)(aligned - ptr);
 
-    alloc->offset += total;
+    alloc->offset += (int)total;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
 
     return aligned;
@@ -36,7 +36,7 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
         if (ptr == NULL) {
             // malloc
             void* new_ptr = sx__linalloc_malloc(linalloc, size, align, file, line);
-            linalloc->last_ptr = new_ptr;
+            linalloc->last_ptr = (uint8_t*)new_ptr;
             return new_ptr;
         } else if (ptr == linalloc->last_ptr) {
             // Realloc: special case, the memory is continous so we can just grow the buffer without any new allocation
@@ -45,7 +45,7 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
                 SX_OUT_OF_MEMORY;
                 return NULL;
             }
-            linalloc->offset += size;
+            linalloc->offset += (int)size;
             return ptr;    // Input pointer does not change
         } else {
             // Realloc: generic, create new allocation and memcpy the previous data into the beginning
@@ -53,7 +53,7 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
             if (new_ptr) {
                 sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)ptr - 1;
                 memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
-                linalloc->last_ptr = new_ptr;
+                linalloc->last_ptr = (uint8_t*)new_ptr;
             }
             return new_ptr;
         }
@@ -71,7 +71,7 @@ void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size)
 
     linalloc->alloc.alloc_cb = sx__linalloc_cb;
     linalloc->alloc.user_data = linalloc;
-    linalloc->ptr = ptr;
+    linalloc->ptr = (uint8_t*)ptr;
     linalloc->last_ptr = NULL;
     linalloc->size = size;
     linalloc->offset = linalloc->peak = 0;   

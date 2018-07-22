@@ -29,7 +29,7 @@ int sx_os_minstacksz()
 
 char sx_os_getch()
 {
-    return getch();
+    return _getch();
 }
 
 #elif SX_PLATFORM_POSIX

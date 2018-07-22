@@ -33,6 +33,10 @@
 #if SX_PLATFORM_WINDOWS
 // FIXME: I got wierd compiler error on MSVC+Clang_c2, so I had to comment this out
 //        Every source must include <windows.h> before including atomic.h
+#   ifndef _WINDOWS_
+#       define WIN32_LEAN_AND_MEAN
+#       include <Windows.h>
+#   endif
 #   include <intrin.h>
 #   if SX_COMPILER_MSVC
 #       pragma intrinsic(_mm_pause)

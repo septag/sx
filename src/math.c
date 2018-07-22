@@ -75,7 +75,7 @@ SX_CONSTFN float sx_cos(float _a)
     const float tmp1   = mad(tmp0, xsq, c6 );
     const float tmp2   = mad(tmp1, xsq, c4 );
     const float tmp3   = mad(tmp2, xsq, c2 );
-    const float tmp4   = mad(tmp3, xsq, 1.0);
+    const float tmp4   = mad(tmp3, xsq, 1.0f);
     const float result = tmp4 * c0;
 
     return bits == 1 || bits == 2

@@ -14,7 +14,6 @@
 #include <stdbool.h>        // bool
 #include <stdlib.h>         // size_t
 #include <stddef.h>         // ptrdiff_t
-#include <stdalign.h>       // alignas, alignof
 #include <assert.h>         // assert / static_assert
 #include <string.h>         // memset
 
@@ -89,9 +88,9 @@ SX_INLINE constexpr Ty sx_max(const Ty& _a, const Ty& _b)
 }
 
 template<typename Ty>
-SX_INLINE constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
+SX_INLINE constexpr Ty sx_clamp(const Ty& _a, const Ty& _min, const Ty& _max)
 {
-    return max(min(_a, _max), _min);
+    return sx_max(sx_min(_a, _max), _min);
 }
 #   else
 #       error "typeof in macros Not supported on this compiler, try to build with C++ instead of C"

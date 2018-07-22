@@ -31,6 +31,9 @@ SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-variable")
 
 SX_PRAGMA_DIAGNOSTIC_POP();
 
+#define _SX_GFX_PRIVATE
+#include "sx/gfx.h"
+
 void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc)
 {
 #if SX_PLATFORM_LINUX

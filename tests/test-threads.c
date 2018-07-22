@@ -9,7 +9,6 @@
 #include "sx/threads.h"
 #include "sx/atomic.h"
 #include "sx/os.h"
-//#include "../3rdparty/fastrange/fastrange.h"
 
 sx_sem g_sem;
 sx_queue_spsc* g_queue = NULL;

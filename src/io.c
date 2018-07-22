@@ -152,7 +152,7 @@ void sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size)
     assert(data);
     assert(size);
 
-    reader->data = data;
+    reader->data = (const uint8_t*)data;
     reader->top = size;
     reader->pos = 0;
 }

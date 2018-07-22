@@ -18,16 +18,16 @@ static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, size_t ali
     }
 
     uint8_t* ptr = alloc->ptr + alloc->offset;
-    uint8_t* aligned = sx_align_ptr(ptr, sizeof(sx__stackalloc_hdr), align);
+    uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(sx__stackalloc_hdr), align);
 
     // Fill header info
     sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)aligned - 1;
-    hdr->size = size;
+    hdr->size = (int)size;
     hdr->padding = (int)(aligned - ptr);
-    hdr->inner_size = total;
+    hdr->inner_size = (int)total;
     hdr->prev_ptr = alloc->last_ptr;
 
-    alloc->offset += total;
+    alloc->offset += (int)total;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
 
     return aligned;
@@ -40,7 +40,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
         if (ptr == NULL) {
             // malloc
             void* new_ptr = sx__stackalloc_malloc(stackalloc, size, align, file, line);
-            stackalloc->last_ptr = new_ptr;
+            stackalloc->last_ptr = (uint8_t*)new_ptr;
             return new_ptr;
         } else if (ptr == stackalloc->last_ptr) {
             // Realloc: special case, the memory is continous so we can just grow the buffer without any new allocation
@@ -49,7 +49,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
                 SX_OUT_OF_MEMORY;
                 return NULL;
             }
-            stackalloc->offset += size;
+            stackalloc->offset += (int)size;
             return ptr;    // Input pointer does not change
         } else {
             // Realloc: generic, create new allocation and memcpy the previous data into the beginning
@@ -57,7 +57,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
             if (new_ptr) {
                 sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)ptr - 1;
                 memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
-                stackalloc->last_ptr = new_ptr;
+                stackalloc->last_ptr = (uint8_t*)new_ptr;
             }
             return new_ptr;
         }
@@ -73,7 +73,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
         assert(stackalloc->offset > 0);
         sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)ptr - 1;
         stackalloc->offset -= hdr->inner_size;
-        stackalloc->last_ptr = hdr->prev_ptr;   // move to previous allocated pointer
+        stackalloc->last_ptr = (uint8_t*)hdr->prev_ptr;   // move to previous allocated pointer
         return NULL;
     }
 
@@ -89,7 +89,7 @@ void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size)
 
     stackalloc->alloc.alloc_cb = sx__stackalloc_cb;
     stackalloc->alloc.user_data = stackalloc;
-    stackalloc->ptr = ptr;
+    stackalloc->ptr = (uint8_t*)ptr;
     stackalloc->last_ptr = NULL;
     stackalloc->size = size;
     stackalloc->offset = stackalloc->peak = 0;   

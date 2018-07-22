@@ -53,10 +53,10 @@ float sx_rng_gen_f(sx_rng* rng)
     return sx__rng_float_normalized(sx_rng_gen(rng));
 }
 
-float sx_rng_gen_irange(sx_rng* rng, int _min, int _max)
+int sx_rng_gen_irange(sx_rng* rng, int _min, int _max)
 {
     assert(_min <= _max);
 
     const uint32_t range = (uint32_t)(_max - _min) + 1;
-    return sx_rng_gen(rng)%range + _min;
+    return (int)(sx_rng_gen(rng)%range) + _min;
 }    

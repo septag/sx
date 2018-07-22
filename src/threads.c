@@ -493,7 +493,7 @@ void sx_mutex_unlock(sx_mutex* mutex)
 bool sx_mutex_trylock(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
-    return TryEnterCriticalSection(&_m->handle);
+    return TryEnterCriticalSection(&_m->handle) == TRUE;
 }
 
 // Semaphore

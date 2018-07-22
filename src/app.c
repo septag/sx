@@ -3,6 +3,8 @@
 // Choose api based on the platform
 #if SX_PLATFORM_WINDOWS
 #   define SOKOL_D3D11
+#   define D3D11_NO_HELPERS
+#   define CINTERFACE
 #elif SX_PLATFORM_APPLE
 #   define SOKOL_METAL
 #elif SX_PLATFORM_RPI || SX_PLATFORM_EMSCRIPTEN

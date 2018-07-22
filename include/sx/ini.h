@@ -3,7 +3,9 @@
 #ifndef SX_INI_H_
 #define SX_INI_H_
 
-#include "../../3rdparty/ini/ini.h"
+#ifndef SX_INI_PRIVATE
+#   include "../../3rdparty/ini/ini.h"
+#endif
 
 #include "allocator.h"
 

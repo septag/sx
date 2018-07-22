@@ -32,13 +32,13 @@ This library currently contains:
 
 ## Build
 ### Windows
-On windows, I'm building with *clang_c2*, to choose clang_c2 toolchain with msvc run this cmake command:
-
+On windows, MSVC's support for C standard is basically crap and non-usable, the code is compatible with C++ compilers, so in MSVC it uses CPP compiler instead of C:
 ```
-mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -G "Visual Studio 14 2015 Win64" -T v140_clang_c2
+cmake .. -G "Visual Studio 14 2015 Win64"
 ```
+
+It is possible to build it with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command
 
 ### Linux
 

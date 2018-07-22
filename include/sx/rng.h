@@ -26,7 +26,7 @@ extern "C" {
 void     sx_rng_seed(sx_rng* rng, uint32_t seed);
 uint32_t sx_rng_gen(sx_rng* rng);
 float    sx_rng_gen_f(sx_rng* rng);
-float    sx_rng_gen_irange(sx_rng* rng, int _min, int _max);
+int      sx_rng_gen_irange(sx_rng* rng, int _min, int _max);
 
 #ifdef __cplusplus
 }
