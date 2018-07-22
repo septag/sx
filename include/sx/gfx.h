@@ -21,7 +21,7 @@
 #include "../../3rdparty/sokol/sokol_gfx.h"
 
 // Instead of using sg_setup, use this function to initialize the sokol_gfx
-SX_API void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc);
+SX_EXTERN void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc);
 
 #endif // SX_GFX_H_
 

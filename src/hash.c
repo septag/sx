@@ -245,14 +245,14 @@ uint32_t sx_hash_crc32(const void *data, size_t len, uint32_t seed)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/ 
-static inline uint32_t sx__fib_hash(uint32_t h, int bits) 
+SX_INLINE uint32_t sx__fib_hash(uint32_t h, int bits) 
 {
     h ^= h >> bits;
     return ((uint64_t)h * 11400714819323198485llu) >> bits;
 }
 
 // https://www.exploringbinary.com/number-of-bits-in-a-decimal-integer/
-static inline int sx__calc_bitshift(int n)
+SX_INLINE int sx__calc_bitshift(int n)
 {
     int c = 0;
     uint32_t un = (uint32_t)n;

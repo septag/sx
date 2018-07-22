@@ -34,14 +34,14 @@ typedef struct sx_virtualalloc
     size_t   reserved_sz;       // Total memory that is reserved (mapped) on init
 } sx_virtualalloc;
 
-SX_API bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz);
-SX_API void sx_virtualalloc_release(sx_virtualalloc* valloc);
+SX_EXTERN bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz);
+SX_EXTERN void sx_virtualalloc_release(sx_virtualalloc* valloc);
 
 // TODO: low-level virtual memory api
-SX_API void* sx_virtual_reserve(size_t reserve_sz);
-SX_API void  sx_virtual_release(void* ptr);
-SX_API void  sx_virtual_protect(void* ptr, size_t sz);
-SX_API void* sx_virtual_commit(void* addr, size_t sz);
-SX_API void  sx_virtual_decommit(void* addr, size_t sz); 
+SX_EXTERN void* sx_virtual_reserve(size_t reserve_sz);
+SX_EXTERN void  sx_virtual_release(void* ptr);
+SX_EXTERN void  sx_virtual_protect(void* ptr, size_t sz);
+SX_EXTERN void* sx_virtual_commit(void* addr, size_t sz);
+SX_EXTERN void  sx_virtual_decommit(void* addr, size_t sz); 
 
 #endif  // SX_VIRTUAL_ALLOC_H_

@@ -5,7 +5,7 @@
 
 #define SX_CONFIG_DEBUG_ALLOCATOR 0
 
-#ifdef _DEBUG
+#if defined(_DEBUG)
 #   undef SX_CONFIG_DEBUG_ALLOCATOR
 #   define SX_CONFIG_DEBUG_ALLOCATOR 1
 
@@ -14,7 +14,7 @@
 #       undef NDEBUG
 #   endif
 
-#   ifndef SX_CONFIG_DEBUG
+#   ifndef SX_DEBUG
 #       define SX_DEBUG 1
 #   endif
 #endif

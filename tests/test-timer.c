@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
         b = f;
     }
     uint64_t delta_tm = sx_tm_since(start_tm);
-    printf("Took %lf us (%lf secs)", sx_tm_us(delta_tm), sx_tm_sec(delta_tm));
+    printf("Took %lf us (%lf secs)\n", sx_tm_us(delta_tm), sx_tm_sec(delta_tm));
 
     return 0;
 }

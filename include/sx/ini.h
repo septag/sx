@@ -3,18 +3,14 @@
 #ifndef SX_INI_H_
 #define SX_INI_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "../../3rdparty/ini/ini.h"
 
 #include "allocator.h"
 
 typedef struct ini_t sx_ini;
 
-sx_ini* sx_ini_create(const sx_alloc* alloc);
-sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
+SX_EXTERN sx_ini* sx_ini_create(const sx_alloc* alloc);
+SX_EXTERN sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
 
 #define sx_ini_save                 ini_save
 #define sx_ini_destroy              ini_destroy
@@ -32,10 +28,6 @@ sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
 #define sx_ini_section_name_set     ini_section_name_set
 #define sx_ini_property_name_set    ini_property_name_set
 #define sx_ini_property_value_set   ini_property_value_set
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SX_INI_H_
 

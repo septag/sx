@@ -48,10 +48,6 @@
 
 #include "allocator.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef uint16_t sx_handle_t;
 
 #define SX_INVALID_HANDLE UINT16_MAX;
@@ -64,21 +60,61 @@ typedef struct sx_handle_pool_s
     sx_handle_t* sparse;
 } sx_handle_pool;
 
-sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity);
-void sx_handle_destroy_pool(sx_handle_pool* pool, const sx_alloc* alloc);
-bool sx_handle_grow_pool(SX_INOUT sx_handle_pool** ppool, const sx_alloc* alloc);
+SX_EXTERN sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity);
+SX_EXTERN void sx_handle_destroy_pool(sx_handle_pool* pool, const sx_alloc* alloc);
+SX_EXTERN bool sx_handle_grow_pool(SX_INOUT sx_handle_pool** ppool, const sx_alloc* alloc);
 
-sx_handle_t sx_handle_new(sx_handle_pool* pool);
-void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle);
-void sx_handle_reset_pool(sx_handle_pool* pool);
-bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle);
-sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index);
-bool sx_handle_full(const sx_handle_pool* pool);
+SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
+{
+    if (pool->count < pool->capacity) {
+        sx_handle_t index = pool->count;
+        ++pool->count;
+        sx_handle_t handle = pool->dense[index];
+        pool->sparse[handle] = index;
+        return handle;
+    } else  {
+        assert(0 && "handle pool is full");
+    }
 
-#ifdef __cplusplus
+    return SX_INVALID_HANDLE;
 }
-#endif  // extern "C"
 
-#include "inline/handle.inl"
+SX_INLINE void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
+{
+    assert(pool->count > 0);
+
+    sx_handle_t index = pool->sparse[handle];
+    --pool->count;
+    sx_handle_t tmp = pool->dense[pool->count];
+    pool->dense[pool->count] = handle;
+    pool->sparse[tmp] = index;
+    pool->dense[index] = tmp; 
+}
+
+SX_INLINE void sx_handle_reset_pool(sx_handle_pool* pool)
+{
+    pool->count = 0;
+    sx_handle_t* dense = pool->dense;
+    for (int i = 0, c = pool->capacity; i < c; i++) {
+        dense[i] = i;
+    }
+}
+
+SX_INLINE bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle)
+{
+    sx_handle_t index = pool->sparse[handle];
+    return index < pool->count && pool->dense[index] == handle;
+}
+
+SX_INLINE sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index)
+{
+    assert(index < pool->count);
+    return pool->dense[index];
+}
+
+SX_INLINE bool sx_handle_full(const sx_handle_pool* pool)
+{
+    return pool->count == pool->capacity;
+}
 
 #endif  // SX_HANDLE_H_

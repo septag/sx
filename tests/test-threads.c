@@ -8,6 +8,7 @@
 #include "sx/atomic.h"
 #include "sx/threads.h"
 #include "sx/atomic.h"
+#include "sx/os.h"
 //#include "../3rdparty/fastrange/fastrange.h"
 
 sx_sem g_sem;
@@ -50,7 +51,7 @@ int main(int argc, char* argv[])
     puts("");
 
     while (!g_quit) {
-        char c = getch();
+        char c = sx_os_getch();
         if (c == 32) {
             work_item item;
             item.id = id;

@@ -1,5 +1,7 @@
 // atomic.h - v1.0 - Atomic primitives and operations
 // Reference: http://en.cppreference.com/w/c/atomic
+// GCC: http://gcc.gnu.org/onlinedocs/gcc-4.6.2/gcc/Atomic-Builtins.html
+//
 // NOTE: I encountered a problem in MSVC+Clang_C2 where some atomic functions where badly implemented 
 //       So I had to implemenet common atomic functions and types myself
 //       Later I may re-evaluate the compatibility of stdatomic.h and use that instead
@@ -26,10 +28,164 @@
 #define SX_ATOMIC_H_
 
 #include "sx.h"
+#include "platform.h"
 
-#ifdef __cplusplus
-extern "C" {
+#if SX_PLATFORM_WINDOWS
+// FIXME: I got wierd compiler error on MSVC+Clang_c2, so I had to comment this out
+//        Every source must include <windows.h> before including atomic.h
+#   include <intrin.h>
+#   if SX_COMPILER_MSVC
+#       pragma intrinsic(_mm_pause)
+#       pragma intrinsic(_mm_mfence)
+#       pragma intrinsic(_mm_lfence)
+#       pragma intrinsic(_mm_sfence)
+#       pragma intrinsic(_ReadWriteBarrier)
+#       pragma intrinsic(_ReadBarrier)
+#       pragma intrinsic(_WriteBarrier)
+#       pragma intrinsic(_InterlockedExchangeAdd)
+#       pragma intrinsic(_InterlockedIncrement)
+#       pragma intrinsic(_InterlockedDecrement)
+#       pragma intrinsic(_InterlockedExchange)
+#       pragma intrinsic(_InterlockedCompareExchange)
+#       pragma intrinsic(_InterlockedExchangePointer)
+#       pragma intrinsic(_InterlockedCompareExchangePointer)
+#   endif
+#   if SX_ARCH_32BIT
+#	    include <emmintrin.h> // _mm_xfence
+#   endif
 #endif
+
+
+typedef int volatile    sx_atomic_int;
+typedef void* volatile  sx_atomic_ptr;
+typedef sx_atomic_int   sx_lock_t;
+
+SX_FORCE_INLINE void sx_yield_cpu()
+{
+#if SX_PLATFORM_WINDOWS
+    _mm_pause();
+#else
+#   if SX_CPU_X86
+    __asm__ __volatile__("pause");
+#   elif SX_CPU_ARM
+    __asm__ __volatile__("yield");
+#   endif
+#endif
+}
+
+SX_FORCE_INLINE void sx_memory_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _mm_mfence();
+#else
+    __sync_synchronize();
+#endif
+}
+
+SX_FORCE_INLINE void sx_memory_read_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _mm_lfence();
+#else
+    __sync_synchronize();
+#endif
+}
+
+SX_FORCE_INLINE void sx_memory_write_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _mm_sfence();
+#else
+    __sync_synchronize();
+#endif
+}
+
+SX_FORCE_INLINE void sx_compiler_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _ReadWriteBarrier();
+#else
+#endif
+}
+
+SX_FORCE_INLINE void sx_compiler_read_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _ReadBarrier();
+#else
+#endif
+}
+
+SX_FORCE_INLINE void sx_compiler_write_barrier()
+{
+#if SX_PLATFORM_WINDOWS
+    _WriteBarrier();
+#else
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchangeAdd((LONG volatile*)a, b);
+#else
+    return __sync_fetch_and_add(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedIncrement((LONG volatile*)a);
+#else
+    return __sync_add_and_fetch(a, 1);
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedDecrement((LONG volatile*)a);
+#else
+    return __sync_sub_and_fetch(a, 1);
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchange((LONG volatile*)a, b);
+#else
+    return __sync_lock_test_and_set(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedCompareExchange((LONG volatile*)a, xchg, comparand);
+#else
+    return __sync_val_compare_and_swap(a, comparand, xchg);
+#endif
+}
+
+SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchangePointer((PVOID volatile*)a, b);
+#else
+    return __sync_lock_test_and_set(a, b);
+#endif
+}
+
+SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedCompareExchangePointer((PVOID volatile*)a, xchg, comparand);
+#else
+    return __sync_val_compare_and_swap(a, comparand, xchg);
+#endif
+}
 
 /*
 #include <stdatomic.h>  
@@ -40,45 +196,31 @@ typedef atomic_flag sx_lock_t;
 #define sx_trylock(_l)  atomic_flag_test_and_set_explicit(&(_l), memory_order_acquire)
 */
 
-typedef int volatile    sx_atomic_int;
-typedef void* volatile  sx_atomic_ptr;
-typedef sx_atomic_int   sx_lock_t;
-
-void sx_yield_cpu();
-
-void sx_memory_barrier();
-void sx_memory_read_barrier();
-void sx_memory_write_barrier();
-
-void sx_compiler_barrier();
-void sx_compiler_read_barrier();
-void sx_compiler_write_barrier();
-
-// Return first value and add new value
-int sx_atomic_fetch_add(sx_atomic_int* a, int b);
-// Increment and return result
-int sx_atomic_incr(sx_atomic_int* a);
-// Decrement and return result
-int sx_atomic_decr(sx_atomic_int* a);
-// Assigns the value and returns initial value
-int sx_atomic_xchg(sx_atomic_int* a, int b);
-// Puts the value of 'xchg' into 'a' if a equals comparand, returns initial value of 'a'
-int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand);
-
-// Assigns the pointer and returns initial value
-void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b);
-// Puts the pointer of 'xchg' into 'a' if a equals comparand, returns initial value of 'a'
-void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand);
-
-// Locking functions
-void sx_lock(sx_lock_t* lock);
-void sx_unlock(sx_lock_t* lock);
-bool sx_trylock(sx_lock_t* lock);
-
-#include "inline/atomic.inl"
-
-#ifdef __cplusplus
-}
+SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
+{
+#if SX_PLATFORM_WINDOWS
+    sx_compiler_barrier();
+    *lock = 0;
+#else
+    __sync_lock_release(lock);
 #endif
+}
+
+SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
+{
+#if SX_PLATFORM_WINDOWS
+    int r = sx_atomic_xchg(lock, 1);
+    sx_compiler_barrier();
+    return r;
+#else
+    return __sync_lock_test_and_set(lock, 1);
+#endif
+}
+
+SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+{
+    while (sx_trylock(lock))
+        sx_yield_cpu();
+}
 
 #endif // SX_ATOMIC_H_

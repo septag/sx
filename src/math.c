@@ -18,7 +18,7 @@ const float SX_FLOAT_MAX   = 3.402823e+38f;
 #define square(_x) (_x*_x)
 #define mad(_a, _b, _c) _a*_b + _c
 
-SX_CONST_FUNC float sx_floor(float _a)
+SX_CONSTFN float sx_floor(float _a)
 {
     if (_a < 0.0f) {
         const float fr = sx_fract(-_a);
@@ -32,7 +32,7 @@ SX_CONST_FUNC float sx_floor(float _a)
     return _a - sx_fract(_a);
 }
 
-SX_CONST_FUNC float sx_cos(float _a)
+SX_CONSTFN float sx_cos(float _a)
 {
     static const float kSinC2  = -0.16666667163372039794921875f;
     static const float kSinC4  =  8.333347737789154052734375e-3f;
@@ -83,7 +83,7 @@ SX_CONST_FUNC float sx_cos(float _a)
         :  result;
 }
 
-SX_CONST_FUNC float sx_acos(float _a)
+SX_CONSTFN float sx_acos(float _a)
 {
     static const float kAcosC0 =  1.5707288f;
     static const float kAcosC1 = -0.2121144f;
@@ -102,7 +102,7 @@ SX_CONST_FUNC float sx_acos(float _a)
     return result;    
 }
 
-SX_CONST_FUNC float sx_atan2(float _y, float _x)
+SX_CONSTFN float sx_atan2(float _y, float _x)
 {
     static const float kAtan2C0 = -0.013480470f;
     static const float kAtan2C1 =  0.057477314f;
@@ -163,7 +163,7 @@ static float sx__frexp(float _a, int32_t* _outExp)
     return result;
 }
 
-SX_CONST_FUNC float sx_exp(float _a)
+SX_CONSTFN float sx_exp(float _a)
 {
     static const float kExpC0  =  1.66666666666666019037e-01f;
     static const float kExpC1  = -2.77777777770155933842e-03f;
@@ -192,7 +192,7 @@ SX_CONST_FUNC float sx_exp(float _a)
     return result; 
 }
 
-SX_CONST_FUNC float sx_log(float _a)
+SX_CONSTFN float sx_log(float _a)
 {
     static const float kLogC0 = 6.666666666666735130e-01f;
     static const float kLogC1 = 3.999999999940941908e-01f;

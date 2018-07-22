@@ -3,7 +3,7 @@
 
 SX is merely a collection of sources and 3rdparty libraries. It is written in C and can be compiled using C++ compiler like MSVC. 
 Designed for simplicity and performance, It is tailored more towards system and game programmers.  
-Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their design/code/libraries/tools inside SXs.
+Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
 
 This library currently contains:
 
@@ -25,7 +25,12 @@ This library currently contains:
 - stack-alloc.h: Generic linear stack based allocator
 - string.h: Useful string manipulation functions
 - threads.h: Portable threading primitives (Thread, Tls, Mutex, Semaphore, Signal, SpScQueue)
-- timer.h: poratble high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
+- timer.h: Portable high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
 - virtual-alloc.h: Portable virtual memory allocator and functions
 - math.h: Vector math primitives and functions, many of the functions are taken from [bx](https://github.com/bkaradzic/bx)
 - os.h: Common portable OS related routines
+
+## Build
+### Linux
+
+- Install __glew__ _(libglew-dev)_

@@ -60,3 +60,49 @@ char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args)
     return ctx.buff;
 }
 
+int sx_strcpy(char* dst, int dst_sz, const char* src)
+{
+    assert(dst);
+    assert(src);
+
+    const int len = sx_strlen(src);
+    const int32_t max = dst_sz-1;
+    const int32_t num = (len < max ? len : max);
+    memcpy(dst, src, num);
+    dst[num] = '\0';
+
+    return num;
+}
+
+int sx_strlen(const char* str)
+{
+    assert(str);
+
+    const char* ptr = str;
+    for (; *ptr != '\0'; ++ptr) {};
+    return (int)(intptr_t)(ptr - str);
+}
+
+SX_INLINE int sx__strnlen(const char* str, int _max)
+{
+    assert(str);
+
+    const char* ptr = str;
+    for (; _max > 0 && *ptr != '\0'; ++ptr, --_max) {};
+    return (int)(intptr_t)(ptr - str);
+}
+
+int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
+{
+    assert(dst);
+    assert(src);
+
+    const int len = sx__strnlen(src, _num);
+    const int32_t max = dst_sz-1;
+    const int32_t num = (len < max ? len : max);
+    memcpy(dst, src, num);
+    dst[num] = '\0';
+
+    return num;
+}
+

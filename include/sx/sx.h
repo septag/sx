@@ -37,8 +37,6 @@
 #   endif
 #endif
 
-#define sx_powerof2(_a) ((_a) && !((_a) & ((_a) - 1)))
-
 /// 
 /// Intellisense and MSCV editor complains about not returning expression on macros that have {()}
 #if SX_COMPILER_GCC || SX_COMPILER_CLANG
@@ -73,25 +71,25 @@
 //          We do this To evaluate the inputs
 #   ifdef __cplusplus 
 template<typename Ty>
-inline void sx_swap(Ty& _a, Ty& _b)
+SX_INLINE void sx_swap(Ty& _a, Ty& _b)
 {
     Ty tmp = _a; _a = _b; _b = tmp;
 }
 
 template<typename Ty>
-inline constexpr Ty sx_min(const Ty& _a, const Ty& _b)
+SX_INLINE constexpr Ty sx_min(const Ty& _a, const Ty& _b)
 {
     return _a < _b ? _a : _b;
 }
 
 template<typename Ty>
-inline constexpr Ty sx_max(const Ty& _a, const Ty& _b)
+SX_INLINE constexpr Ty sx_max(const Ty& _a, const Ty& _b)
 {
     return _a > _b ? _a : _b;
 }
 
 template<typename Ty>
-inline constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
+SX_INLINE constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
 {
     return max(min(_a, _max), _min);
 }

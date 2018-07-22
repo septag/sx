@@ -55,15 +55,6 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/virtual-alloc.h 
                   include/sx/fiber.h
                   include/sx/math.h)
-set(INLINE_FILES include/sx/inline/allocator.inl
-                 include/sx/inline/array.inl
-                 include/sx/inline/atomic.inl
-                 include/sx/inline/os.inl
-                 include/sx/inline/handle.inl
-                 include/sx/inline/pool.inl
-                 include/sx/inline/hash.inl
-                 include/sx/inline/math.inl)
-
 ####################################################################################################
 # Assembly files for fcontext
 if (APPLE)
@@ -122,8 +113,9 @@ if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU")
 
     # MSVC + Clang_C2
     if (MSVC)
-        add_compile_options("$<$<CONFIG:Debug>:-DSX_DEBUG=1;-g;>")
+        add_compile_options("$<$<CONFIG:Debug>:-g;>")
     endif()
+    add_compile_options("$<$<CONFIG:Debug>:-D_DEBUG;>")
     
     set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=gnu11")
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11" "-fno-rtti" "-fno-exceptions")
@@ -144,7 +136,7 @@ sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "-fexceptions -fr
 # sx_remove_compile_options(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "/MDd" "/MD")
 # sx_remove_compile_options(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "/MDd" "/MD")
 
-add_library(sx ${SOURCE_FILES} ${INCLUDE_FILES} ${INLINE_FILES} ${ASM_SOURCES})
+add_library(sx ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
 
 if (MSVC)
     set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/msvc)
@@ -157,7 +149,11 @@ elseif(APPLE)
 endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
-target_link_libraries(sx PUBLIC GL GLEW)
+
+# Link 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    target_link_libraries(sx PUBLIC GL GLEW X11 dl pthread)
+endif()
 
 # Tests
 if (SX_BUILD_TESTS)

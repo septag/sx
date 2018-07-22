@@ -7,20 +7,10 @@
 
 #include "sx.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int sx_os_minstacksz();
-int sx_os_maxstacksz();
-int sx_os_pagesz();
-size_t sx_os_align_pagesz(size_t size);
-
-#include "inline/os.inl"
-
-#ifdef __cplusplus
-}
-#endif  // extern "C"
-
+SX_EXTERN int sx_os_minstacksz();
+SX_EXTERN int sx_os_maxstacksz();
+SX_EXTERN int sx_os_pagesz();
+SX_EXTERN size_t sx_os_align_pagesz(size_t size);
+SX_EXTERN char sx_os_getch();
 
 #endif

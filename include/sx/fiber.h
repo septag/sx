@@ -64,11 +64,11 @@ typedef struct sx_fiber_stack
 
 typedef void (sx_fiber_cb)(sx_fiber_transfer transfer);
 
-SX_API bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size SX_DFLT(0));
-SX_API void sx_siber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
-SX_API void sx_fiber_stack_release(sx_fiber_stack* fstack);
+SX_EXTERN bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size SX_DFLT(0));
+SX_EXTERN void sx_siber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
+SX_EXTERN void sx_fiber_stack_release(sx_fiber_stack* fstack);
 
-SX_API sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
-SX_API sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);
+SX_EXTERN sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
+SX_EXTERN sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);
 
 #endif // SX_FIBER_H_

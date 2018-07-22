@@ -16,8 +16,8 @@
 #define DEFAULT_STACK_SIZE 131072   // 120kb
 
 // Fwd declare ASM functions
-SX_API sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
-SX_API sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
+SX_EXTERN sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
+SX_EXTERN sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
 
 bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
 {

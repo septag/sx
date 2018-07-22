@@ -54,15 +54,15 @@
 
 #if SX_COMPILER_GCC || SX_COMPILER_CLANG
 #	define SX_ALIGN_DECL(_align, _decl) _decl __attribute__( (aligned(_align) ) )
-#	define SX_ALLOW_UNUSED __attribute__( (unused) )
-#	define SX_FORCE_INLINE inline __attribute__( (__always_inline__) )
-#	define SX_FUNCTION __PRETTY_FUNCTION__
-#	define SX_LIKELY(_x)   __builtin_expect(!!(_x), 1)
-#	define SX_UNLIKELY(_x) __builtin_expect(!!(_x), 0)
-#	define SX_NO_INLINE   __attribute__( (noinline) )
-#	define SX_NO_RETURN   __attribute__( (noreturn) )
-#	define SX_CONST_FUNC  __attribute__( (const) )
-
+#	define SX_ALLOW_UNUSED              __attribute__( (unused) )
+#	define SX_FORCE_INLINE              static inline __attribute__( (__always_inline__) )
+#	define SX_FUNCTION                  __PRETTY_FUNCTION__
+#	define SX_LIKELY(_x)                __builtin_expect(!!(_x), 1)
+#	define SX_UNLIKELY(_x)              __builtin_expect(!!(_x), 0)
+#	define SX_NO_INLINE                 __attribute__( (noinline) )
+#	define SX_NO_RETURN                 __attribute__( (noreturn) )
+#	define SX_CONSTFN                   __attribute__( (const) )
+#   define SX_INLINE                    static inline
 #	if SX_COMPILER_GCC >= 70000
 #		define SX_FALLTHROUGH __attribute__( (fallthrough) )
 #	else
@@ -79,16 +79,17 @@
 #elif SX_COMPILER_MSVC
 #	define SX_ALIGN_DECL(_align, _decl) __declspec(align(_align) ) _decl
 #	define SX_ALLOW_UNUSED
-#	define SX_FORCE_INLINE __forceinline
-#	define SX_FUNCTION __FUNCTION__
-#	define SX_LIKELY(_x)   (_x)
-#	define SX_UNLIKELY(_x) (_x)
-#	define SX_NO_INLINE __declspec(noinline)
+#	define SX_FORCE_INLINE              __forceinline
+#	define SX_FUNCTION                  __FUNCTION__
+#	define SX_LIKELY(_x)                (_x)
+#	define SX_UNLIKELY(_x)              (_x)
+#	define SX_NO_INLINE                 __declspec(noinline)
 #	define SX_NO_RETURN
-#	define SX_CONST_FUNC  __declspec(noalias)
+#	define SX_CONSTFN                   __declspec(noalias)
 #	define SX_FALLTHROUGH SX_NOOP()
 #	define SX_PRINTF_ARGS(_format, _args)
 #	define SX_ATTRIBUTE(_x)
+#   define SX_INLINE                    inline
 #else
 #	error "Unknown SX_COMPILER_?"
 #endif
@@ -138,11 +139,12 @@
 #endif // SX_COMPILER_
 
 #ifdef __cplusplus
-#   define SX_API extern "C" 
+#   define SX_EXTERN extern "C" 
 #else
-#   define SX_API extern
+#   define SX_EXTERN extern
 #endif
 
 #define SX_ENABLED(_f)  ((_f) != 0)
+#define SX_UNUSED(_a)   (void)(true ? (void)0 : ( (void)(_a) ))
 
 #endif // SX_MACROS_H_

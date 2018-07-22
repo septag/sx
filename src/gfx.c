@@ -11,7 +11,7 @@
 #   define SOKOL_GLES3
 #elif SX_PLATFORM_LINUX
 #   define SOKOL_GLCORE33
-#   include <GL/glew.h>
+#   include <GL/glew.h>     // glew must be installed on linux
 #else
 #   define SOKOL_GLCORE33
 #endif
@@ -33,7 +33,14 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 
 void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc)
 {
-    glewInit();
+#if SX_PLATFORM_LINUX
+    glewExperimental = GL_TRUE;
+    GLenum r = glewInit();
+    if (r != GLEW_OK) {
+        printf("Error :%s\n", glewGetErrorString(r));
+    }
+    glGetError();
+#endif
     g_gfx_alloc = alloc;
     sg_setup(desc);
 }

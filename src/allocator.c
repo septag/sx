@@ -6,8 +6,8 @@
 static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
 static void* sx_malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
 
-static const sx_alloc g_alloc_malloc = {.alloc_cb=sx_malloc_cb, .user_data=NULL};
-static const sx_alloc g_alloc_malloc_leakd = {.alloc_cb=sx_malloc_leakd_cb, .user_data=NULL};
+static const sx_alloc g_alloc_malloc = {sx_malloc_cb, NULL};
+static const sx_alloc g_alloc_malloc_leakd = {sx_malloc_leakd_cb, NULL};
 
 const sx_alloc* sx_alloc_malloc = &g_alloc_malloc;
 const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
@@ -147,9 +147,9 @@ static void stblkck_internal_print(const char *reason, const char *file, int lin
     if (!slash)
         slash = strrchr(file, '\\');
     if (slash)
-        strcpy_s(filename, sizeof(filename), slash+1);
+        sx_strcpy(filename, sizeof(filename), slash+1);
     else
-        strcpy_s(filename, sizeof(filename), file);
+        sx_strcpy(filename, sizeof(filename), file);
 
     char text[512];
     sx_snprintf(text, sizeof(text), "%-6s: %s (%4d): %zd bytes at %p", reason, filename, line, size, ptr);

@@ -5,22 +5,15 @@
 
 #include "allocator.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_EXTERN int sx_snprintf(char* str, int size, const char* fmt, ...);
+SX_EXTERN int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 
-int sx_snprintf(char* str, int size, const char* fmt, ...);
-int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
+SX_EXTERN SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
+SX_EXTERN SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
-SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
-SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
+SX_EXTERN int sx_strcpy(char* dst, int dst_sz, const char* src);
+SX_EXTERN int sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
+SX_EXTERN int sx_strlen(const char* str);
 
-#define sx_strcpy strcpy_s
-#define sx_strcat strcat_s
-#define sx_strlen (int)strlen
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
