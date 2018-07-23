@@ -12,7 +12,7 @@
 // sx_lock_t: Common spin lock, use this for short-time data locking, for longer locking times, use mutex
 //            Reference: http://en.cppreference.com/w/cpp/atomic/atomic_flag
 //            Usage:
-//              sx_lock_t lock = sx_lock_init()
+//              sx_lock_t lock = 0;
 //              sx_lock(lock); 
 //              ... // write some data
 //              sx_unlock(lock);

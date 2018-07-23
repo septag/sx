@@ -6,7 +6,8 @@ set(SOURCE_FILES test-sokol.c
                  test-fiber.c
                  test-cmdline.c
                  test-timer.c
-                 test-threads.c)
+                 test-threads.c
+                 test-virtualmem.c)
 if (MSVC)
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
 endif()
@@ -28,3 +29,6 @@ target_link_libraries(test-timer PRIVATE sx)
 
 add_executable(test-threads test-threads.c)
 target_link_libraries(test-threads PRIVATE sx)
+
+add_executable(test-virtualmem test-virtualmem.c)
+target_link_libraries(test-virtualmem PRIVATE sx)

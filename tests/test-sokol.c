@@ -17,7 +17,7 @@ void init(void) {
     desc.d3d11_depth_stencil_view_cb = sapp_d3d11_get_depth_stencil_view;
 
     memset(&pass_action, 0x0, sizeof(pass_action));
-    pass_action.colors[0] = {SG_ACTION_CLEAR, {1.0f, 0.0f, 0.0f, 1.0f}};
+    pass_action.colors[0] = (sg_color_attachment_action){SG_ACTION_CLEAR, {1.0f, 0.0f, 0.0f, 1.0f}};
 
     sg_setup_alloc(alloc, &desc);
 }

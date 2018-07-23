@@ -1,4 +1,5 @@
 #include "sx/io.h"
+
 #include <stdio.h>
 #include <limits.h>
 
@@ -9,7 +10,8 @@
 	  || SX_PLATFORM_ANDROID \
 	  || SX_PLATFORM_BSD     \
 	  || SX_PLATFORM_IOS     \
-	  || SX_PLATFORM_OSX
+	  || SX_PLATFORM_OSX     \
+      || SX_PLATFORM_LINUX   
 #	define fseeko64 fseeko
 #	define ftello64 ftello
 #elif SX_PLATFORM_PS4
