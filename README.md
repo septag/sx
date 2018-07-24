@@ -31,20 +31,28 @@ This library currently contains:
 - os.h: Common portable OS related routines
 
 ## Build
+### CMake options
+
+These are general options for cmake, where you can trim or customize the build:  
+
+- **SX_BUILD_TESTS** (Default=1): Set SX_BUILD_TESTS=0 to skip building test applications
+- **SX_NO_GFX** (Default=0): By default SX includes and implements sokol_gfx, set SX_NO_GFX=1 to ignore sokol_gfx in the build
+- **SX_NO_APP** (Default=0): By default SX includes and implements sokol_app, set SX_NO_APP=1 to ignore sokol_app in the build
+
 ### Windows
-On windows, MSVC's support for C standard is basically crap and non-usable, the code is compatible with C++ compilers, so in MSVC it uses CPP compiler instead of C:
+On windows, MSVC's support for C99/C11 standard is basically broken and non-usable, the code is compatible with C++ compilers, so in MSVC it uses CPP compiler instead of C:
 ```
 cd build
 cmake .. -G "Visual Studio 14 2015 Win64"
 ```
 
-It is possible to build it with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command
+It is possible to build it with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command (vs2015)
 
 ### Linux
 
 __Dependencies__
 
-- __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_CONFIG_NO_GFX flag in cmake options
+- __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
 
 [License (BSD 2-clause)](https://github.com/septag/sx/blob/master/LICENSE)
 --------------------------------------------------------------------------

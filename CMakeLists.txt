@@ -11,6 +11,8 @@ endfunction()
 
 
 option(SX_BUILD_TESTS "Build test executables" TRUE)
+option(SX_NO_APP "Exclude App (sokol_app) module integration" FALSE)
+option(SX_NO_GFX "Exclude Gfx (sokol_gfx) module integration" FALSE)
 
 # Enable Assembler
 if (MSVC)
@@ -64,6 +66,17 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/virtual-alloc.h 
                   include/sx/fiber.h
                   include/sx/math.h)
+
+if (SX_NO_GFX)
+    list(REMOVE_ITEM SOURCE_FILES src/gfx.c)
+    list(REMOVE_ITEM INCLUDE_FILES src/gfx.h)
+endif()
+
+if (SX_NO_APP)
+    list(REMOVE_ITEM SOURCE_FILES src/app.c)
+    list(REMOVE_ITEM INCLUDE_FILES src/app.h)
+endif()
+
 ####################################################################################################
 # Assembly files for fcontext
 if (APPLE)
@@ -152,11 +165,19 @@ endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
 
-# Link 
+# Link system libs
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(sx PUBLIC GL GLEW X11 dl pthread)
+    target_link_libraries(sx PUBLIC dl pthread)
+    if (NOT SX_NO_GFX)
+        target_link_libraries(sx PUBLIC GL GLEW)
+    endif()
+    if (NOT SX_NO_APP)
+        target_link_libraries(sx PUBLIC X11)
+    endif()
 elseif (WIN32)
-    target_link_libraries(sx PUBLIC dxgi d3d11)
+    if (NOT SX_NO_GFX)
+        target_link_libraries(sx PUBLIC dxgi d3d11)
+    endif()
 endif()
 
 # Tests
