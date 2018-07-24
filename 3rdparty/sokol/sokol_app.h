@@ -569,6 +569,15 @@ extern const void* sapp_d3d11_get_depth_stencil_view(void);
 /*-- IMPLEMENTATION ----------------------------------------------------------*/
 #ifdef SOKOL_IMPL
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4201)   /* nonstandard extension used: nameless struct/union */
+#pragma warning(disable:4115)   /* named type definition in parentheses */
+#pragma warning(disable:4054)   /* 'type cast': from function pointer */
+#pragma warning(disable:4055)   /* 'type cast': from data pointer */
+#pragma warning(disable:4505)   /* unreferenced local function has been removed */
+#endif
+
 #include <string.h> /* memset */
 
 /* check if the config defines are alright */
@@ -643,9 +652,8 @@ extern const void* sapp_d3d11_get_depth_stencil_view(void);
         #define _SOKOL_PRIVATE static
     #endif
 #endif
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef _SOKOL_UNUSED
+    #define _SOKOL_UNUSED(x) (void)(x)
 #endif
 
 /* helper macros */
@@ -800,6 +808,7 @@ static _sapp_macos_app_delegate* _sapp_macos_app_dlg_obj;
 static _sapp_macos_view* _sapp_view_obj;
 static _sapp_macos_mtk_view_dlg* _sapp_macos_mtk_view_dlg_obj;
 static id<MTLDevice> _sapp_mtl_device_obj;
+static uint32_t _sapp_macos_flags_changed_store;
 
 _SOKOL_PRIVATE void _sapp_macos_init_keytable(void) {
     _sapp.keycodes[0x1D] = SAPP_KEYCODE_0;
@@ -1183,7 +1192,32 @@ _SOKOL_PRIVATE void _sapp_macos_app_event(sapp_event_type type) {
         _sapp_macos_mod(event.modifierFlags));
 }
 - (void)flagsChanged:(NSEvent*)event {
-    /* FIXME */
+    const uint32_t old_f = _sapp_macos_flags_changed_store;
+    const uint32_t new_f = event.modifierFlags;
+    _sapp_macos_flags_changed_store = new_f;
+    sapp_keycode key_code = SAPP_KEYCODE_INVALID;
+    bool down = false;
+    if ((new_f ^ old_f) & NSEventModifierFlagShift) {
+        key_code = SAPP_KEYCODE_LEFT_SHIFT;
+        down = 0 != (new_f & NSEventModifierFlagShift);
+    }
+    if ((new_f ^ old_f) & NSEventModifierFlagControl) {
+        key_code = SAPP_KEYCODE_LEFT_CONTROL;
+        down = 0 != (new_f & NSEventModifierFlagControl);
+    }
+    if ((new_f ^ old_f) & NSEventModifierFlagOption) {
+        key_code = SAPP_KEYCODE_LEFT_ALT;
+        down = 0 != (new_f & NSEventModifierFlagOption);
+    }
+    if ((new_f ^ old_f) & NSEventModifierFlagCommand) {
+        key_code = SAPP_KEYCODE_LEFT_SUPER;
+        down = 0 != (new_f & NSEventModifierFlagCommand);
+    }
+    if (key_code != SAPP_KEYCODE_INVALID) {
+        _sapp_macos_key_event(down ? SAPP_EVENTTYPE_KEY_DOWN : SAPP_EVENTTYPE_KEY_UP,
+            key_code,
+            _sapp_macos_mod(event.modifierFlags));
+    }
 }
 @end
 
@@ -2141,9 +2175,26 @@ _SOKOL_PRIVATE const _sapp_gl_fbconfig* _sapp_gl_choose_fbconfig(const _sapp_gl_
 #include <windowsx.h>
 
 #if defined(SOKOL_D3D11)
+#ifndef D3D11_NO_HELPERS
+#define D3D11_NO_HELPERS
+#endif
+#ifndef CINTERFACE
+#define CINTERFACE
+#endif
+#ifndef COBJMACROS
 #define COBJMACROS
+#endif
+#include <windows.h>
 #include <d3d11.h>
 #include <dxgi.h>
+#if (defined(WINAPI_FAMILY_PARTITION) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP))
+#pragma comment (lib, "WindowsApp.lib")
+#else
+#pragma comment (lib, "user32.lib")
+#pragma comment (lib, "dxgi.lib")
+#pragma comment (lib, "d3d11.lib")
+#pragma comment (lib, "dxguid.lib")
+#endif
 #endif
 
 #ifndef DPI_ENUMS_DECLARED
@@ -2185,7 +2236,6 @@ static ID3D11RenderTargetView* _sapp_d3d11_rtv;
 static ID3D11Texture2D* _sapp_d3d11_ds;
 static ID3D11DepthStencilView* _sapp_d3d11_dsv;
 #endif
-#if defined(SOKOL_GLCORE33)
 #define WGL_NUMBER_PIXEL_FORMATS_ARB 0x2000
 #define WGL_SUPPORT_OPENGL_ARB 0x2010
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
@@ -2267,6 +2317,7 @@ static HDC _sapp_win32_msg_dc;
 more, you'll need to use you own gl header-generator/loader
 */
 #if !defined(SOKOL_WIN32_NO_GL_LOADER)
+#if defined(SOKOL_GLCORE33)
 #define __gl_h_ 1
 #define __gl32_h_ 1
 #define __gl31_h_ 1
@@ -2867,6 +2918,7 @@ _SOKOL_PRIVATE void _sapp_d3d11_create_device_and_swapchain(void) {
         &_sapp_d3d11_device,            /* ppDevice */
         &feature_level,                 /* pFeatureLevel */
         &_sapp_d3d11_device_context);   /* ppImmediateContext */
+    _SOKOL_UNUSED(hr);
     SOKOL_ASSERT(SUCCEEDED(hr) && _sapp_dxgi_swap_chain && _sapp_d3d11_device && _sapp_d3d11_device_context);
 }
 
@@ -2878,11 +2930,11 @@ _SOKOL_PRIVATE void _sapp_d3d11_destroy_device_and_swapchain(void) {
 
 _SOKOL_PRIVATE void _sapp_d3d11_create_default_render_target(void) {
     HRESULT hr;
-#ifdef __cplusplus
+    #ifdef __cplusplus
     hr = IDXGISwapChain_GetBuffer(_sapp_dxgi_swap_chain, 0, IID_ID3D11Texture2D, (void**)&_sapp_d3d11_rt);
-#else
+    #else
     hr = IDXGISwapChain_GetBuffer(_sapp_dxgi_swap_chain, 0, &IID_ID3D11Texture2D, (void**)&_sapp_d3d11_rt);
-#endif
+    #endif
     SOKOL_ASSERT(SUCCEEDED(hr) && _sapp_d3d11_rt);
     hr = ID3D11Device_CreateRenderTargetView(_sapp_d3d11_device, (ID3D11Resource*)_sapp_d3d11_rt, NULL, &_sapp_d3d11_rtv);
     SOKOL_ASSERT(SUCCEEDED(hr) && _sapp_d3d11_rtv);
@@ -3403,6 +3455,20 @@ _SOKOL_PRIVATE LRESULT CALLBACK _sapp_win32_wndproc(HWND hWnd, UINT uMsg, WPARAM
             case WM_CLOSE:
                 PostQuitMessage(0);
                 return 0;
+            case WM_SYSCOMMAND:
+                switch (wParam & 0xFFF0) {
+                    case SC_SCREENSAVE:
+                    case SC_MONITORPOWER:
+                        if (_sapp.desc.fullscreen) {
+                            /* disable screen saver and blanking in fullscreen mode */
+                            return 0;
+                        }
+                        break;
+                    case SC_KEYMENU:
+                        /* user trying to access menu via ALT */
+                        return 0;
+                }
+                break;
             case WM_ERASEBKGND:
                 return 1;
             case WM_SIZE:
@@ -3472,9 +3538,11 @@ _SOKOL_PRIVATE LRESULT CALLBACK _sapp_win32_wndproc(HWND hWnd, UINT uMsg, WPARAM
                 _sapp_win32_char_event((uint32_t)wParam);
                 break;
             case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
                 _sapp_win32_key_event(SAPP_EVENTTYPE_KEY_DOWN, (int)(HIWORD(lParam)&0x1FF));
                 break;
             case WM_KEYUP:
+            case WM_SYSKEYUP:
                 _sapp_win32_key_event(SAPP_EVENTTYPE_KEY_UP, (int)(HIWORD(lParam)&0x1FF));
                 break;
             default:
@@ -3570,6 +3638,7 @@ _SOKOL_PRIVATE void _sapp_win32_init_dpi(void) {
         HMONITOR hm = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
         UINT dpix, dpiy;
         HRESULT hr = _sapp_win32_getdpiformonitor(hm, MDT_EFFECTIVE_DPI, &dpix, &dpiy);
+        _SOKOL_UNUSED(hr);
         SOKOL_ASSERT(SUCCEEDED(hr));
         /* clamp window scale to an integer factor */
         _sapp_win32_window_scale = (int)((float)dpix / 96.0f);
@@ -3599,6 +3668,10 @@ int main(int argc, const char** argv) {
 #else
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 #endif
+    _SOKOL_UNUSED(hInstance);
+    _SOKOL_UNUSED(hPrevInstance);
+    _SOKOL_UNUSED(lpCmdLine);
+    _SOKOL_UNUSED(nCmdShow);
     sapp_desc desc = sokol_main(__argc, __argv);
     _sapp_init_state(&desc, __argc, __argv);
     _sapp_win32_init_keytable();
@@ -5426,6 +5499,8 @@ void sapp_show_keyboard(bool shown) {
     _sapp_ios_show_keyboard(shown);
     #elif __EMSCRIPTEN__
     _sapp_emsc_show_keyboard(shown);
+    #else
+    _SOKOL_UNUSED(shown);
     #endif
 }
 
@@ -5504,8 +5579,8 @@ const void* sapp_d3d11_get_depth_stencil_view(void) {
 
 #undef _sapp_def
 
-#ifdef __cplusplus
-} /* extern "C" */
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 
 #endif /* SOKOL_IMPL */

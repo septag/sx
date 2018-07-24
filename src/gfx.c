@@ -26,6 +26,10 @@ SX_PRAGMA_DIAGNOSTIC_PUSH();
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-function")
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-variable")
 
+#ifdef __cplusplus
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4800) // forcing value to bool 'true' or 'false' (performance warning)
+#endif
+
 #define SOKOL_IMPL
 #include "../3rdparty/sokol/sokol_gfx.h"
 

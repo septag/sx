@@ -123,12 +123,12 @@ if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU")
 
     # MSVC + Clang_C2
     if (MSVC)
-        add_compile_options("$<$<CONFIG:Debug>:-g;>")
+        add_compile_options("$<$<CONFIG:Debug>:-g>")
     endif()
-    add_compile_options("$<$<CONFIG:Debug>:-D_DEBUG;>")
+    add_compile_options("$<$<CONFIG:Debug>:-D_DEBUG>")
     
-    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=gnu11")
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11" "-fno-rtti" "-fno-exceptions")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions")
     sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "-fexceptions -frtti")
 elseif (MSVC) 
     # Build files as CPP, C support in MSVC is crap

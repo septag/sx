@@ -9,7 +9,7 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 // With a minor optimization in sx_rng_gen_irange 
 
 // Convert a randomized uint32_t value to a float value x in the range 0.0f <= x < 1.0f. Contributed by Jonatan Hedborg
-static SX_INLINE float sx__rng_float_normalized(uint32_t value)
+SX_INLINE float sx__rng_float_normalized(uint32_t value)
 {
     uint32_t exponent = 127;
     uint32_t mantissa = value >> 9;
@@ -18,7 +18,7 @@ static SX_INLINE float sx__rng_float_normalized(uint32_t value)
     return fresult - 1.0f;    
 }
 
-static SX_INLINE uint64_t sx__rng_avalanche64(uint64_t h)
+SX_INLINE uint64_t sx__rng_avalanche64(uint64_t h)
 {
     h ^= h >> 33;
     h *= 0xff51afd7ed558ccd;
