@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // pool.h - v1.0 - Object Pool container, new/deletes pointer to fixed size objects
 //      sx_pool_create          Allocates object pool with objects of 'item_sz' size and capacity
 //                              also aligns the capacity count to 16

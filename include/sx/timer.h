@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // timer.h - v1.0 - portable high resolution timer
 //                  Implementation is sokol_time, just a rename of functions
 //    void sx_tm_setup();

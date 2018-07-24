@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // cmdline.h - Command line parser
 //             This is actually a very thin wrapper around getopt
 //             Source: https://github.com/wc-duck/getopt

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // stream-io.h v1.0: Some streaming primitives
 //      sx_mem_block: Memory block represents a piece of memory that can also grow with an allocator
 //              sx_mem_create_block         allocates the entire continous block object with it's memory. this type CAN NOT grow

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 #include "sx/math.h"
 
 const float SX_PI          = 3.1415926535897932384626433832795f;

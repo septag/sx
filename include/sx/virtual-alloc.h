@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // virtual-alloc.h - v1.0 - Virtual memory allocator
 //
 // Uses OS specific virtual memory functions

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // lin-alloc.h - v1.0 - Generic linear allocator
 // 
 // sx_linalloc allocates memory from a pre-allocated buffer in a linear fashion

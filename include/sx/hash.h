@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // hash.h - v1.0 - Some nice hash functions and a fast hash-table
 // Reference for hash funcs: https://aras-p.info/blog/2016/08/02/Hash-Functions-all-the-way-down/
 // 

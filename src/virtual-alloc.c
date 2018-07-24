@@ -1,3 +1,8 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
+
 #include "sx/virtual-alloc.h"
 
 #if SX_PLATFORM_WINDOWS

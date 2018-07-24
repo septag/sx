@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // threads.h - v1.0 - Common portable multi-threading primitives
 //
 //      sx_thread       Portable thread

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // app.h    portable minimal app gfx-device initialization for different platforms with basic input support
 //          basically includes sokol_app.h and implements it in the app.c
 //          Current supported:

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // allocator.h - v1.0 - Memory allocation routines and helper functions
 //      sx_alloc: main allocation primitive, all memory allocation function must accept this object instead of malloc/free
 //                Custom implementaion is only one 'alloc_cb' function (see sx_alloc), and a user_data that is to store

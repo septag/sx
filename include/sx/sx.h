@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // sx.h - v1.0 - Main sx lib entry include file
 //               Contains essential stdc includes and library definitions
 //

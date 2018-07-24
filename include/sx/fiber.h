@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // fiber.h - v1.0 - Low-level, High-performance (asm) portable fibers
 // Reference: https://github.com/boostorg/context
 //            http://www.boost.org/doc/libs/1_60_0/libs/context/doc/html/index.html

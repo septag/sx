@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // array.h - v1.0 - Dynamic arrays
 // Source: https://github.com/nothings/stb/blob/master/stretchy_buffer.h
 //

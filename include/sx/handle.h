@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // handle.h - v1.0 - Handle opaque type (uint16_t) and handle pool
 // Reference: https://github.com/bkaradzic/bx/blob/master/include/bx/handlealloc.h
 //

@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 #include "sx/handle.h"
 
 sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity)

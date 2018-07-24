@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // gfx.h - Low level graphics API wrapper
 //         basically includes sokol_gfx and implements it in the gfx.c
 //         Different APIs are chosen for each platform:

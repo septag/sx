@@ -1,3 +1,7 @@
+//
+// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// License: https://github.com/septag/sx#license-bsd-2-clause
+//
 // math.h - v1.0 - Fpu and Vector math functions
 //                 Contains vector primitives and vector/fpu math functions, event functions implemented in libm
 //                 Many functions are from bx library (https://github.com/bkaradzic/bx)
