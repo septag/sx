@@ -6,6 +6,7 @@
 #include "sx/threads.h"
 #include "sx/os.h"
 #include "sx/string.h"
+#include "sx/platform.h"
 
 #if SX_PLATFORM_APPLE
 #	include <dispatch/dispatch.h>
@@ -16,11 +17,15 @@
 #	include <pthread.h>
 #	include <semaphore.h>
 #	include <time.h>
+#   include <unistd.h>
 #	if BX_PLATFORM_LINUX && (SX_CRT_GLIBC < 21200)
 #		include <sys/prctl.h>
 #	endif // BX_PLATFORM_
 #   if defined(__FreeBSD__)
 #       include <pthread_np.h>
+#   endif
+#   if SX_PLATFORM_LINUX
+#       include <sys/syscall.h>     // syscall
 #   endif
 #elif  SX_PLATFORM_WINDOWS
 #   define VC_EXTRALEAN
@@ -767,5 +772,26 @@ bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
     }
 
     return false;
+}
+
+uint32_t sx_thread_tid()
+{
+#if SX_PLATFORM_WINDOWS
+    return GetCurrentThreadId();
+#elif SX_PLATFORM_LINUX || \
+      SX_PLATFORM_RPI || \
+      SX_PLATFORM_STEAMLINK
+    return (pid_t)syscall(SYS_gettid);
+#elif SX_PLATFORM_IOS || SX_PLATFORM_OSX
+    return (mach_port_t)pthread_mach_thread_np(pthread_self());
+#elif SX_PLATFORM_BSD
+    return *(uint32_t*)pthread_self(); 
+#elif SX_PLATFORM_ANDROID
+    return gettid();
+#elif SX_PLATFORM_HURD
+    return (pthread_t)pthread_self();
+#else
+    assert(0 && "Tid not implemented");
+#endif // SX_PLATFORM_
 }
 

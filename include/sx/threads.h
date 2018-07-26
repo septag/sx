@@ -37,6 +37,7 @@ int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc);
 bool sx_thread_running(sx_thread* thrd);
 void sx_thread_setname(sx_thread* thrd, const char* name);
 void sx_thread_yield();
+uint32_t sx_thread_tid();
 
 // Tls data
 typedef void* sx_tls;

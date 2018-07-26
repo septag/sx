@@ -19,5 +19,4 @@ SX_EXTERN int sx_strcpy(char* dst, int dst_sz, const char* src);
 SX_EXTERN int sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
 SX_EXTERN int sx_strlen(const char* str);
 
-
 #endif

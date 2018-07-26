@@ -11,10 +11,25 @@
 
 #include "sx.h"
 
-SX_EXTERN int sx_os_minstacksz();
-SX_EXTERN int sx_os_maxstacksz();
-SX_EXTERN int sx_os_pagesz();
-SX_EXTERN size_t sx_os_align_pagesz(size_t size);
-SX_EXTERN char sx_os_getch();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int    sx_os_minstacksz();
+int    sx_os_maxstacksz();
+int    sx_os_pagesz();
+size_t sx_os_align_pagesz(size_t size);
+char   sx_os_getch();
+size_t sx_os_processmem();
+void*  sx_os_dlopen(const char* filepath);
+void   sx_os_dlclose(void* handle);
+void*  sx_os_dlsym(void* handle, const char* symbol);
+int    sx_os_chdir(const char* path);
+void   sx_os_sleep(int ms);
+void*  sx_os_exec(const char* const* argv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
