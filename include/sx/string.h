@@ -2,6 +2,8 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
+// string.h - v1.0 - C-String replacement/utility functions
+//
 #pragma once
 
 #ifndef SX_STRING_H_

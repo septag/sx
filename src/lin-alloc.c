@@ -52,11 +52,11 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
             linalloc->offset += (int)size;
             return ptr;    // Input pointer does not change
         } else {
-            // Realloc: generic, create new allocation and memcpy the previous data into the beginning
+            // Realloc: generic, create new allocation and sx_memcpy the previous data into the beginning
             void* new_ptr = sx__linalloc_malloc(linalloc, size, align, file, line);
             if (new_ptr) {
                 sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)ptr - 1;
-                memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
+                sx_memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
                 linalloc->last_ptr = (uint8_t*)new_ptr;
             }
             return new_ptr;

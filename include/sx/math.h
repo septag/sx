@@ -903,7 +903,7 @@ SX_INLINE void sx_vec3_mul_quat(float* _result, const float* _vec, const float* 
 // Matrix
 SX_INLINE void sx_mat4_ident(float* _result)
 {
-    memset(_result, 0x0, sizeof(float)*16);
+    sx_memset(_result, 0x0, sizeof(float)*16);
     _result[0] = _result[5] = _result[10] = _result[15] = 1.0f;
 }
 
@@ -917,7 +917,7 @@ SX_INLINE void sx_mat4_translate(float* _result, float _tx, float _ty, float _tz
 
 SX_INLINE void sx_mat4_scale(float* _result, float _sx, float _sy, float _sz)
 {
-    memset(_result, 0x0, sizeof(float) * 16);
+    sx_memset(_result, 0x0, sizeof(float) * 16);
     _result[0]  = _sx;
     _result[5]  = _sy;
     _result[10] = _sz;
@@ -1085,7 +1085,7 @@ SX_INLINE void sx_vec2_mul_mat3(float* _result, const float* _vec, const float* 
 
 SX_INLINE void sx_mat3_ident(float* result) 
 {
-    memset(result, 0x0, sizeof(float)*9);
+    sx_memset(result, 0x0, sizeof(float)*9);
     result[0] = 1.0f;
     result[4] = 1.0f;
     result[8] = 1.0f;
@@ -1093,7 +1093,7 @@ SX_INLINE void sx_mat3_ident(float* result)
 
 SX_INLINE void sx_mat3_translate(float* result, float x, float y)
 {
-    memset(result, 0x00, sizeof(float) * 9);
+    sx_memset(result, 0x00, sizeof(float) * 9);
     result[0] = 1.0f;
     result[4] = 1.0f;
     result[6] = x;
@@ -1103,7 +1103,7 @@ SX_INLINE void sx_mat3_translate(float* result, float x, float y)
 
 SX_INLINE void sx_mat3_rotate(float* result, float theta)
 {
-    memset(result, 0x00, sizeof(float) * 9);
+    sx_memset(result, 0x00, sizeof(float) * 9);
     float c = sx_cos(theta);
     float s = sx_sin(theta);
     result[0] = c;     result[1] = -s;
@@ -1113,7 +1113,7 @@ SX_INLINE void sx_mat3_rotate(float* result, float theta)
 
 SX_INLINE void sx_mat3_scale(float* result, float sx, float sy)
 {
-    memset(result, 0x00, sizeof(float) * 9);
+    sx_memset(result, 0x00, sizeof(float) * 9);
     result[0] = sx;
     result[4] = sy;
     result[8] = 1.0f;
@@ -1121,7 +1121,7 @@ SX_INLINE void sx_mat3_scale(float* result, float sx, float sy)
 
 SX_INLINE void sx_mat3_SRT(float* _result, float _sx, float _sy, float _angle, float _tx, float _ty)
 {
-    memset(_result, 0x00, sizeof(float) * 9);
+    sx_memset(_result, 0x00, sizeof(float) * 9);
     float c = sx_cos(_angle);
     float s = sx_sin(_angle);
     _result[0] = c*_sx;     _result[1] = -s;

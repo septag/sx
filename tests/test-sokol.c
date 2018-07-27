@@ -7,7 +7,7 @@ sg_pass_action pass_action;
 void init(void) {
     const sx_alloc* alloc = sx_alloc_malloc_leak_detect;
     sg_desc desc;
-    memset(&desc, 0x0, sizeof(desc));
+    sx_memset(&desc, 0x0, sizeof(desc));
     desc.mtl_device = sapp_metal_get_device();
     desc.mtl_renderpass_descriptor_cb = sapp_metal_get_renderpass_descriptor;
     desc.mtl_drawable_cb = sapp_metal_get_drawable;
@@ -16,7 +16,7 @@ void init(void) {
     desc.d3d11_render_target_view_cb = sapp_d3d11_get_render_target_view;
     desc.d3d11_depth_stencil_view_cb = sapp_d3d11_get_depth_stencil_view;
 
-    memset(&pass_action, 0x0, sizeof(pass_action));
+    sx_memset(&pass_action, 0x0, sizeof(pass_action));
 #ifdef __cplusplus
     pass_action.colors[0] = { SG_ACTION_CLEAR, {1.0f, 0.0f, 0.0f, 1.0f} };
 #else
@@ -41,7 +41,7 @@ void cleanup(void) {
 sapp_desc sokol_main(int argc, char* argv[])
 {
     sapp_desc desc;
-    memset(&desc, 0x0, sizeof(desc));
+    sx_memset(&desc, 0x0, sizeof(desc));
     desc.init_cb = init;
     desc.frame_cb = frame;
     desc.cleanup_cb = cleanup;

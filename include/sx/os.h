@@ -11,6 +11,14 @@
 
 #include "sx.h"
 
+#if SX_PLATFORM_OSX
+#   define SX_DL_EXT "dylib"
+#elif SX_PLATFORM_WINDOWS
+#   define SX_DL_EXT "dll"
+#else
+#   define SX_DL_EXT "so"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

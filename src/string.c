@@ -48,7 +48,7 @@ static char* sx__vsnprintf_callback(char* buff, void* user, int len)
     sx__printf_ctx* ctx = (sx__printf_ctx*)user;
     int len_ = len + 1;     // Reserve one character for null-termination
     sx_array_add(ctx->alloc, ctx->buff, len_);
-    memcpy(ctx->buff + ctx->len, ctx->tmp, len);
+    sx_memcpy(ctx->buff + ctx->len, ctx->tmp, len);
     ctx->len += len;
     return ctx->tmp;
 }
@@ -72,7 +72,7 @@ int sx_strcpy(char* dst, int dst_sz, const char* src)
     const int len = sx_strlen(src);
     const int32_t max = dst_sz-1;
     const int32_t num = (len < max ? len : max);
-    memcpy(dst, src, num);
+    sx_memcpy(dst, src, num);
     dst[num] = '\0';
 
     return num;
@@ -104,7 +104,7 @@ int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
     const int len = sx__strnlen(src, _num);
     const int32_t max = dst_sz-1;
     const int32_t num = (len < max ? len : max);
-    memcpy(dst, src, num);
+    sx_memcpy(dst, src, num);
     dst[num] = '\0';
 
     return num;

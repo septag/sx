@@ -69,12 +69,18 @@ set(INCLUDE_FILES include/sx/allocator.h
 
 if (SX_NO_GFX)
     list(REMOVE_ITEM SOURCE_FILES src/gfx.c)
-    list(REMOVE_ITEM INCLUDE_FILES src/gfx.h)
+    list(REMOVE_ITEM INCLUDE_FILES include/sx/gfx.h)
 endif()
 
 if (SX_NO_APP)
     list(REMOVE_ITEM SOURCE_FILES src/app.c)
-    list(REMOVE_ITEM INCLUDE_FILES src/app.h)
+    list(REMOVE_ITEM INCLUDE_FILES include/sx/app.h)
+endif()
+
+# I don't know if emscripten has 
+if (EMSCRIPTEN)
+    list(REMOVE_ITEM SOURCE_FILES src/fiber.c)
+    list(REMOVE_ITEM SOURCE_FILES include/sx/fiber.h)
 endif()
 
 ####################################################################################################
@@ -120,6 +126,10 @@ set(ASM_SOURCES "asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
+
+if (EMSCRIPTEN) 
+    unset(ASM_SOURCES)
+endif()
 ####################################################################################################
 
 add_definitions(-D__STDC_LIMIT_MACROS)

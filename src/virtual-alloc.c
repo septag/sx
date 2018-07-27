@@ -123,7 +123,7 @@ static void* sx__virtualalloc_cb(void* ptr, size_t size, size_t align, const cha
         void* new_ptr = sx__virtualalloc_malloc(valloc, size, align, file, line);
         if (new_ptr) {
             sx__virtualalloc_hdr* hdr = (sx__virtualalloc_hdr*)ptr - 1;
-            memcpy(new_ptr, ptr, sx_min(size, hdr->size));
+            sx_memcpy(new_ptr, ptr, sx_min(size, hdr->size));
             void* old_ptr = (uint8_t*)ptr - hdr->padding;
             sx_virtual_decommit(old_ptr, hdr->size);
         }

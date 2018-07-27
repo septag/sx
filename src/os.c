@@ -5,16 +5,16 @@
 #include "sx/os.h"
 #include "sx/string.h"
 #include <alloca.h>
+#include <stdio.h>
 
 #if SX_PLATFORM_WINDOWS
 #   define VC_EXTRALEAN
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
-#   include <conio.h>
+#	include <Psapi.h>
 #elif SX_PLATFORM_POSIX
 #   include <unistd.h>
 #   include <sys/resource.h>
-#   include <stdio.h>
 #   include <termios.h>
 #   include <time.h>
 #   include <pthread.h>
@@ -73,6 +73,8 @@ char sx_os_getch()
 {
 #if SX_PLATFORM_WINDOWS
     return getchar();
+//#elif SX_PLATFORM_EMSCRIPTEN
+//	return 0;
 #elif SX_PLATFORM_POSIX
     struct termios old_term;
     struct termios new_term;
@@ -146,12 +148,12 @@ size_t sx_os_processmem()
 void* sx_os_dlopen(const char* filepath)
 {
 #if SX_PLATFORM_WINDOWS
-	return (void*)LoadLibraryA(filePath);
+	return (void*)LoadLibraryA(filepath);
 #elif  SX_PLATFORM_EMSCRIPTEN \
 	|| SX_PLATFORM_PS4        \
 	|| SX_PLATFORM_XBOXONE    \
 	|| SX_PLATFORM_WINRT
-	SX_UNUSED(filePath);
+	SX_UNUSED(filepath);
 	return NULL;
 #else
 	return dlopen(filepath, RTLD_LOCAL|RTLD_LAZY);
@@ -161,7 +163,7 @@ void* sx_os_dlopen(const char* filepath)
 void sx_os_dlclose(void* handle)
 {
 #if SX_PLATFORM_WINDOWS
-    return (void*)FreeLibrary((HMODULE)handle);
+    FreeLibrary((HMODULE)handle);
 #elif SX_PLATFORM_EMSCRIPTEN || \
       SX_PLATFORM_PS4 || \
       SX_PLATFORM_XBOXONE
@@ -226,23 +228,23 @@ void* sx_os_exec(const char* const* argv)
 			return NULL;
 		}
 
-		return (void*)(uintptr_t)pid;
+		return (void*)(ptr_t)pid;
 #elif SX_PLATFORM_WINDOWS
 		STARTUPINFOA si;
-		memset(&si, 0, sizeof(STARTUPINFOA));
+		sx_memset(&si, 0, sizeof(STARTUPINFOA));
 		si.cb = sizeof(STARTUPINFOA);
 
 		PROCESS_INFORMATION pi;
-		memset(&pi, 0, sizeof(PROCESS_INFORMATION) );
+		sx_memset(&pi, 0, sizeof(PROCESS_INFORMATION) );
 
 		int total = 0;
-		for (uint ii = 0; NULL != argv[ii]; ++ii) {
+		for (int ii = 0; NULL != argv[ii]; ++ii) {
 			total += sx_strlen(argv[ii]) + 1;
 		}
 
 		char* temp = (char*)alloca(total);
 		int len = 0;
-		for(uint ii = 0; NULL != argv[ii]; ++ii) {
+		for(int ii = 0; NULL != argv[ii]; ++ii) {
 			len += sx_snprintf(&temp[len], sx_max(0, total-len), "%s ", argv[ii]);
 		}
 

@@ -2,6 +2,10 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
+//
+// ini.h - v1.0 - Ini file parser/writer by Mattias Gustavsson 
+// Reference: https://github.com/mattiasgustavsson/libs/blob/master/ini.h
+// 
 #pragma once
 
 #ifndef SX_INI_H_

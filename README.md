@@ -52,6 +52,15 @@ It is possible to build it with *MSVC + clang_c2* toolset which in that case you
 
 __Dependencies__
 
+### Emscripten
+
+It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some limitations:
+
+- _threads.h_: support is not yet implemented, blocking primitives like signals and semaphores doesn't seem to work on this platform. Support maybe added in future.
+- _fibers.h_: Emscripten doesn't seem to support boost's assembly fibers which I'm currently using, however it is possible to implement async functions using emscripten API, which I'll try to implement in the future.
+- _virtual-alloc.h_: Virtual memory allocation functions does not seem to be working, it works like normal malloc, where reserving just pre-allocates all required memory
+
+
 - __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
 
 [License (BSD 2-clause)](https://github.com/septag/sx/blob/master/LICENSE)

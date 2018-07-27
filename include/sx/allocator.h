@@ -136,7 +136,7 @@ SX_INLINE void* sx__aligned_realloc(const sx_alloc* alloc, void* ptr, size_t siz
 			return aligned;
 
 		aligned = (uint8_t*)ptr + offset;
-		memmove(new_aligned, aligned, size);
+		sx_memmove(new_aligned, aligned, size);
 		uint32_t* header = (uint32_t*)new_aligned - 1;
 		*header = (uint32_t)(new_aligned - (uint8_t*)ptr);
 		return new_aligned;

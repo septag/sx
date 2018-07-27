@@ -11,6 +11,7 @@
 #if SX_PLATFORM_APPLE
 #	include <dispatch/dispatch.h>
 #	include <pthread.h>
+#   include <mach/mach.h>
 #elif SX_PLATFORM_POSIX
 #   define __USE_GNU
 #	include <errno.h>
@@ -270,7 +271,7 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
 
 void sx_thread_yield()
 {
-    pthread_yield();
+    sched_yield();
 }
 
 // Mutex
@@ -739,7 +740,7 @@ bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
 {
     if (queue->iter > 0) {
         _sx_queue_spsc_node* node = queue->ptrs[--queue->iter];
-        memcpy(node + 1, data, queue->stride);
+        sx_memcpy(node + 1, data, queue->stride);
         node->next = NULL;
 
         _sx_queue_spsc_node* last = (_sx_queue_spsc_node*)queue->last;
@@ -765,7 +766,7 @@ bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
     if (queue->divider != queue->last) {
         _sx_queue_spsc_node* divider = (_sx_queue_spsc_node*)queue->divider;
         assert(divider->next);
-        memcpy(data, divider->next + 1, queue->stride);
+        sx_memcpy(data, divider->next + 1, queue->stride);
         
         sx_atomic_xchg_ptr(&queue->divider, divider->next);
         return true;

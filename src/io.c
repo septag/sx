@@ -15,7 +15,8 @@
 	  || SX_PLATFORM_BSD     \
 	  || SX_PLATFORM_IOS     \
 	  || SX_PLATFORM_OSX     \
-      || SX_PLATFORM_LINUX   
+      || SX_PLATFORM_LINUX   \
+      || SX_PLATFORM_EMSCRIPTEN
 #	define fseeko64 fseeko
 #	define ftello64 ftello
 #elif SX_PLATFORM_PS4
@@ -33,7 +34,7 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
         mem->size = size;
         mem->align = align;
         if (data)
-            memcpy(mem->data, data, size);
+            sx_memcpy(mem->data, data, size);
         return mem;
     } else {
         SX_OUT_OF_MEMORY;
@@ -61,7 +62,7 @@ bool sx_mem_init_block(sx_mem_block* mem, const sx_alloc* alloc, int size, const
         mem->size = size;
         mem->align = align;
         if (data)
-            memcpy(mem->data, data, size);
+            sx_memcpy(mem->data, data, size);
         return true;
     } else {
         SX_OUT_OF_MEMORY;
@@ -128,7 +129,7 @@ int sx_mem_write(sx_mem_writer* writer, const void* data, int size)
         }
     }
 
-    memcpy(&writer->data[writer->pos], data, size);
+    sx_memcpy(&writer->data[writer->pos], data, size);
     writer->pos += size;
     writer->top = sx_max(writer->top, writer->pos);
 
@@ -170,7 +171,7 @@ int sx_mem_read(sx_mem_reader* reader, void* data, int size)
         size = (int)remain;
         SX_DATA_TRUNCATE;
     }
-    memcpy(data, &reader->data[reader->pos], size);
+    sx_memcpy(data, &reader->data[reader->pos], size);
     reader->pos += size;
     return size;
 }

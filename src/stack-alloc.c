@@ -56,11 +56,11 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
             stackalloc->offset += (int)size;
             return ptr;    // Input pointer does not change
         } else {
-            // Realloc: generic, create new allocation and memcpy the previous data into the beginning
+            // Realloc: generic, create new allocation and sx_memcpy the previous data into the beginning
             void* new_ptr = sx__stackalloc_malloc(stackalloc, size, align, file, line);
             if (new_ptr) {
                 sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)ptr - 1;
-                memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
+                sx_memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
                 stackalloc->last_ptr = (uint8_t*)new_ptr;
             }
             return new_ptr;

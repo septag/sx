@@ -254,7 +254,7 @@ static void sx__mat4_lookat(float* _result, const float* _eye, const float* _vie
 
     sx_vec3_cross(up, _view, right);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = right[0];
     _result[ 1] = up[0];
     _result[ 2] = _view[0];
@@ -307,7 +307,7 @@ static void sx__mat4_projXYWH_RH(float* _result, float _x, float _y, float _widt
     const float aa = _oglNdc ? (     _far+_near)/diff : _far/diff;
     const float bb = _oglNdc ? (2.0f*_far*_near)/diff : _near*aa;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = _x;
@@ -324,7 +324,7 @@ static void sx__mat4_projXYWH_LH(float* _result, float _x, float _y, float _widt
     const float aa = _oglNdc ? (     _far+_near)/diff : _far/diff;
     const float bb = _oglNdc ? (2.0f*_far*_near)/diff : _near*aa;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = -_x;
@@ -432,7 +432,7 @@ static void sx__mat4_proj_infXYWH_RH(float* _result, float _x, float _y, float _
     aa = 1.0f;
     bb = _oglNdc ? 2.0f*_near : _near;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = _x;
@@ -449,7 +449,7 @@ static void sx__mat4_proj_infXYWH_LH(float* _result, float _x, float _y, float _
     aa = 1.0f;
     bb = _oglNdc ? 2.0f*_near : _near;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = -_x;
@@ -467,7 +467,7 @@ static void sx__mat4_proj_infXYWH_RH_inv(float* _result, float _x, float _y, flo
     aa = _oglNdc ?       -1.0f :   0.0f;
     bb = _oglNdc ? -2.0f*_near : -_near;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = _x;
@@ -484,7 +484,7 @@ static void sx__mat4_proj_infXYWH_LH_inv(float* _result, float _x, float _y, flo
     aa = _oglNdc ?       -1.0f :   0.0f;
     bb = _oglNdc ? -2.0f*_near : -_near;
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = _width;
     _result[ 5] = _height;
     _result[ 8] = -_x;
@@ -666,7 +666,7 @@ static void sx__mat4_orthoLH(float* _result, float _left, float _right, float _b
         ? (_near + _far)/(_near - _far)
         :  _near        /(_near - _far);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = aa;
     _result[ 5] = bb;
     _result[10] = cc;
@@ -687,7 +687,7 @@ static void sx__mat4_orthoRH(float* _result, float _left, float _right, float _b
         ? (_near + _far)/(_near - _far)
         :  _near        /(_near - _far);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = aa;
     _result[ 5] = bb;
     _result[10] = -cc;
@@ -717,7 +717,7 @@ void sx_mat4_rotateX(float* _result, float _ax)
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = 1.0f;
     _result[ 5] = cx;
     _result[ 6] = -sx;
@@ -731,7 +731,7 @@ void sx_mat4_rotateY(float* _result, float _ay)
     const float sy = sx_sin(_ay);
     const float cy = sx_cos(_ay);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = cy;
     _result[ 2] = sy;
     _result[ 5] = 1.0f;
@@ -745,7 +745,7 @@ void sx_mat4_rotateZ(float* _result, float _az)
     const float sz = sx_sin(_az);
     const float cz = sx_cos(_az);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = cz;
     _result[ 1] = -sz;
     _result[ 4] = sz;
@@ -761,7 +761,7 @@ void sx_mat4_rotateXY(float* _result, float _ax, float _ay)
     const float sy = sx_sin(_ay);
     const float cy = sx_cos(_ay);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = cy;
     _result[ 2] = sy;
     _result[ 4] = sx*sy;
@@ -782,7 +782,7 @@ void sx_mat4_rotateXYZ(float* _result, float _ax, float _ay, float _az)
     const float sz = sx_sin(_az);
     const float cz = sx_cos(_az);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = cy*cz;
     _result[ 1] = -cy*sz;
     _result[ 2] = sy;
@@ -804,7 +804,7 @@ void sx_mat4_rotateZYX(float* _result, float _ax, float _ay, float _az)
     const float sz = sx_sin(_az);
     const float cz = sx_cos(_az);
 
-    memset(_result, 0, sizeof(float)*16);
+    sx_memset(_result, 0, sizeof(float)*16);
     _result[ 0] = cy*cz;
     _result[ 1] = cz*sx*sy-cx*sz;
     _result[ 2] = cx*cz*sy+sx*sz;

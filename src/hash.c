@@ -251,8 +251,9 @@ uint32_t sx_hash_crc32(const void *data, size_t len, uint32_t seed)
 // https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/ 
 SX_INLINE uint32_t sx__fib_hash(uint32_t h, int bits) 
 {
-    h ^= h >> bits;
-    return (uint32_t)(((uint64_t)h * 11400714819323198485llu) >> bits);
+    uint64_t h64 = (uint64_t)h;
+    h64 ^= (h64 >> bits);
+    return (uint32_t)((h64 * 11400714819323198485llu) >> bits);
 }
 
 // https://www.exploringbinary.com/number-of-bits-in-a-decimal-integer/
@@ -260,7 +261,7 @@ SX_INLINE int sx__calc_bitshift(int n)
 {
     int c = 0;
     uint32_t un = (uint32_t)n;
-    while (un) {
+    while (un > 1) {
         c++;
         un >>= 1;
     }
@@ -287,7 +288,7 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
     tbl->capacity = capacity;
 
     // Reset keys
-    memset(tbl->keys, 0x0, sizeof(uint32_t)*capacity);
+    sx_memset(tbl->keys, 0x0, sizeof(uint32_t)*capacity);
 
     return tbl;
 }
@@ -346,13 +347,13 @@ int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
     tbl->keys[h] = key;
     tbl->values[h] = value;    
     ++tbl->count;
-
     return h;
 }
 
 int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key)
 {
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
+    assert(h >= 0 && h < tbl->capacity);
     uint32_t cnt = (uint32_t)tbl->capacity;
     if (tbl->keys[h] == key) {
         return h;
@@ -370,6 +371,6 @@ int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key)
 
 void sx_hashtbl_clear(sx_hashtbl* tbl)
 {
-    memset(tbl->keys, 0x0, sizeof(uint32_t)*tbl->capacity);
+    sx_memset(tbl->keys, 0x0, sizeof(uint32_t)*tbl->capacity);
     tbl->count = 0;
 }

@@ -82,8 +82,6 @@ void sx_signal_raise(sx_signal* sig);
 bool sx_signal_wait(sx_signal* sig, int msecs SX_DFLT(-1));
 
 // Lock-Free single-producer/single-consumer self-contained-data queue
-#include "allocator.h"
-
 typedef struct sx_queue_spsc sx_queue_spsc;
 sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capacity);
 void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc);

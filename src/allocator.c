@@ -136,7 +136,7 @@ static void *stb_leakcheck_realloc(void *ptr, size_t sz, const char *file, int l
             void *q = stb_leakcheck_malloc(sz, file, line);
 #endif
             if (q) {
-                memcpy(q, ptr, mi->size);
+                sx_memcpy(q, ptr, mi->size);
                 stb_leakcheck_free(ptr);
             }
             return q;

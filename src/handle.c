@@ -44,8 +44,8 @@ bool sx_handle_grow_pool(sx_handle_pool** ppool, const sx_alloc* alloc)
     if (!new_pool)
         return false;
     new_pool->count = pool->count;
-    memcpy(new_pool->dense, pool->dense, sizeof(sx_handle_t)*pool->capacity);
-    memcpy(new_pool->sparse, pool->sparse, sizeof(sx_handle_t)*pool->capacity);
+    sx_memcpy(new_pool->dense, pool->dense, sizeof(sx_handle_t)*pool->capacity);
+    sx_memcpy(new_pool->sparse, pool->sparse, sizeof(sx_handle_t)*pool->capacity);
 
     sx_handle_t* dense = pool->dense;
     for (int i = pool->capacity; i < new_cap; i++) {

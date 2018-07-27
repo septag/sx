@@ -19,7 +19,7 @@
 #include <stdlib.h>         // size_t
 #include <stddef.h>         // ptrdiff_t
 #include <assert.h>         // assert / static_assert
-#include <string.h>         // memset
+#include <string.h>         // sx_memset
 
 #include "platform.h"
 #include "macros.h"
@@ -39,6 +39,10 @@
 #       define static_assert _Static_assert
 #   endif
 #endif
+
+#define sx_memcpy   memcpy
+#define sx_memmove  memmove
+#define sx_memset   memset
 
 /// 
 /// Intellisense and MSCV editor complains about not returning expression on macros that have {()}

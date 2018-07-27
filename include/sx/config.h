@@ -36,7 +36,7 @@
 #endif // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
 
-#if defined(_MSC_VER) && defined(__clang__)
+#if defined(_MSC_VER)
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor, the compiler defines them by default)
 // TODO: make some of them with cmake --config
