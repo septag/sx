@@ -286,6 +286,10 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
     tbl->_bitshift = sx__calc_bitshift(capacity);
     tbl->count = 0;
     tbl->capacity = capacity;
+#if SX_CONFIG_HASHTBL_DEBUG
+    tbl->_miss_cnt = 0;
+    tbl->_probe_cnt = 0;
+#endif
 
     // Reset keys
     sx_memset(tbl->keys, 0x0, sizeof(uint32_t)*capacity);
@@ -327,6 +331,10 @@ void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* val
     tbl->_bitshift = sx__calc_bitshift(capacity);
     tbl->capacity = capacity;
     tbl->count = 0;
+#if SX_CONFIG_HASHTBL_DEBUG
+    tbl->_miss_cnt = 0;
+    tbl->_probe_cnt = 0;
+#endif
 }
 
 int sx_hashtbl_valid_capacity(int capacity)
@@ -340,8 +348,9 @@ int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
 
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
     uint32_t cnt = (uint32_t)tbl->capacity;
-    while (tbl->keys[h] != 0)
+    while (tbl->keys[h] != 0) {
         h = (h + 1) % cnt; 
+    }
 
     assert(tbl->keys[h] == 0);  // something went wrong!
     tbl->keys[h] = key;
@@ -353,14 +362,20 @@ int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
 int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key)
 {
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
-    assert(h >= 0 && h < tbl->capacity);
     uint32_t cnt = (uint32_t)tbl->capacity;
     if (tbl->keys[h] == key) {
         return h;
     } else {
+#if SX_CONFIG_HASHTBL_DEBUG
+        sx_hashtbl* _tbl = (sx_hashtbl*)tbl;
+        ++_tbl->_miss_cnt;
+#endif
         // probe lineary in the keys array
         for (uint32_t i = 1; i < cnt; i++) {
             int idx = (h + i) % cnt;
+#if SX_CONFIG_HASHTBL_DEBUG
+            ++_tbl->_probe_cnt;
+#endif
             if (tbl->keys[idx] == key)
                 return idx;
         }

@@ -96,10 +96,14 @@ SX_EXTERN uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state);
 typedef struct sx_hashtbl_s
 {
     uint32_t* keys;
-    int* values;
-    int _bitshift;
-    int count;
-    int capacity;
+    int*      values;
+    int       _bitshift;
+    int       count;
+    int       capacity;
+#if SX_CONFIG_HASHTBL_DEBUG
+    int       _miss_cnt;
+    int       _probe_cnt;
+#endif
 } sx_hashtbl;
 
 SX_EXTERN sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity);

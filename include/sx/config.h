@@ -35,8 +35,12 @@
 #	define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
 #endif // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
+#ifndef SX_CONFIG_HASHTBL_DEBUG
+#   define SX_CONFIG_HASHTBL_DEBUG 1
+#endif
 
-#if defined(_MSC_VER)
+
+#if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor, the compiler defines them by default)
 // TODO: make some of them with cmake --config

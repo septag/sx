@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "sx/app.h"
 #include "sx/gfx.h"
+#include "sx/math.h"
 
 sg_pass_action pass_action;
 

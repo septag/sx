@@ -23,11 +23,13 @@ This library currently contains:
 - pool.h: Fixed size pool allocator
 - rng.h: PCG random number generator
 - stack-alloc.h: Generic linear stack based allocator
-- string.h: Useful string manipulation functions
+- string.h: Useful C-style string functions
 - threads.h: Portable threading primitives (Thread, Tls, Mutex, Semaphore, Signal, SpScQueue)
 - timer.h: Portable high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
 - virtual-alloc.h: Portable virtual memory allocator and functions
-- math.h: Vector math primitives and functions, many of the functions are taken from [bx](https://github.com/bkaradzic/bx)
+- math.h: 
+	- Vector/Matrix math, many of the them taken from [bx](https://github.com/bkaradzic/bx)
+	- Easing functions
 - os.h: Common portable OS related routines
 
 ## Build
