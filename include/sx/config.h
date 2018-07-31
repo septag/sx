@@ -39,7 +39,6 @@
 #   define SX_CONFIG_HASHTBL_DEBUG 1
 #endif
 
-
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor, the compiler defines them by default)

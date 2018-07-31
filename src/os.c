@@ -58,15 +58,7 @@ int sx_os_maxstacksz()
 
 int sx_os_minstacksz()
 {
-#if SX_PLATFORM_WINDOWS
-#   if SX_ARCH_64BIT
-    return 8192;    
-#   else
-    return 4096;
-#   endif    
-#elif SX_PLATFORM_POSIX
-    return 32768;   // 32kb
-#endif
+	return 32768;   // 32kb
 }
 
 char sx_os_getch()

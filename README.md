@@ -54,6 +54,8 @@ It is possible to build it with *MSVC + clang_c2* toolset which in that case you
 
 __Dependencies__
 
+- __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
+
 ### Emscripten
 
 It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some limitations:
@@ -63,7 +65,6 @@ It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some
 - _virtual-alloc.h_: Virtual memory allocation functions does not seem to be working, it works like normal malloc, where reserving just pre-allocates all required memory
 
 
-- __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
 
 [License (BSD 2-clause)](https://github.com/septag/sx/blob/master/LICENSE)
 --------------------------------------------------------------------------

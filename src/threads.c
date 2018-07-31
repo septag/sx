@@ -123,7 +123,7 @@ void sx_semaphore_post(sx_sem* sem, int count)
     }
 }
 
-bool sx_semaphore_wait(sx_sem* sem, int msecs)
+bool sx_semaphore_wait(sx_sem* sem, int `secs)
 {
     sx__sem* _sem = (sx__sem*)sem->data;
     dispatch_time_t dt = msecs < 0 ? DISPATCH_TIME_FOREVER :
@@ -783,7 +783,7 @@ uint32_t sx_thread_tid()
       SX_PLATFORM_RPI || \
       SX_PLATFORM_STEAMLINK
     return (pid_t)syscall(SYS_gettid);
-#elif SX_PLATFORM_IOS || SX_PLATFORM_OSX
+#elif SX_PLATFORM_APPLE
     return (mach_port_t)pthread_mach_thread_np(pthread_self());
 #elif SX_PLATFORM_BSD
     return *(uint32_t*)pthread_self(); 
