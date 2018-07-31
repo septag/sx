@@ -12,7 +12,12 @@ This library currently contains:
 - array.h: [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
 - atomic.h: Set of portable atomic types and functions like CAS/Exchange/Incr/...
 - cmdline.h: [getopt](https://github.com/wc-duck/getopt) command line parser wrapper
-- fiber.h: low-level portable assembly fiber implementation taken from my other project [deboost.context](https://github.com/septag/deboost.context)
+- fiber.h: low-level portable assembly fiber implementation taken from my other _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
+- jobs.h: Fiber based task scheduler. Proof of concept for [Christian Gyrling 2015 GDC Talk](http://gdcvault.com/play/1022186/Parallelizing-the-Naughty-Dog-Engine)
+	- Very fast assembly fibers
+	- Wait on job dependencies without task chains or context switches
+	- Fixed thread pool
+	- Job execution priority support
 - gfx.h: [sokol_gfx](https://github.com/floooh/sokol) implementation and wrapper 
 - handlepool.h: Handle pool
 - hash.h:  Some nice hash functions and a fast fibonacci multiplicative hash-table
