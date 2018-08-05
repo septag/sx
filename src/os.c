@@ -220,7 +220,7 @@ void* sx_os_exec(const char* const* argv)
 			return NULL;
 		}
 
-		return (void*)(ptr_t)pid;
+		return (void*)(uintptr_t)pid;
 #elif SX_PLATFORM_WINDOWS
 		STARTUPINFOA si;
 		sx_memset(&si, 0, sizeof(STARTUPINFOA));

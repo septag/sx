@@ -39,12 +39,6 @@ typedef SX_ALIGN_DECL(16, struct) sx_pool
     uint8_t* buff;
 } sx_pool;
 
-sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int capacity);
-void  sx_pool_destroy(sx_pool* pool, const sx_alloc* alloc);
-void* sx_pool_new(sx_pool* pool);
-void  sx_pool_del(sx_pool* pool, void* ptr);
-bool  sx_pool_valid(const sx_pool* pool, void* ptr);
-
 SX_INLINE sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int capacity)
 {
     assert(item_sz > 0 && "Item size should not be zero");
@@ -92,13 +86,6 @@ SX_INLINE void* sx_pool_new(sx_pool* pool)
     }
 }
 
-SX_INLINE void sx_pool_del(sx_pool* pool, void* ptr)
-{
-    assert(pool->iter != pool->capacity && "Cannot delete more objects");
-    assert(sx_pool_valid(pool, ptr) && "Pointer does not belong to pool");
-    pool->ptrs[pool->iter++] = ptr;
-}
-
 SX_INLINE bool sx_pool_valid(const sx_pool* pool, void* ptr)
 {
     uintptr_t uptr = (uintptr_t)ptr;
@@ -107,5 +94,13 @@ SX_INLINE bool sx_pool_valid(const sx_pool* pool, void* ptr)
     bool valid = (uintptr_t)((uint8_t*)ptr - pool->buff) % pool->item_sz == 0;
     return inbuf & valid;
 }
+
+SX_INLINE void sx_pool_del(sx_pool* pool, void* ptr)
+{
+    assert(pool->iter != pool->capacity && "Cannot delete more objects");
+    assert(sx_pool_valid(pool, ptr) && "Pointer does not belong to pool");
+    pool->ptrs[pool->iter++] = ptr;
+}
+
 
 #endif  // SX_POOL_H_
