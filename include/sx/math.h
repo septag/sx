@@ -566,6 +566,11 @@ SX_INLINE sx_vec2 sx_vec2fv(const float* _f)
 #endif    
 }
 
+SX_INLINE sx_vec2 sx_vec2splat(float _f)
+{
+    return sx_vec2f(_f, _f);
+}
+
 //
 SX_INLINE sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w) 
 {

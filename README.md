@@ -36,6 +36,7 @@ This library currently contains:
 	- Vector/Matrix math, many of the them taken from [bx](https://github.com/bkaradzic/bx)
 	- Easing functions
 - os.h: Common portable OS related routines
+- bheap.h: Binary heap implementation
 
 ## Build
 ### CMake options

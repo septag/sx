@@ -43,6 +43,10 @@ add_executable(test-jobs test-jobs.c)
 target_link_libraries(test-jobs PRIVATE sx)
 set_target_properties(test-jobs PROPERTIES FOLDER tests)
 
+add_executable(test-bheap test-bheap.c)
+target_link_libraries(test-bheap PRIVATE sx)
+set_target_properties(test-bheap PROPERTIES FOLDER tests)
+
 # skip test-fiber, test-threads in emscripten
 if (NOT EMSCRIPTEN)
     add_executable(test-fiber test-fiber.c)

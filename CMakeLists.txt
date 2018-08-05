@@ -41,7 +41,8 @@ set(SOURCE_FILES src/sx.c
                  src/virtual-alloc.c
                  src/fiber.c
                  src/math.c 
-                 src/jobs.c)
+                 src/jobs.c
+                 src/bheap.c)
 set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/array.h 
                   include/sx/config.h 
@@ -67,7 +68,8 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/virtual-alloc.h 
                   include/sx/fiber.h
                   include/sx/math.h
-                  include/sx/jobs.h)
+                  include/sx/jobs.h
+                  include/sx/bheap.h)
 
 if (SX_NO_GFX)
     list(REMOVE_ITEM SOURCE_FILES src/gfx.c)

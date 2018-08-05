@@ -53,7 +53,6 @@ typedef struct sx_job_context
     sx__job*        waiting_list_last[SX_JOB_PRIORITY_COUNT];
     sx_lock_t       job_lk;
     sx_lock_t       counter_lk;
-    sx_lock_t       pool_lk;
     sx_tls          thread_tls;
     int             dummy_counter;
     sx_sem          sem;
@@ -62,9 +61,9 @@ typedef struct sx_job_context
 
 static void sx__del_job(sx_job_context* ctx, sx__job* job)
 {
-    sx_lock(&ctx->pool_lk);
+    sx_lock(&ctx->job_lk);
     sx_pool_del(ctx->job_pool, job);
-    sx_unlock(&ctx->pool_lk);
+    sx_unlock(&ctx->job_lk);
 }
 
 static void fiber_fn(sx_fiber_transfer transfer)
@@ -87,7 +86,6 @@ static void fiber_fn(sx_fiber_transfer transfer)
 
 static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* desc, sx_job_t counter)
 {
-    sx_lock(&ctx->pool_lk);
     sx__job* j = (sx__job*)sx_pool_new(ctx->job_pool);
 
     if (j) {
@@ -96,7 +94,6 @@ static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* d
         if (!j->stack_mem.sptr) {
             // Initialize stack memory
             if (!sx_fiber_stack_init(&j->stack_mem, ctx->stack_sz)) {
-                sx_unlock(&ctx->pool_lk);
                 return NULL;
             }
         }
@@ -107,7 +104,6 @@ static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* d
         j->ctx = ctx;
         j->next = j->prev = NULL;
     } 
-    sx_unlock(&ctx->pool_lk);
     return j;
 }
 
@@ -258,15 +254,6 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int coun
         return NULL;
     }
 
-    sx__job** jobs = (sx__job**)alloca(sizeof(sx__job*)*count);
-    assert(jobs);
-
-    for (int i = 0; i < count; i++) {
-        sx__job* job = sx__new_job(ctx, i, &descs[i], counter);
-        assert(job);
-        jobs[i] = job;
-    }
-
     *counter = count;
     assert(tdata && "Dispatch must be called within main thread or job threads");
 
@@ -279,7 +266,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int coun
     for (int i = 0; i < count; i++) {
         sx__job_add_list(&ctx->waiting_list[descs[i].priority], 
                          &ctx->waiting_list_last[descs[i].priority],
-                         jobs[i]);
+                         sx__new_job(ctx, i, &descs[i], counter));
     }
     sx_unlock(&ctx->job_lk);
 
