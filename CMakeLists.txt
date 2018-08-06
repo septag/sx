@@ -74,11 +74,17 @@ set(INCLUDE_FILES include/sx/allocator.h
 if (SX_NO_GFX)
     list(REMOVE_ITEM SOURCE_FILES src/gfx.c)
     list(REMOVE_ITEM INCLUDE_FILES include/sx/gfx.h)
+elseif (APPLE)
+    # Compile gfx.c as objective-c (m file)
+    set_source_files_properties(src/gfx.c PROPERTIES COMPILE_FLAGS "-fobjc-arc -fmodules -x objective-c")
 endif()
 
 if (SX_NO_APP)
     list(REMOVE_ITEM SOURCE_FILES src/app.c)
     list(REMOVE_ITEM INCLUDE_FILES include/sx/app.h)
+elseif (APPLE)
+    # Compile app.c as objective-c (m file)
+    set_source_files_properties(src/app.c PROPERTIES COMPILE_FLAGS "-fobjc-arc -fmodules -x objective-c")
 endif()
 
 # I don't know if emscripten has 

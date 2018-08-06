@@ -106,7 +106,7 @@ size_t sx_os_processmem()
 		return 1 == items ? pages * sysconf(_SC_PAGESIZE) : 0;
 #elif SX_PLATFORM_OSX
 #	if defined(MACH_TASK_BASIC_INFO)
-		mach_task_basic_info info;
+		struct mach_task_basic_info info;
 		mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
 
 		int const result = task_info(mach_task_self()

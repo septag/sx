@@ -123,7 +123,7 @@ void sx_semaphore_post(sx_sem* sem, int count)
     }
 }
 
-bool sx_semaphore_wait(sx_sem* sem, int `secs)
+bool sx_semaphore_wait(sx_sem* sem, int msecs)
 {
     sx__sem* _sem = (sx__sem*)sem->data;
     dispatch_time_t dt = msecs < 0 ? DISPATCH_TIME_FOREVER :
@@ -176,7 +176,7 @@ static void* thread_fn(void* arg)
 
 #if SX_PLATFORM_APPLE
     if (thrd->name[0])
-        sx_thread_setname(thrd->name);
+        sx_thread_setname(thrd, thrd->name);
 #endif
 
     sx_semaphore_post(&thrd->sem, 1);
@@ -253,7 +253,7 @@ bool sx_thread_running(sx_thread* thrd)
 void sx_thread_setname(sx_thread* thrd, const char* name)
 {
 #if SX_PLATFORM_APPLE
-    pthread_setname_np(thrd->handle, name);
+    pthread_setname_np(name);
 #elif SX_PLATFORM_BSD
 #	if defined(__NetBSD__)
 		pthread_setname_np(thrd->handle, "%s", (void*)name);
