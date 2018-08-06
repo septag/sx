@@ -39,6 +39,9 @@ This library currently contains:
 - bheap.h: Binary heap implementation
 
 ## Build
+**Status:** 
+[![Build Status](https://travis-ci.org/septag/sx.svg?branch=master)](https://travis-ci.org/septag/sx)
+
 ### CMake options
 
 These are general options for cmake, where you can trim or customize the build:  
@@ -61,6 +64,7 @@ It is possible to build it with *MSVC + clang_c2* toolset which in that case you
 __Dependencies__
 
 - __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
+- __libx11__ (libx11-dev, libxrandr-dev, libxi-dev): If you are planning to use x11 apps, or else use SX_NO_APP flag in cmake options
 
 ### Emscripten
 
