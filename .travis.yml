@@ -12,6 +12,7 @@ addons:
     - gcc
     - clang
     - cmake
+    - libglew-dev
 
 before_script:
   - mkdir build
