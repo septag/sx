@@ -1,0 +1,30 @@
+language: C
+matrix:
+  include:
+    - compiler: gcc
+      os: linux
+    - compiler: clang
+      os: osx
+
+addons:
+  apt:
+    packages:
+    - gcc-5
+    - clang
+    - cmake
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make
+
+branches:
+  only:
+    - master
+
+notifications:
+  email: false
+
+osx_image: xcode9.3
