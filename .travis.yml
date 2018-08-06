@@ -13,6 +13,9 @@ addons:
     - clang
     - cmake
     - libglew-dev
+    - libx11-dev
+    - libxrandr-dev
+    - libxi-dev
 
 before_script:
   - mkdir build
