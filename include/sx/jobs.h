@@ -62,11 +62,6 @@ typedef struct sx_job_desc
     sx_job_cb*      callback;
     void*           user;    
     sx_job_priority priority;   
-#ifdef __cplusplus
-    sx_job_desc() {}
-    explicit sx_job_desc(sx_job_cb* _callback, void* _user, int _priority = SX_JOB_PRIORITY_HIGH) :
-        callback(_callback), priority(_priority), user(_user) {}
-#endif
 } sx_job_desc;
 
 typedef volatile int* sx_job_t;

@@ -53,7 +53,7 @@ static void sx__bheap_heapify_max(sx_bheap* bh, int index)
 sx_bheap* sx_bheap_create(const sx_alloc* alloc, int capacity)
 {
     size_t total_sz = sizeof(sx_bheap) + sizeof(sx_bheap_item)*capacity;
-    sx_bheap* bh = sx_malloc(alloc, total_sz);
+    sx_bheap* bh = (sx_bheap*)sx_malloc(alloc, total_sz);
     if (!bh) {
         SX_OUT_OF_MEMORY;
         return NULL;

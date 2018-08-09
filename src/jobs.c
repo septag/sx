@@ -89,11 +89,13 @@ static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* d
     sx__job* j = (sx__job*)sx_pool_new(ctx->job_pool);
 
     if (j) {
+        j->job_index = index;
         j->owner_tid = 0;
         j->done = 0;
         if (!j->stack_mem.sptr) {
             // Initialize stack memory
             if (!sx_fiber_stack_init(&j->stack_mem, ctx->stack_sz)) {
+                SX_OUT_OF_MEMORY;
                 return NULL;
             }
         }
@@ -328,7 +330,7 @@ bool sx_job_try_del(sx_job_context* ctx, sx_job_t job)
 static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t tid, bool main_thrd)
 {
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_malloc(alloc, sizeof(sx__job_thread_data));
-    memset(tdata, 0x0, sizeof(sx__job_thread_data));
+    sx_memset(tdata, 0x0, sizeof(sx__job_thread_data));
     tdata->tid = sx_thread_tid();
     tdata->main_thrd = main_thrd;
 
@@ -371,10 +373,14 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, in
 {
     assert(num_threads >= 0);
     assert(num_fibers > 0);
-    assert(fiber_stack_sz > sx_os_minstacksz());
+    assert(fiber_stack_sz >= sx_os_minstacksz() && "stack size too small");
 
     sx_job_context* ctx = (sx_job_context*)sx_malloc(alloc, sizeof(sx_job_context));
-    memset(ctx, 0x0, sizeof(sx_job_context));
+    if (!ctx) {
+        SX_OUT_OF_MEMORY;
+        return NULL;
+    }
+    sx_memset(ctx, 0x0, sizeof(sx_job_context));
 
     ctx->alloc = alloc;
     ctx->num_threads = num_threads;
@@ -395,8 +401,8 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, in
     ctx->counter_pool = sx_pool_create(alloc, sizeof(int), max_jobs);
     if (!ctx->job_pool || !ctx->counter_pool)
         return NULL;
-    memset(ctx->job_pool->buff, 0x0, sizeof(sx__job)*num_fibers);
-    memset(ctx->counter_pool->buff, 0x0, sizeof(int)*max_jobs);
+    sx_memset(ctx->job_pool->buff, 0x0, sizeof(sx__job)*num_fibers);
+    sx_memset(ctx->counter_pool->buff, 0x0, sizeof(int)*max_jobs);
 
     // Worker threads
     if (num_threads > 0) {

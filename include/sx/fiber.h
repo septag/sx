@@ -2,9 +2,15 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
-// fiber.h - v1.0 - Low-level, High-performance (asm) portable fibers
+// fiber.h - v1.1 - High-performance (asm) portable fibers/coroutines
 // Reference: https://github.com/boostorg/context
 //            http://www.boost.org/doc/libs/1_60_0/libs/context/doc/html/index.html
+//
+// API is divided into two parts, low-level (sx_fiber_t) and high-level (sx_fiber_context):
+//
+// Low-level API:
+// This is the essential fiber API that is used by jobs.c for multi-threaded job dispatcher
+// You can make stack memory and fiber object which holds cpu state and stack pointer
 //
 //      sx_fiber_stack_init     create fiber stack from virtual memory
 //                              size will be aligned to OS page size
@@ -43,12 +49,36 @@
 //     Fiber1 - End
 //     End
 //
+// High-level API:
+// This is a more practical API for gameplay programmers, it emulates somewhat unity's coroutines
+// Facilitates iterative algorithms and wait timers, ...
+// You create a fiber context, which is actually a fiber pool. On each frame of the game you update the context
+// So when you invoke a fiber, it will run it like a normal function, but you can return in the middle of the function
+// and continue on some other time based on 'sx_fiber_ret_type' enum value.
+// Note that the context API is not thread-safe, so the context-related functions must be called within one thread only
+//
+//      sx_fiber_create_context     creates fiber context (fiber pool) 
+//                                  max_fibers is the maximum number of fibers in the pool (actual count of running 'invokes')
+//                                  stack_sz is the size of fiber stack is bytes, must be more than sx_os_minstacksz()
+//      sx_fiber_destroy_context    destroys fiber context
+//      sx_fiber_invoke             Invokes the fiber immediately and runs it's callback
+//      sx_fiber_update             Updates fiber-context state with a delta-time as input. In the game this should be called on each frame
+//      sx_fiber_return             Exits the fiber execution and returns to program, much like C's 'return' keyword,
+//                                  This function must be called whenever you want to exit the fiber callback, even at the end of the function
+//                                  'pfrom' is the caller fiber and gets updated, should be the pointer to the sx_fiber_t handle 'transfer.from' in the parameter of the callback
+//                                  'sx_fiber_ret_type' indicates how should the fiber continue it's execution on the next updates
+//                                      SX_FIBER_RET_FINISH indicates that execution is finished and fiber's work is done
+//                                                          This can be called in the middle of fiber callback
+//                                                          And must always be called at the end of the function body
+//                                      SX_FIBER_RET_PASS   indices that execution must continue on next N frames given by 'arg' parameter
+//                                      SX_FIBER_RET_WAIT   waits for N msecs and continue the execution, which is 'arg' paramater
+//
 #pragma once
 
 #ifndef SX_FIBER_H_
 #define SX_FIBER_H_
 
-#include "sx.h"
+#include "allocator.h"
 
 #define SX_FIBER_INVALID NULL
 
@@ -68,8 +98,25 @@ typedef struct sx_fiber_stack
 
 typedef void (sx_fiber_cb)(sx_fiber_transfer transfer);
 
+// High level context API
+typedef struct sx_fiber_context sx_fiber_context;
+typedef enum sx_fiber_ret_type
+{
+    SX_FIBER_RET_NONE = 0,
+    SX_FIBER_RET_FINISH,        // Executation is finished
+    SX_FIBER_RET_PASS,          // Pass this 'update' to the next N update which is 'arg' in sx_fiber_return
+    SX_FIBER_RET_WAIT           // Wait for msecs: 'arg' is msecs in sx_fiber_return
+} sx_fiber_ret_type;
+
+SX_EXTERN sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
+SX_EXTERN void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc);
+SX_EXTERN void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user);
+SX_EXTERN void sx_fiber_update(sx_fiber_context* ctx, float dt);
+SX_EXTERN void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg);
+
+// Low-level functions
 SX_EXTERN bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size SX_DFLT(0));
-SX_EXTERN void sx_siber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
+SX_EXTERN void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
 SX_EXTERN void sx_fiber_stack_release(sx_fiber_stack* fstack);
 
 SX_EXTERN sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);

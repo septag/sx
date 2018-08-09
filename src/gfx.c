@@ -45,16 +45,16 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 #define _SX_GFX_PRIVATE
 #include "sx/gfx.h"
 
-void sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc)
+bool sg_setup_alloc(const sx_alloc* alloc, const sg_desc* desc)
 {
 #if SX_PLATFORM_LINUX
     glewExperimental = GL_TRUE;
     GLenum r = glewInit();
-    if (r != GLEW_OK) {
-        printf("Error :%s\n", glewGetErrorString(r));
-    }
+    if (r != GLEW_OK)
+        return false;
     glGetError();
 #endif
     g_gfx_alloc = alloc;
     sg_setup(desc);
+    return true;
 }

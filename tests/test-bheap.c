@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     static const int N = 32;
 
     sx_rng rng;
-    sx_rng_seed(&rng, time(NULL));
+    sx_rng_seed(&rng, (uint32_t)time(NULL));
 
     const sx_alloc* alloc = sx_alloc_malloc;
     sx_bheap* bh = sx_bheap_create(alloc, N);

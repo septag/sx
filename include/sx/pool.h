@@ -86,6 +86,11 @@ SX_INLINE void* sx_pool_new(sx_pool* pool)
     }
 }
 
+SX_INLINE bool sx_pool_full(const sx_pool* pool)
+{
+    return pool->iter == 0;
+}
+
 SX_INLINE bool sx_pool_valid(const sx_pool* pool, void* ptr)
 {
     uintptr_t uptr = (uintptr_t)ptr;

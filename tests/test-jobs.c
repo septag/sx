@@ -30,8 +30,8 @@ static void job_fib_fn(int index, void* user)
     }
 
     const sx_job_desc jobs[] = {
-        {job_wait_fn, NULL, 0},
-        {job_wait_fn, NULL, 0}
+        {job_wait_fn, NULL, SX_JOB_PRIORITY_HIGH},
+        {job_wait_fn, NULL, SX_JOB_PRIORITY_HIGH}
     };
     //if (sx_rng_gen_irange(&g_rng, 1, 100) < 50) {
         sx_job_t job = sx_job_dispatch(g_ctx, jobs, 1);
@@ -43,7 +43,7 @@ static void job_fib_fn(int index, void* user)
 
 int main(int argc, char* argv[])
 {
-    sx_rng_seed(&g_rng, time(NULL));
+    sx_rng_seed(&g_rng, (uint32_t)time(NULL));
     const sx_alloc* alloc = sx_alloc_malloc;
     sx_job_context* ctx = sx_job_create_context(alloc, 1, MAX_JOBS, MAX_FIBERS, STACK_SIZE);
     if (!ctx) {
@@ -53,25 +53,25 @@ int main(int argc, char* argv[])
     g_ctx = ctx;
 
     uint32_t results[16];
-    memset(results, 0x0, sizeof(results));
+    sx_memset(results, 0x0, sizeof(results));
 
     const sx_job_desc jobs[] = {
-        {job_fib_fn, &results[0], 0},
-        {job_fib_fn, &results[1], 0},
-        {job_fib_fn, &results[2], 0},
-        {job_fib_fn, &results[3], 0},
-        {job_fib_fn, &results[4], 0},
-        {job_fib_fn, &results[5], 0},
-        {job_fib_fn, &results[6], 0},
-        {job_fib_fn, &results[7], 0},
-        {job_fib_fn, &results[8], 0},
-        {job_fib_fn, &results[9], 0},
-        {job_fib_fn, &results[10], 0},
-        {job_fib_fn, &results[11], 0},
-        {job_fib_fn, &results[12], 0},
-        {job_fib_fn, &results[13], 0},
-        {job_fib_fn, &results[14], 0},
-        {job_fib_fn, &results[15], 0},
+        {job_fib_fn, &results[0], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[1], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[2], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[3], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[4], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[5], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[6], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[7], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[8], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[9], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[10], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[11], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[12], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[13], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[14], SX_JOB_PRIORITY_HIGH},
+        {job_fib_fn, &results[15], SX_JOB_PRIORITY_HIGH},
     };
 
     puts("Dispatching jobs ...");

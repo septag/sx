@@ -39,9 +39,8 @@
 //     their arguments more than once (except for 'v' in sx_array_push), so the arguments should
 //     be side-effect-free.
 //
-//     Note that 'TYPE *a' in sb_push and sb_add must be lvalues
-//     so that the library can overwrite the existing pointer if
-//     the object has to be reallocated.
+//     Note that 'TYPE *a' in sx_array_push and sx_array_add must be lvalues
+//     so that the library can overwrite the existing pointer if the object has to be reallocated.
 //
 
 #pragma once

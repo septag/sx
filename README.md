@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/septag/sx.svg?branch=master)](https://travis-ci.org/septag/sx)
+
 # SX: Portable base library for C/C++ programs (WIP)
 [@septag](https://twitter.com/septagh)
 
@@ -39,8 +41,12 @@ This library currently contains:
 - bheap.h: Binary heap implementation
 
 ## Build
-**Status:** 
-[![Build Status](https://travis-ci.org/septag/sx.svg?branch=master)](https://travis-ci.org/septag/sx)
+### Current supported platforms
+
+- *Windows*: Tested on vs2015-cl (cpp) and vs2015-clang_c2 (c11) - x86_64
+- *Linux*: Tested on ubuntu, gcc 4.8.4
+- *OSX*: Tested on x86_64 Darwin 17.4.0 - LLVM version 9.1.0 (clang-902.0.39.1)
+- *Emscripten*: Tested on v1.38.8
 
 ### CMake options
 

@@ -8,7 +8,9 @@ set(SOURCE_FILES test-sokol.c
                  test-timer.c
                  test-threads.c
                  test-virtualmem.c 
-                 test-hash.c)
+                 test-hash.c
+                 test-jobs.c
+                 test-bheap.c)
 if (MSVC AND NOT (CMAKE_C_COMPILER_ID MATCHES "Clang"))
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
 endif()
