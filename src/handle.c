@@ -6,7 +6,7 @@
 
 sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity)
 {
-    assert(capacity < UINT16_MAX && "Capacity too high");
+    sx_assert(capacity < UINT16_MAX && "Capacity too high");
     // Align count to 16, for a better aligned internal memory
     int maxsz = sx_align_mask(capacity, 15);
 

@@ -83,7 +83,7 @@ char sx_os_getch()
 
 size_t sx_os_align_pagesz(size_t size)
 {
-    assert(size > 0);
+    sx_assert(size > 0);
     int page_sz = sx_os_pagesz();
     size_t page_cnt = (size + page_sz - 1) / page_sz;
     return page_cnt * page_sz;
@@ -201,7 +201,7 @@ void sx_os_sleep(int ms)
 #if SX_PLATFORM_WINDOWS
     Sleep(ms);
 #elif SX_PLATFORM_XBOXONE
-    assert(0 && "Sleep not implemented");
+    sx_assert(0 && "Sleep not implemented");
 #else
     struct timespec req = { (time_t)ms/1000, (long)((ms%1000)*1000000) };
     struct timespec rem = { 0, 0 };

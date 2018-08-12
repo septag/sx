@@ -18,8 +18,6 @@
 #include <stdbool.h>        // bool
 #include <stdlib.h>         // size_t
 #include <stddef.h>         // ptrdiff_t
-#include <assert.h>         // assert / static_assert
-#include <string.h>         // sx_memset
 
 #include "platform.h"
 #include "macros.h"
@@ -36,13 +34,35 @@
 #   endif
 #else
 #   ifndef static_assert
+#       include <assert.h>
 #       define static_assert _Static_assert
 #   endif
 #endif
 
-#define sx_memcpy   memcpy
-#define sx_memmove  memmove
-#define sx_memset   memset
+// Some libc function overrides
+// Use sx_ versions in the code and override if required
+#ifndef sx_memset
+#   include <string.h>         // sx_memset
+#   define sx_memset   memset
+#endif
+
+#ifndef sx_memcpy 
+#   define sx_memcpy   memcpy
+#endif
+
+#ifndef sx_memmove
+#   define sx_memmove  memmove
+#endif
+
+#ifndef sx_memcmp
+#   define sx_memcmp   memcmp
+#endif
+
+#ifndef sx_assert
+#   include <assert.h>
+#   define sx_assert   assert
+#endif
+
 
 /// 
 /// Intellisense and MSCV editor complains about not returning expression on macros that have {()}

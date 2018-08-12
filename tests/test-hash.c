@@ -23,8 +23,8 @@ typedef struct sx__hashtbl2
 
 static sx__hashtbl2* sx__hashtbl2_create(const sx_alloc* alloc, int capacity)
 {
-    assert(capacity > 0);
-    assert(capacity == 10000);
+    sx_assert(capacity > 0);
+    sx_assert(capacity == 10000);
     capacity = 13001;
     sx__hashtbl2* tbl = (sx__hashtbl2*)sx_malloc(alloc, 
         sizeof(sx__hashtbl2) + capacity*(sizeof(uint32_t) + sizeof(int)) + SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
@@ -50,14 +50,14 @@ static sx__hashtbl2* sx__hashtbl2_create(const sx_alloc* alloc, int capacity)
 
 static void sx__hashtbl2_destroy(sx__hashtbl2* tbl, const sx_alloc* alloc)
 {
-    assert(tbl);
+    sx_assert(tbl);
     tbl->count = tbl->capacity = 0;
     sx_free(alloc, tbl);
 }
 
 static int sx__hashtbl2_add(sx__hashtbl2* tbl, uint32_t key, int value)
 {
-    assert(tbl->count < tbl->capacity);
+    sx_assert(tbl->count < tbl->capacity);
 
     uint32_t cnt = (uint32_t)tbl->capacity;
     uint32_t h = key % cnt;
@@ -65,7 +65,7 @@ static int sx__hashtbl2_add(sx__hashtbl2* tbl, uint32_t key, int value)
         h = (h + 1) % cnt; 
     }
 
-    assert(tbl->keys[h] == 0);  // something went wrong!
+    sx_assert(tbl->keys[h] == 0);  // something went wrong!
     tbl->keys[h] = key;
     tbl->values[h] = value;    
     ++tbl->count;
@@ -76,7 +76,7 @@ static int sx__hashtbl2_find(const sx__hashtbl2* tbl, uint32_t key)
 {
     uint32_t cnt = (uint32_t)tbl->capacity;
     uint32_t h = key % cnt;
-    assert(h >= 0 && h < tbl->capacity);
+    sx_assert(h >= 0 && h < (uint32_t)tbl->capacity);
     if (tbl->keys[h] == key) {
         return h;
     } else {
@@ -112,17 +112,17 @@ typedef struct str_item
 int main(int argc, char* argv[])
 {
     sx_rng rng;
-    sx_rng_seed(&rng, time(NULL));
+    sx_rng_seed(&rng, (uint32_t)time(NULL));
     sx_tm_setup();
 
     const int num_samples = 10000;
     const sx_alloc* alloc = sx_alloc_malloc;
     sx_hashtbl* tbl = sx_hashtbl_create(alloc, num_samples);
-    assert(tbl);
+    sx_assert(tbl);
 
     // Make random string array
     str_item* items = (str_item*)sx_malloc(alloc, sizeof(str_item)*num_samples);
-    assert(items);
+    sx_assert(items);
 
     puts("Generating random strings ...");
     for (int i = 0; i < num_samples; i++) {
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
         int num_chars = sx_rng_gen_irange(&rng, 16, sizeof(item->str)-1);
         for (int ii = 0; ii < num_chars; ii++) {
             char ch = (char)sx_rng_gen_irange(&rng, 48, 122);
-            assert(ch >= 48 && ch <= 122);
+            sx_assert(ch >= 48 && ch <= 122);
             item->str[ii] = ch;
         }
         item->str[num_chars] = 0;
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // sx__hashtbl2
     sx__hashtbl2* tbl2 = sx__hashtbl2_create(alloc, num_samples);
-    assert(tbl2);
+    sx_assert(tbl2);
 
     puts("sx_hashtbl2:");
     puts("\tPushing into hash table ...");

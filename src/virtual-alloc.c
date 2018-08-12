@@ -23,7 +23,7 @@
 
 void* sx_virtual_reserve(size_t reserve_sz)
 {
-    assert(reserve_sz % sx_os_pagesz() == 0);
+    sx_assert(reserve_sz % sx_os_pagesz() == 0);
 #if SX_PLATFORM_WINDOWS
     return VirtualAlloc(NULL, reserve_sz, MEM_RESERVE, PAGE_READWRITE);
 #elif SX_PLATFORM_POSIX
@@ -48,8 +48,8 @@ void  sx_virtual_protect(void* ptr, size_t sz)
 void* sx_virtual_commit(void* addr, size_t sz)
 {
     int page_sz = sx_os_pagesz();
-    assert((uintptr_t)addr % page_sz == 0);
-    assert(sz % page_sz == 0);
+    sx_assert((uintptr_t)addr % page_sz == 0);
+    sx_assert(sz % page_sz == 0);
 
 #if SX_PLATFORM_WINDOWS
     return VirtualAlloc(addr, sz, MEM_COMMIT, PAGE_READWRITE);
@@ -61,8 +61,8 @@ void* sx_virtual_commit(void* addr, size_t sz)
 void  sx_virtual_decommit(void* addr, size_t sz)
 {
     int page_sz = sx_os_pagesz();
-    assert((uintptr_t)addr % page_sz == 0);
-    assert(sz % page_sz == 0);
+    sx_assert((uintptr_t)addr % page_sz == 0);
+    sx_assert(sz % page_sz == 0);
 
 #if SX_PLATFORM_WINDOWS
     VirtualFree(addr, sz, MEM_DECOMMIT);
@@ -133,7 +133,7 @@ static void* sx__virtualalloc_cb(void* ptr, size_t size, size_t align, const cha
 
 bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz)
 {
-    assert(reserve_sz > 0);
+    sx_assert(reserve_sz > 0);
     
     // Align size to pages
     reserve_sz = sx_os_align_pagesz(reserve_sz);

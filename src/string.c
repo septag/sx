@@ -2,6 +2,7 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
+
 #include "sx/string.h"
 #include "sx/array.h"
 
@@ -11,6 +12,16 @@ SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-function")
 #define STB_SPRINTF_STATIC
 #include "../3rdparty/stb/stb_printf.h"
 SX_PRAGMA_DIAGNOSTIC_POP();
+
+// Mattias' strpool implementation
+#define STRPOOL_IMPLEMENTATION
+#define STRPOOL_MEMSET( ptr, val, cnt ) ( sx_memset(ptr, val, cnt) )
+#define STRPOOL_MEMCPY( dst, src, cnt ) ( sx_memcpy(dst, src, cnt) )
+#define STRPOOL_MEMCMP( pr1, pr2, cnt ) ( sx_memcmp(pr1, pr2, cnt) )
+// TODO: #define STRPOOL_STRNICMP( s1, s2, len ) ( strncmp( s1, s2, len ) )
+#define STRPOOL_MALLOC( ctx, size )     ( sx_malloc((const sx_alloc*)ctx, size) )
+#define STRPOOL_FREE( ctx, ptr )        ( sx_free((const sx_alloc*)ctx, ptr) )
+#include "../3rdparty/mattias/strpool.h"
 
 typedef struct sx__printf_ctx_s
 {
@@ -66,8 +77,8 @@ char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args)
 
 int sx_strcpy(char* dst, int dst_sz, const char* src)
 {
-    assert(dst);
-    assert(src);
+    sx_assert(dst);
+    sx_assert(src);
 
     const int len = sx_strlen(src);
     const int32_t max = dst_sz-1;
@@ -80,7 +91,7 @@ int sx_strcpy(char* dst, int dst_sz, const char* src)
 
 int sx_strlen(const char* str)
 {
-    assert(str);
+    sx_assert(str);
 
     const char* ptr = str;
     for (; *ptr != '\0'; ++ptr) {};
@@ -89,7 +100,7 @@ int sx_strlen(const char* str)
 
 SX_INLINE int sx__strnlen(const char* str, int _max)
 {
-    assert(str);
+    sx_assert(str);
 
     const char* ptr = str;
     for (; _max > 0 && *ptr != '\0'; ++ptr, --_max) {};
@@ -98,8 +109,8 @@ SX_INLINE int sx__strnlen(const char* str, int _max)
 
 int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
 {
-    assert(dst);
-    assert(src);
+    sx_assert(dst);
+    sx_assert(src);
 
     const int len = sx__strnlen(src, _num);
     const int32_t max = dst_sz-1;
@@ -110,3 +121,100 @@ int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
     return num;
 }
 
+sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf)
+{
+    strpool_config_t sconf;
+    sconf.memctx = (void*)alloc;
+    if (!conf) {
+        sconf.ignore_case = 0;
+        sconf.counter_bits = 12;
+        sconf.index_bits = 20;
+        sconf.entry_capacity = 4096;
+        sconf.block_capacity = 32;
+        sconf.block_size = 256*1024;
+        sconf.min_length = 23;
+    } else {
+        sconf.ignore_case = conf->ignore_case;
+        sconf.counter_bits = conf->counter_bits;
+        sconf.index_bits = conf->index_bits;
+        sconf.entry_capacity = conf->entry_capacity;
+        sconf.block_capacity = conf->block_capacity;
+        sconf.block_size = conf->block_sz_kb*1024;
+        sconf.min_length = conf->min_str_len;
+    }
+
+    strpool_t* sp = (strpool_t*)sx_malloc(alloc, sizeof(strpool_t));
+    if (!sp) {
+        SX_OUT_OF_MEMORY;
+        return NULL;
+    }
+    strpool_init(sp, &sconf);
+    return sp;
+}
+
+void sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc)
+{
+    sx_assert(sp);
+    strpool_term(sp);
+    sx_free(alloc, sp);
+}
+
+void sx_strpool_defrag(sx_strpool* sp)
+{
+    strpool_defrag(sp);
+}
+
+sx_str_t sx_strpool_add(sx_strpool* sp, const char* str, int len)
+{
+    STRPOOL_U64 handle = strpool_inject(sp, str, len);
+    sx_assert((handle & 0xffffffff) == handle && "uint32_t overflow, check index_bits and counter_bits in config!");
+    return (uint32_t)handle;
+}
+
+void sx_strpool_del(sx_strpool* sp, sx_str_t handle)
+{
+    strpool_discard(sp, (STRPOOL_U64)handle);
+}
+
+int sx_strpool_incref(sx_strpool* sp, sx_str_t handle)
+{
+    return strpool_incref(sp, (STRPOOL_U64)handle);
+}
+
+int sx_strpool_decref(sx_strpool* sp, sx_str_t handle)
+{
+    return strpool_decref(sp, (STRPOOL_U64)handle);
+}
+
+bool sx_strpool_valid(const sx_strpool* sp, sx_str_t handle)
+{
+    return SX_BOOL(strpool_isvalid(sp, (STRPOOL_U64)handle));
+}
+
+int sx_strpool_ref(sx_strpool* sp, sx_str_t handle)
+{
+    return strpool_getref(sp, (STRPOOL_U64)handle);
+}
+
+const char* sx_strpool_cstr(const sx_strpool* sp, sx_str_t handle)
+{
+    return strpool_cstr(sp, (STRPOOL_U64)handle);
+}
+
+int sx_strpool_len(const sx_strpool* sp, sx_str_t handle)
+{
+    return strpool_length(sp, (STRPOOL_U64)handle);
+}
+
+sx_strpool_collate_data sx_strpool_collate(const sx_strpool* sp)
+{
+    sx_strpool_collate_data d;
+    d.first = strpool_collate(sp, &d.count);
+    return d;
+}
+
+void sx_strpool_collate_free(const sx_strpool* sp, sx_strpool_collate_data data)
+{
+    sx_assert(data.first);
+    strpool_free_collated(sp, data.first);
+}

@@ -68,14 +68,14 @@ sx_bheap* sx_bheap_create(const sx_alloc* alloc, int capacity)
 
 void sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc)
 {
-    assert(bh);
+    sx_assert(bh);
     sx_free(alloc, bh);
 }
 
 
 void sx_bheap_push_min(sx_bheap* bh, int key, void* user)
 {
-    assert(bh->count < bh->capacity && "BinaryHeap's capacity exceeded");
+    sx_assert(bh->count < bh->capacity && "BinaryHeap's capacity exceeded");
 
     // Put the value at the bottom the tree and traverse up    
     int index = bh->count;
@@ -101,7 +101,7 @@ void sx_bheap_push_min(sx_bheap* bh, int key, void* user)
 
 sx_bheap_item sx_bheap_pop_min(sx_bheap* bh)
 {
-    assert(bh && bh->count > 0);
+    sx_assert(bh && bh->count > 0);
 
     // Root is the value we want
     sx_bheap_item result = bh->items[0];
@@ -117,7 +117,7 @@ sx_bheap_item sx_bheap_pop_min(sx_bheap* bh)
 
 void sx_bheap_push_max(sx_bheap* bh, int key, void* user)
 {
-    assert(bh->count < bh->capacity && "BinaryHeap's capacity exceeded");
+    sx_assert(bh->count < bh->capacity && "BinaryHeap's capacity exceeded");
 
     // Put the value at the bottom the tree and traverse up    
     int index = bh->count;
@@ -143,7 +143,7 @@ void sx_bheap_push_max(sx_bheap* bh, int key, void* user)
 
 sx_bheap_item sx_bheap_pop_max(sx_bheap* bh)
 {
-    assert(bh && bh->count > 0);
+    sx_assert(bh && bh->count > 0);
 
     // Root is the value we want
     sx_bheap_item result = bh->items[0];

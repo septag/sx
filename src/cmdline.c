@@ -25,7 +25,7 @@ sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, c
 
 void sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc)
 {
-    assert(ctx);
+    sx_assert(ctx);
     sx_free(alloc, ctx);
 }
 

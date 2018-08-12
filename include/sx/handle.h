@@ -10,7 +10,7 @@
 //          sx_handle_create_pool       allocate and create handle pool with the specified capacity (must be less than UIN16_MAX)
 //          sx_handle_destroy_pool      destroy handle pool
 //          sx_handle_new               returns a new handle
-//                                      returns SX_INVALID_HANDLE with (assert in debug), if pool is full
+//                                      returns SX_INVALID_HANDLE with (sx_assert in debug), if pool is full
 //          sx_handle_del               deletes the handle and puts it back to the pool
 //          sx_handle_at                converts pool index to a valid handle
 //          sx_handle_valid             checks if handle is valid
@@ -77,7 +77,7 @@ SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
         pool->sparse[handle] = index;
         return handle;
     } else  {
-        assert(0 && "handle pool is full");
+        sx_assert(0 && "handle pool is full");
     }
 
     return SX_INVALID_HANDLE;
@@ -85,7 +85,7 @@ SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
 
 SX_INLINE void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
 {
-    assert(pool->count > 0);
+    sx_assert(pool->count > 0);
 
     sx_handle_t index = pool->sparse[handle];
     --pool->count;
@@ -112,7 +112,7 @@ SX_INLINE bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle)
 
 SX_INLINE sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index)
 {
-    assert(index < pool->count);
+    sx_assert(index < pool->count);
     return pool->dense[index];
 }
 

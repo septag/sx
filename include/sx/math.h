@@ -424,7 +424,7 @@ SX_INLINE SX_CONSTFN float sx_rsqrt(float _a)
 
 SX_INLINE SX_CONSTFN float sx_sqrt(float _a)
 {
-    assert (_a >= SX_NEAR_ZERO);
+    sx_assert (_a >= SX_NEAR_ZERO);
     return 1.0f/sx_rsqrt(_a);
 }
 

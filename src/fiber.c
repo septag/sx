@@ -62,8 +62,8 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
 void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size)
 {
     int page_sz = sx_os_pagesz();
-    assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
-    assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
+    sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
+    sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
 
     fstack->sptr = ptr;
     fstack->ssize = size;
@@ -71,7 +71,7 @@ void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size)
 
 void sx_fiber_stack_release(sx_fiber_stack* fstack)
 {
-    assert(fstack->sptr);
+    sx_assert(fstack->sptr);
     void* ptr = (uint8_t*)fstack->sptr - fstack->ssize;
 
 #if SX_PLATFORM_WINDOWS
@@ -147,8 +147,8 @@ SX_INLINE void sx__fiber_remove_list(sx__fiber_state** pfirst, sx__fiber_state**
 
 sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz)
 {
-    assert(max_fibers > 0);
-    assert(stack_sz >= sx_os_minstacksz() && "stack size too small");
+    sx_assert(max_fibers > 0);
+    sx_assert(stack_sz >= sx_os_minstacksz() && "stack size too small");
 
     sx_fiber_context* ctx = (sx_fiber_context*)sx_malloc(alloc, sizeof(sx_fiber_context));
     if (!ctx) {
@@ -170,7 +170,7 @@ sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers,
 
 void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc)
 {
-    assert(ctx);
+    sx_assert(ctx);
     if (ctx->fiber_pool)
         sx_pool_destroy(ctx->fiber_pool, alloc);
 
@@ -230,7 +230,7 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt)
                 break;
             }
             default:
-                assert(0 && "Invalid ret type in update loop");
+                sx_assert(0 && "Invalid ret type in update loop");
                 break;
             }
 
@@ -241,8 +241,8 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt)
 
 void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg)
 {
-    assert(ctx->cur_fiber && "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
-    assert(type != SX_FIBER_RET_NONE && "Invalid enum for type");
+    sx_assert(ctx->cur_fiber && "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
+    sx_assert(type != SX_FIBER_RET_NONE && "Invalid enum for type");
 
     sx__fiber_state* fs = ctx->cur_fiber;
 

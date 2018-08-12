@@ -68,7 +68,6 @@ static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file
 #   undef realloc
 #endif
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -107,7 +106,7 @@ static void stb_leakcheck_free(void *ptr)
         mi->size = ~mi->size;
 #ifndef STB_LEAKCHECK_SHOWALL
         if (mi->prev == NULL) {
-            assert(mi_head == mi);
+            sx_assert(mi_head == mi);
             mi_head = mi->next;
         } else
             mi->prev->next = mi->next;

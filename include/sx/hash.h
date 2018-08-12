@@ -125,7 +125,7 @@ SX_INLINE int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_f
 
 SX_INLINE void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
 {
-    assert(index>=0 && index<tbl->capacity);
+    sx_assert(index>=0 && index<tbl->capacity);
 
     tbl->keys[index] = 0;
     --tbl->count;    
@@ -138,7 +138,7 @@ SX_INLINE bool sx_hashtbl_full(const sx_hashtbl* tbl)
 
 SX_INLINE int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
 {
-    assert(index>=0 && index<tbl->capacity);
+    sx_assert(index>=0 && index<tbl->capacity);
     return tbl->values[index];
 }
 

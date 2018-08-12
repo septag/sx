@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
         if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_min(bh).key;
             for (int k = 0; k < bh->count; k++)
-                assert(key <= bh->items[k].key);
+                sx_assert(key <= bh->items[k].key);
             num_pop++;
         }
     }
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_max(bh).key;
             for (int k = 0; k < bh->count; k++)
-                assert(key >= bh->items[k].key);
+                sx_assert(key >= bh->items[k].key);
             num_pop++;
         }
     }

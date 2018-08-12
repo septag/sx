@@ -73,23 +73,23 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
         //      free(p2);
         //      free(p1);
         // So we trigger assertion if this order is not applied, for memory safety
-        assert(ptr == stackalloc->last_ptr && "Invalid ordering of 'free'. See the comment above");
-        assert(stackalloc->offset > 0);
+        sx_assert(ptr == stackalloc->last_ptr && "Invalid ordering of 'free'. See the comment above");
+        sx_assert(stackalloc->offset > 0);
         sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)ptr - 1;
         stackalloc->offset -= hdr->inner_size;
         stackalloc->last_ptr = (uint8_t*)hdr->prev_ptr;   // move to previous allocated pointer
         return NULL;
     }
 
-    assert(0 && "Invalid arguments?!");
+    sx_assert(0 && "Invalid arguments?!");
     return NULL;
 }
 
 void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size)
 {
-    assert(stackalloc);
-    assert(ptr);
-    assert(size);
+    sx_assert(stackalloc);
+    sx_assert(ptr);
+    sx_assert(size);
 
     stackalloc->alloc.alloc_cb = sx__stackalloc_cb;
     stackalloc->alloc.user_data = stackalloc;

@@ -44,7 +44,7 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
 
 void sx_mem_destroy_block(sx_mem_block* mem, const sx_alloc* alloc)
 {
-    assert(mem);
+    sx_assert(mem);
     
     if (mem->alloc) {
         mem->alloc = NULL;
@@ -73,7 +73,7 @@ bool sx_mem_init_block(sx_mem_block* mem, const sx_alloc* alloc, int size, const
 
 void sx_mem_release_block(sx_mem_block* mem)
 {
-    assert(mem);
+    sx_assert(mem);
 
     if (mem->alloc) {
         sx_aligned_free(mem->alloc, mem->data, mem->align);
@@ -91,8 +91,8 @@ void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size)
 
 void* sx_mem_grow(sx_mem_block* mem, int size)
 {
-    assert(mem->alloc && "Growable memory must be created with an allocator!");
-    assert(size > mem->size && "New size must be greater than the previous one");
+    sx_assert(mem->alloc && "Growable memory must be created with an allocator!");
+    sx_assert(size > mem->size && "New size must be greater than the previous one");
 
     mem->data = sx_aligned_realloc(mem->alloc, mem->data, size, mem->align);
     mem->size = size;
@@ -103,7 +103,7 @@ void* sx_mem_grow(sx_mem_block* mem, int size)
 //
 void sx_mem_init_writer(sx_mem_writer* writer, sx_mem_block* mem)
 {
-    assert(mem && mem->size > 0);
+    sx_assert(mem && mem->size > 0);
 
     writer->mem = mem;
     writer->data = (uint8_t*)mem->data;
@@ -156,8 +156,8 @@ int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset, sx_whence whence)
 //
 void sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size)
 {
-    assert(data);
-    assert(size);
+    sx_assert(data);
+    sx_assert(size);
 
     reader->data = (const uint8_t*)data;
     reader->top = size;
@@ -277,7 +277,7 @@ sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath)
     if (sx_file_open_reader(&reader, filepath)) {
         int64_t sz = sx_file_seekr(&reader, 0, SX_WHENCE_END);
         if (sz > 0) {
-            assert(sz < INT_MAX-1);
+            sx_assert(sz < INT_MAX-1);
             sx_file_seekr(&reader, 0, SX_WHENCE_BEGIN);
             sx_mem_block* mem = sx_mem_create_block(alloc, (int)sz + 1, NULL, 0);
             if (mem) {
@@ -297,7 +297,7 @@ sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath)
     if (sx_file_open_reader(&reader, filepath)) {
         int64_t sz = sx_file_seekr(&reader, 0, SX_WHENCE_END);
         if (sz > 0) {
-            assert(sz < INT_MAX-1);
+            sx_assert(sz < INT_MAX-1);
             sx_file_seekr(&reader, 0, SX_WHENCE_BEGIN);
             sx_mem_block* mem = sx_mem_create_block(alloc, (int)sz, NULL, 0);
             if (mem) {

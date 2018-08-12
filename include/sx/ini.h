@@ -12,7 +12,7 @@
 #define SX_INI_H_
 
 #ifndef SX_INI_PRIVATE
-#   include "../../3rdparty/ini/ini.h"
+#   include "../../3rdparty/mattias/ini.h"
 #endif
 
 #include "allocator.h"

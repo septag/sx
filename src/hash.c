@@ -271,7 +271,7 @@ SX_INLINE int sx__calc_bitshift(int n)
 
 sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
 {
-    assert(capacity > 0);
+    sx_assert(capacity > 0);
 
     capacity = sx_nearest_pow2(capacity);
     sx_hashtbl* tbl = (sx_hashtbl*)sx_malloc(alloc, 
@@ -299,7 +299,7 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
 
 void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc)
 {
-    assert(tbl);
+    sx_assert(tbl);
     tbl->count = tbl->capacity = 0;
     sx_free(alloc, tbl);
 }
@@ -324,7 +324,7 @@ bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc)
 
 void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr)
 {
-    assert(sx_ispow2(capacity) && "Table size must be power of 2, get it from sx_hashtbl_valid_capacity");
+    sx_assert(sx_ispow2(capacity) && "Table size must be power of 2, get it from sx_hashtbl_valid_capacity");
 
     tbl->keys = keys_ptr;
     tbl->values = values_ptr;
@@ -344,7 +344,7 @@ int sx_hashtbl_valid_capacity(int capacity)
 
 int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
 {
-    assert(tbl->count < tbl->capacity);
+    sx_assert(tbl->count < tbl->capacity);
 
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
     uint32_t cnt = (uint32_t)tbl->capacity;
@@ -352,7 +352,7 @@ int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
         h = (h + 1) % cnt; 
     }
 
-    assert(tbl->keys[h] == 0);  // something went wrong!
+    sx_assert(tbl->keys[h] == 0);  // something went wrong!
     tbl->keys[h] = key;
     tbl->values[h] = value;    
     ++tbl->count;

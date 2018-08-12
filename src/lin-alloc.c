@@ -69,9 +69,9 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
 
 void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size)
 {
-    assert(linalloc);
-    assert(ptr);
-    assert(size);
+    sx_assert(linalloc);
+    sx_assert(ptr);
+    sx_assert(size);
 
     linalloc->alloc.alloc_cb = sx__linalloc_cb;
     linalloc->alloc.user_data = linalloc;

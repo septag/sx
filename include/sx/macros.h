@@ -151,4 +151,10 @@
 #define SX_ENABLED(_f)  ((_f) != 0)
 #define SX_UNUSED(_a)   (void)(true ? (void)0 : ( (void)(_a) ))
 
+#ifdef __cplusplus
+#   define SX_BOOL(_b)   (_b) ? true : false;
+#else
+#   define SX_BOOL(_b)    _b
+#endif
+
 #endif // SX_MACROS_H_
