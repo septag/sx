@@ -28,13 +28,17 @@
 #   define noreturn 
 #endif
 
+#ifndef sx_assert
+#   include <assert.h>
+#   define sx_assert   assert
+#endif
+
 #if defined(__cplusplus)
 #   if !defined(typeof)
 #       define typeof(a) decltype(a)
 #   endif
 #else
 #   ifndef static_assert
-#       include <assert.h>
 #       define static_assert _Static_assert
 #   endif
 #endif
@@ -57,12 +61,6 @@
 #ifndef sx_memcmp
 #   define sx_memcmp   memcmp
 #endif
-
-#ifndef sx_assert
-#   include <assert.h>
-#   define sx_assert   assert
-#endif
-
 
 /// 
 /// Intellisense and MSCV editor complains about not returning expression on macros that have {()}
