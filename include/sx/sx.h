@@ -18,6 +18,7 @@
 #include <stdbool.h>        // bool
 #include <stdlib.h>         // size_t
 #include <stddef.h>         // ptrdiff_t
+#include <assert.h>         // assert
 
 #include "platform.h"
 #include "macros.h"
@@ -28,11 +29,6 @@
 #   define noreturn 
 #endif
 
-#ifndef sx_assert
-#   include <assert.h>
-#   define sx_assert   assert
-#endif
-
 #if defined(__cplusplus)
 #   if !defined(typeof)
 #       define typeof(a) decltype(a)
@@ -41,6 +37,10 @@
 #   ifndef static_assert
 #       define static_assert _Static_assert
 #   endif
+#endif
+
+#ifndef sx_assert
+#   define sx_assert   assert
 #endif
 
 // Some libc function overrides

@@ -159,6 +159,7 @@ if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU")
         add_compile_options("$<$<CONFIG:Debug>:-g>")
     endif()
     add_compile_options("$<$<CONFIG:Debug>:-D_DEBUG>")
+    add_compile_options("$<$<CONFIG:Release>:-DNDEBUG>")
     
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions")
