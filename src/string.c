@@ -18,7 +18,7 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 #define STRPOOL_MEMSET( ptr, val, cnt ) ( sx_memset(ptr, val, cnt) )
 #define STRPOOL_MEMCPY( dst, src, cnt ) ( sx_memcpy(dst, src, cnt) )
 #define STRPOOL_MEMCMP( pr1, pr2, cnt ) ( sx_memcmp(pr1, pr2, cnt) )
-// TODO: #define STRPOOL_STRNICMP( s1, s2, len ) ( strncmp( s1, s2, len ) )
+#define STRPOOL_STRNICMP(s1, s2, len)   ( sx_strncmpnocase(s1, s2, len) )
 #define STRPOOL_MALLOC( ctx, size )     ( sx_malloc((const sx_alloc*)ctx, size) )
 #define STRPOOL_FREE( ctx, ptr )        ( sx_free((const sx_alloc*)ctx, ptr) )
 #include "../3rdparty/mattias/strpool.h"
@@ -150,6 +150,91 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
     }
     strpool_init(sp, &sconf);
     return sp;
+}
+
+bool sx_strcmp(const char* a, const char* b)
+{
+    int alen = sx_strlen(a);
+    int blen = sx_strlen(b);
+    if (alen != blen)
+        return false;
+
+    int c = sx_min(alen, blen);
+    for (int i = 0; i < c; i++) {
+        if (a[i] != b[i])
+            return false;
+    }
+    return true;
+}
+
+bool sx_strcmpnocase(const char* a, const char* b)
+{
+    int alen = sx_strlen(a);
+    int blen = sx_strlen(b);
+    if (alen != blen)
+        return false;
+
+    int c = sx_min(alen, blen);
+    for (int i = 0; i < c; i++) {
+        if (sx_tolowerchar(a[i]) != sx_tolowerchar(b[i]))
+            return false;
+    }
+    return true;
+}
+
+bool sx_strncmp(const char* a, const char* b, int num)
+{
+    int alen = sx_min(num, sx_strlen(a));
+    int blen = sx_min(num, sx_strlen(b));
+    if (alen != blen)
+        return false;
+
+    int c = sx_min(alen, blen);
+    for (int i = 0; i < c; i++) {
+        if (a[i] != b[i])
+            return false;
+    }
+    return true;
+}
+
+bool sx_strncmpnocase(const char* a, const char* b, int num)
+{
+    int alen = sx_min(num, sx_strlen(a));
+    int blen = sx_min(num, sx_strlen(b));
+    if (alen != blen)
+        return false;
+
+    int c = sx_min(alen, blen);
+    for (int i = 0; i < c; i++) {
+        if (sx_tolowerchar(a[i]) != sx_tolowerchar(b[i]))
+            return false;
+    }
+    return true;
+}
+
+char sx_tolowerchar(char ch)
+{
+    return ch + (sx_isupperchar(ch) ? 0x20 : 0);
+}
+
+char sx_toupperchar(char ch)
+{
+	return ch - (sx_islowerchar(ch) ? 0x20 : 0);
+}
+
+bool sx_isrange(char ch, char from, char to)
+{
+    return (uint8_t)(ch - from) <= (uint8_t)(to - from);
+}
+
+bool sx_isupperchar(char ch)
+{
+    return sx_isrange(ch, 'A', 'Z');
+}
+
+bool sx_islowerchar(char ch)
+{
+    return sx_isrange(ch, 'a', 'z');
 }
 
 void sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc)

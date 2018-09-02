@@ -11,15 +11,71 @@
 
 #include "allocator.h"
 
-SX_EXTERN int sx_snprintf(char* str, int size, const char* fmt, ...);
-SX_EXTERN int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-SX_EXTERN SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
-SX_EXTERN SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
+typedef struct sx_str_block
+{
+    const char* start;
+    const char* end;
+} sx_str_block;
 
-SX_EXTERN int sx_strcpy(char* dst, int dst_sz, const char* src);
-SX_EXTERN int sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
-SX_EXTERN int sx_strlen(const char* str);
+int sx_snprintf(char* str, int size, const char* fmt, ...);
+int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
+
+SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
+SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
+
+int  sx_strcpy(char* dst, int dst_sz, const char* src);
+int  sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
+int  sx_strlen(const char* str);
+bool sx_strcmp(const char* a, const char* b);
+bool sx_strcmpnocase(const char* a, const char* b);
+bool sx_strncmp(const char* a, const char* b, int num);
+bool sx_strncmpnocase(const char* a, const char* b, int num);
+
+const char* sx_strrchar(const char* str, char ch);
+const char* sx_strchar(const char* str, char ch);
+const char* sx_strstr(const char* str, const char* find);
+
+const char* sx_skip_whitespace(const char* str);
+const char* sx_skip_word(const char* str);
+char* sx_trim_whitespace(char* dest, int dest_sz, const char* src);
+char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim);
+char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch);
+char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace);
+char* sx_EOL_LF(char* dest, int dest_sz, const char* src);
+bool  sx_splitchar(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char ch);
+bool  sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, const char* split);
+sx_str_block sx_findblock(const char* str, char open, char close);
+
+bool     sx_isrange(char ch, char from, char to);
+bool     sx_isupperchar(char ch);
+bool     sx_isupper(const char* str);
+bool     sx_islowerchar(char ch);
+bool     sx_islower(const char* str);
+bool     sx_isnumchar(char ch);
+bool     sx_isnum(const char* str);
+bool     sx_ishexchar(char ch);
+bool     sx_ishex(const char* str);
+char*    sx_tolower(SX_INOUT char* str);
+char*    sx_toupper(SX_INOUT char* str);
+char     sx_tolowerchar(char ch);
+char     sx_toupperchar(char ch);
+bool     sx_tobool(const char* str);
+int      sx_toint(const char* str);
+uint32_t sx_touint(const char* str);
+float    sx_tofloat(const char* str);
+double   sx_todouble(const char* str);
+
+int sx_btos(char* out, int max, bool b);
+int sx_i32tos(char* out, int max, int n, int base SX_DFLT(10));
+int sx_u32tos(char* out, int max, uint32_t n, int base SX_DFLT(10));
+int sx_i64tos(char* out, int max, int64_t n, int base SX_DFLT(10));
+int sx_u64tos(char* out, int max, uint64_t n, int base SX_DFLT(10));
+int sx_ftos(char* out, int max, float f);
+int sx_dtos(char* out, int max, double d);
 
 // strpool (string interning) implementation
 // By Mattias Gustavsson: https://github.com/mattiasgustavsson/libs/blob/master/strpool.h
@@ -41,7 +97,7 @@ typedef struct sx_strpool_collate_data
     int   count;
 } sx_strpool_collate_data;
 
-typedef struct strpool_t sx_strpool;
+typedef struct strpool_t    sx_strpool;
 typedef uint32_t sx_str_t;
 
 sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf SX_DFLT(NULL));
@@ -60,5 +116,8 @@ int         sx_strpool_len(const sx_strpool* sp, sx_str_t handle);
 sx_strpool_collate_data sx_strpool_collate(const sx_strpool* sp);
 void                    sx_strpool_collate_free(const sx_strpool* sp, sx_strpool_collate_data data);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
