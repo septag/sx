@@ -93,7 +93,7 @@
 #	define SX_FALLTHROUGH SX_NOOP()
 #	define SX_PRINTF_ARGS(_format, _args)
 #	define SX_ATTRIBUTE(_x)
-#   define SX_INLINE                    inline
+#   define SX_INLINE                    static inline
 #else
 #	error "Unknown SX_COMPILER_?"
 #endif

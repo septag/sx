@@ -37,7 +37,7 @@ extern "C" {
 // #define GETOPT_PRIVATE_API
 // #include "getopt/getopt.h"
 #ifdef GETOPT_PRIVATE_API
-#  if defined(__GNUC__)
+#  if defined(__GNUC__) || defined(__clang__)
 #    define GETOPT_API static __attribute__((unused))
 #  else
 #	 define GETOPT_API static

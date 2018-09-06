@@ -167,12 +167,46 @@ typedef union sx_mat4
 } sx_mat4;
 
 
+#if SX_CONFIG_STDMATH
+#include <math.h>
+
+SX_INLINE SX_CONSTFN float sx_floor(float _f)
+{
+    return floorf(_f);
+}
+
+SX_INLINE SX_CONSTFN float sx_cos(float _a)
+{
+    return cosf(_a);
+}
+
+SX_INLINE SX_CONSTFN float sx_acos(float _a)
+{
+    return acosf(_a);
+}
+
+SX_INLINE SX_CONSTFN float sx_atan2(float _y, float _x)
+{
+    return atan2f(_y, _x);
+}
+
+SX_INLINE SX_CONSTFN float sx_exp(float _a)
+{
+    return expf(_a);
+}
+
+SX_INLINE SX_CONSTFN float sx_log(float _a)
+{
+    return logf(_a);
+}
+#else
 SX_EXTERN SX_CONSTFN float sx_floor(float _f);
 SX_EXTERN SX_CONSTFN float sx_cos(float _a);
 SX_EXTERN SX_CONSTFN float sx_acos(float _a);
 SX_EXTERN SX_CONSTFN float sx_atan2(float _y, float _x);
 SX_EXTERN SX_CONSTFN float sx_exp(float _a);
 SX_EXTERN SX_CONSTFN float sx_log(float _a);
+#endif
 
 SX_EXTERN sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
 SX_EXTERN sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
@@ -408,6 +442,17 @@ SX_INLINE SX_CONSTFN float sx_log2(float _a)
     return sx_log(_a) * SX_INVLOG_NAT2;
 }
 
+#if SX_CONFIG_STDMATH
+SX_INLINE SX_CONSTFN float sx_sqrt(float _a)
+{
+    return sqrtf(_a);
+}
+
+SX_INLINE SX_CONSTFN float sx_rsqrt(float _a)
+{
+    return 1.0f/sqrtf(_a);
+}
+#else
 // Reference: http://en.wikipedia.org/wiki/Fast_inverse_square_root
 SX_INLINE SX_CONSTFN float sx_rsqrt(float _a)
 {
@@ -427,6 +472,8 @@ SX_INLINE SX_CONSTFN float sx_sqrt(float _a)
     sx_assert (_a >= SX_NEAR_ZERO);
     return 1.0f/sx_rsqrt(_a);
 }
+#endif
+
 
 // Returns the nearest integer not greater in magnitude than _a.
 SX_INLINE SX_CONSTFN float sx_trunc(float _a)

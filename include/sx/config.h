@@ -7,11 +7,17 @@
 #ifndef SX_CONFIG_H_
 #define SX_CONFIG_H_
 
-#define SX_CONFIG_DEBUG_ALLOCATOR 0
+// Debug is forced to be off, so we undef _DEBUG if it's already defined
+#if defined(SX_DEBUG) && !SX_DEBUG
+#   ifdef _DEBUG
+#       undef _DEBUG
+#   endif
+#endif
 
-#if defined(_DEBUG)
-#   undef SX_CONFIG_DEBUG_ALLOCATOR
-#   define SX_CONFIG_DEBUG_ALLOCATOR 1
+#if defined(_DEBUG)  || (defined(SX_DEBUG) && SX_DEBUG)
+#   ifndef SX_CONFIG_DEBUG_ALLOCATOR
+#       define SX_CONFIG_DEBUG_ALLOCATOR 1
+#   endif
 
 // There is an issue with msvc+clang_c2 where NDEBUG (and some other release flags) are always defined
 #   ifdef NDEBUG
@@ -27,17 +33,30 @@
 #   define SX_DEBUG 0
 #endif
 
-// Define anything here, for out of memory exceptions (exit/assert/...)
-#define SX_OUT_OF_MEMORY    do { assert(0 && "Out of memory!");  exit(-1); } while(0)
-#define SX_DATA_TRUNCATE    assert(0 && "Data truncated !")
+#ifndef SX_CONFIG_DEBUG_ALLOCATOR
+#   define SX_CONFIG_DEBUG_ALLOCATOR 0
+#endif
 
+// Natural aligment is the default memory alignment for each platform
+// All memory allocators aligns pointers to this value if 'align' parameter is less than natural alignment
 #ifndef SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 #	define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
 #endif // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
+// Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
 #ifndef SX_CONFIG_HASHTBL_DEBUG
 #   define SX_CONFIG_HASHTBL_DEBUG 1
 #endif
+
+// Use stdc math lib for basic math functions, see math.h
+#ifndef SX_CONFIG_STDMATH
+#   define SX_CONFIG_STDMATH 1
+#endif
+
+// Define anything here, for out of memory exceptions (exit/assert/...)
+#define SX_OUT_OF_MEMORY    do { assert(0 && "Out of memory!");  exit(-1); } while(0)
+#define SX_DATA_TRUNCATE    assert(0 && "Data truncated !")
+
 
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions

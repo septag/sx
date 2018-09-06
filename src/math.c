@@ -22,6 +22,7 @@ const float SX_FLOAT_MAX   = 3.402823e+38f;
 #define square(_x) (_x*_x)
 #define mad(_a, _b, _c) _a*_b + _c
 
+#if !SX_CONFIG_STDMATH
 SX_CONSTFN float sx_floor(float _a)
 {
     if (_a < 0.0f) {
@@ -235,6 +236,7 @@ SX_CONSTFN float sx_log(float _a)
 
     return result;
 }
+#endif
 
 static void sx__mat4_lookat(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _view, const sx_vec3 _up)
 {

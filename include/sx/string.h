@@ -29,11 +29,13 @@ SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_l
 
 int  sx_strcpy(char* dst, int dst_sz, const char* src);
 int  sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
+int  sx_strcat(char* dst, int dst_sz, const char* src);
+int  sx_strncat(char* dst, int dst_sz, const char* src, int _num);
 int  sx_strlen(const char* str);
-bool sx_strcmp(const char* a, const char* b);
-bool sx_strcmpnocase(const char* a, const char* b);
-bool sx_strncmp(const char* a, const char* b, int num);
-bool sx_strncmpnocase(const char* a, const char* b, int num);
+bool sx_strequal(const char* a, const char* b);
+bool sx_strequalnocase(const char* a, const char* b);
+bool sx_strnequal(const char* a, const char* b, int num);
+bool sx_strnequalnocase(const char* a, const char* b, int num);
 
 const char* sx_strrchar(const char* str, char ch);
 const char* sx_strchar(const char* str, char ch);
@@ -46,10 +48,10 @@ char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim);
 char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch);
 char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace);
 char* sx_EOL_LF(char* dest, int dest_sz, const char* src);
-bool  sx_splitchar(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char ch);
-bool  sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, const char* split);
+bool  sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char splitch);
 sx_str_block sx_findblock(const char* str, char open, char close);
 
+bool     sx_isspace(char ch);
 bool     sx_isrange(char ch, char from, char to);
 bool     sx_isupperchar(char ch);
 bool     sx_isupper(const char* str);
@@ -59,8 +61,8 @@ bool     sx_isnumchar(char ch);
 bool     sx_isnum(const char* str);
 bool     sx_ishexchar(char ch);
 bool     sx_ishex(const char* str);
-char*    sx_tolower(SX_INOUT char* str);
-char*    sx_toupper(SX_INOUT char* str);
+char*    sx_tolower(char* dst, int dst_sz, const char* str);
+char*    sx_toupper(char* dst, int dst_sz, const char* str);
 char     sx_tolowerchar(char ch);
 char     sx_toupperchar(char ch);
 bool     sx_tobool(const char* str);
@@ -68,14 +70,6 @@ int      sx_toint(const char* str);
 uint32_t sx_touint(const char* str);
 float    sx_tofloat(const char* str);
 double   sx_todouble(const char* str);
-
-int sx_btos(char* out, int max, bool b);
-int sx_i32tos(char* out, int max, int n, int base SX_DFLT(10));
-int sx_u32tos(char* out, int max, uint32_t n, int base SX_DFLT(10));
-int sx_i64tos(char* out, int max, int64_t n, int base SX_DFLT(10));
-int sx_u64tos(char* out, int max, uint64_t n, int base SX_DFLT(10));
-int sx_ftos(char* out, int max, float f);
-int sx_dtos(char* out, int max, double d);
 
 // strpool (string interning) implementation
 // By Mattias Gustavsson: https://github.com/mattiasgustavsson/libs/blob/master/strpool.h
@@ -98,7 +92,7 @@ typedef struct sx_strpool_collate_data
 } sx_strpool_collate_data;
 
 typedef struct strpool_t    sx_strpool;
-typedef uint32_t sx_str_t;
+typedef uint32_t            sx_str_t;
 
 sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf SX_DFLT(NULL));
 void        sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc);

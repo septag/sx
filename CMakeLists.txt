@@ -1,3 +1,29 @@
+#
+# Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+# License: https://github.com/septag/sx#license-bsd-2-clause
+#
+# Here's the main stuff that this cmake does: 
+#   Defines some options like SX_NO_APP and SX_NO_GFX to skip building gfx.c and app.c
+#   Builds deboost.context assemby files based on the target platform. See the ASM_SOURCES variable below
+#   Emscripten: Remove assembly files from build
+#   Emscripten: Remove fiber.h and fiber.c from build
+#   Set BOOST_CONTEXT_EXPORT='' compile definition for assembly files or we will get build errors
+#   Add defintions: __STDC_LIMIT_MACROS, __STDC_FORMAT_MACROS, __STDC_CONSTANT_MACROS
+#   MSVC: add definitions _ITERATOR_DEBUG_LEVEL=0, _HAS_EXCEPTIONS=0, _CRT_SECURE_NO_WARNINGS=0
+#   GCC/CLANG: for CPP files, -std=c++11 -fno-rtti -fno-exceptions
+#   GCC/CLANG: for C-files, -std=gnu11
+#   MSVC: /EHsc /GR /GR-, which means no exceptions and no RTTI
+#   MSVC: Build all .c files as cpp 
+#   Add 'compat' include directory based on platform:
+#       msvc (windows): //include/compat/msvc
+#       ios: //include/compat/ios
+#       osx: //include/compat/osx
+#   Links libraries:
+#       linux: dl pthread
+#       linux (+ gfx.c): gl glew
+#       lunux (+ app.c): x11
+#       windows (+ gfx.c): dxgi d3d11
+#
 cmake_minimum_required(VERSION 3.0)
 project(sx)
 
@@ -42,7 +68,8 @@ set(SOURCE_FILES src/sx.c
                  src/fiber.c
                  src/math.c 
                  src/jobs.c
-                 src/bheap.c)
+                 src/bheap.c
+                 src/tlsf-alloc.c)
 set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/array.h 
                   include/sx/config.h 
@@ -69,7 +96,8 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/fiber.h
                   include/sx/math.h
                   include/sx/jobs.h
-                  include/sx/bheap.h)
+                  include/sx/bheap.h
+                  include/sx/tlsf-alloc.h)
 
 if (SX_NO_GFX)
     list(REMOVE_ITEM SOURCE_FILES src/gfx.c)
@@ -87,7 +115,7 @@ elseif (APPLE)
     set_source_files_properties(src/app.c PROPERTIES COMPILE_FLAGS "-fobjc-arc -fmodules -x objective-c")
 endif()
 
-# I don't know if emscripten has 
+# Remove fiber functions for now on emscripten
 if (EMSCRIPTEN)
     list(REMOVE_ITEM SOURCE_FILES src/fiber.c)
     list(REMOVE_ITEM SOURCE_FILES include/sx/fiber.h)

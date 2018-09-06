@@ -58,6 +58,21 @@ These are general options for cmake, where you can trim or customize the build:
 - **SX_NO_GFX** (Default=0): By default SX includes and implements sokol_gfx, set SX_NO_GFX=1 to ignore sokol_gfx in the build
 - **SX_NO_APP** (Default=0): By default SX includes and implements sokol_app, set SX_NO_APP=1 to ignore sokol_app in the build
 
+These are also the macros that you can override in _config.h_ or add them to compile definitions:
+
+- **SX_DEBUG** (Default=0): Forces debug compilation, defaults to 1 if _DEBUG (debug build) is set
+- **SX_CONFIG_DEBUG_ALLOCATOR** (Default=0): Allocations include debug information like filename and line numbers
+- **SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT** (Default=8): All memory allocators aligns pointers to this value if 'align' parameter is less than natural alignment
+- **SX_CONFIG_HASHTBL_DEBUG** (Default=0): Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
+- **SX_CONFIG_STDMATH** (Default=1): Uses stdc's math library (libm) for basic math functions. Set this to 0 if you want the library use it's own base math functions and ignore libm dependency.
+- **SX_OUT_OF_MEMORY**: What should the program do if some internal memory allocations fail. see _config.h_ for default implementation
+- **SX_DATA_TRUNCATE**: What should the program do if IO operations get truncated and goes out of bound. see _config.h_ for default implementation
+- **sx_assert**: Assert replacement, default is clib's _assert_
+- **sx_memset**: Memory set replacement, default is clib's _memset_
+- **sx_memcpy**: Memory copy replacement, default is clib's _memcpy_
+- **sx_memcmp**: Memory compare replacement, default is clib's _memcmp_
+- **sx_memmove**: Memory move replacement, default is clib's _memmove_
+
 ### Windows
 On windows, MSVC's support for C99/C11 standard is basically broken and non-usable, the code is compatible with C++ compilers, so in MSVC it uses CPP compiler instead of C:
 ```

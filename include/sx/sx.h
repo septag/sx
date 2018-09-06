@@ -39,27 +39,30 @@
 #   endif
 #endif
 
-#ifndef sx_assert
-#   define sx_assert   assert
-#endif
-
 // Some libc function overrides
 // Use sx_ versions in the code and override if required
+#ifndef sx_assert
+#   define sx_assert(_e)                assert(_e)
+#endif
+
 #ifndef sx_memset
-#   include <string.h>         // sx_memset
-#   define sx_memset   memset
+#   include <string.h>         // memset
+#   define sx_memset(_dst, _n, _sz)     memset(_dst, _n, _sz)
 #endif
 
 #ifndef sx_memcpy 
-#   define sx_memcpy   memcpy
+#   include <string.h>         // memcpy
+#   define sx_memcpy(_dst, _src, _n)    memcpy(_dst, _src, _n)
 #endif
 
 #ifndef sx_memmove
-#   define sx_memmove  memmove
+#   include <string.h>         // memmove
+#   define sx_memmove(_dst, _src, _n)   memmove(_dst, _src, _n)
 #endif
 
 #ifndef sx_memcmp
-#   define sx_memcmp   memcmp
+#   include <string.h>         // memcmp
+#   define sx_memcmp(_p1, _p2, _n)      memcmp(_p1, _p2, _n)
 #endif
 
 /// 

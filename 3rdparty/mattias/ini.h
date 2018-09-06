@@ -413,7 +413,7 @@ the length is determined automatically, but in this case `value` has to be zero-
 #ifndef INI_STRNICMP
     #ifdef _WIN32
         #include <string.h>
-        #define INI_STRNICMP( s1, s2, cnt ) ( strnicmp( s1, s2, cnt ) )
+        #define INI_STRNICMP( s1, s2, cnt ) ( _strnicmp( s1, s2, cnt ) )
     #else                           
         #include <string.h>         
         #define INI_STRNICMP( s1, s2, cnt ) ( strncasecmp( s1, s2, cnt ) )        
