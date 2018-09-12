@@ -5,11 +5,6 @@
 #include "sx/hash.h"
 #include "sx/math.h"
 
-SX_PRAGMA_DIAGNOSTIC_PUSH();
-SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunknown-pragmas")
-#include "../3rdparty/fastrange/fastrange.h"
-SX_PRAGMA_DIAGNOSTIC_POP();
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 uint32_t sx_hash_u32(uint32_t key)
 {

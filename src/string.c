@@ -146,9 +146,9 @@ bool sx_isspace(char ch)
     return  ch == ' ' ||
             ch == '\t' ||
             ch == '\n' ||
+            ch == '\r'/* ||
             ch == '\v' ||
-            ch == '\f' ||
-            ch == '\r';
+            ch == '\f'*/;
 }
 
 const char* sx_strrchar(const char* str, char ch) 

@@ -4,7 +4,7 @@
 //
 // bheap.h - v1.0 - Binary heap implmenetation
 //                  I discovered this algorithm when reading Randy Paul's [blog](http://www.randygaul.net/)
-//                  Which is a partially sorted binary tree and is used for pulling up minimum or maximum values 
+//                  Which is a partially sorted binary tree and is used for pulling up minimum or maximum values at a time
 // Reference: https://en.wikipedia.org/wiki/Binary_heap
 //
 //  API:

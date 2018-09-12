@@ -4,11 +4,6 @@
 //
 #include "sx/rng.h"
 
-SX_PRAGMA_DIAGNOSTIC_PUSH();
-SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunknown-pragmas")
-#include "../3rdparty/fastrange/fastrange.h"
-SX_PRAGMA_DIAGNOSTIC_POP();
-
 // This implementation is taken from: https://github.com/mattiasgustavsson/libs/blob/master/rnd.h
 // With a minor optimization in sx_rng_gen_irange 
 
