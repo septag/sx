@@ -17,7 +17,7 @@ static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, size_t ali
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     size_t total = size + sizeof(sx__stackalloc_hdr) + align;
     if (alloc->offset + total > alloc->size) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 
@@ -50,7 +50,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char*
             // Realloc: special case, the memory is continous so we can just grow the buffer without any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant between reallocs
             if (stackalloc->offset + size > stackalloc->size) {
-                SX_OUT_OF_MEMORY;
+                sx_out_of_memory();
                 return NULL;
             }
             stackalloc->offset += (int)size;

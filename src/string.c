@@ -524,7 +524,7 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
 
     strpool_t* sp = (strpool_t*)sx_malloc(alloc, sizeof(strpool_t));
     if (!sp) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
     strpool_init(sp, &sconf);

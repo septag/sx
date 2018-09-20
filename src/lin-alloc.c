@@ -15,7 +15,7 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, size_t align, 
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     size_t total = size + sizeof(sx__linalloc_hdr) + align;
     if (alloc->offset + total > alloc->size) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 
@@ -46,7 +46,7 @@ static void* sx__linalloc_cb(void* ptr, size_t size, size_t align, const char* f
             // Realloc: special case, the memory is continous so we can just grow the buffer without any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant between reallocs
             if (linalloc->offset + size > linalloc->size) {
-                SX_OUT_OF_MEMORY;
+                sx_out_of_memory();
                 return NULL;
             }
             linalloc->offset += (int)size;

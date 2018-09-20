@@ -29,7 +29,7 @@ static sx__hashtbl2* sx__hashtbl2_create(const sx_alloc* alloc, int capacity)
     sx__hashtbl2* tbl = (sx__hashtbl2*)sx_malloc(alloc, 
         sizeof(sx__hashtbl2) + capacity*(sizeof(uint32_t) + sizeof(int)) + SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     if (!tbl) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 {
     sx_rng rng;
     sx_rng_seed(&rng, (uint32_t)time(NULL));
-    sx_tm_setup();
+    sx_tm_init();
 
     const int num_samples = 10000;
     const sx_alloc* alloc = sx_alloc_malloc;

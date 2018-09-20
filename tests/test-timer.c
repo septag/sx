@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-    sx_tm_setup();
+    sx_tm_init();
 
     uint64_t start_tm = sx_tm_now();
     puts("Calculating fibonacci sequence ...");

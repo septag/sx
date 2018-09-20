@@ -13,7 +13,7 @@ sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity)
     uint8_t* buff = (uint8_t*)sx_malloc(alloc, 
             sizeof(sx_handle_pool) + sizeof(sx_handle_t)*maxsz*2);
     if (!buff)  {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 

@@ -272,7 +272,7 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
     sx_hashtbl* tbl = (sx_hashtbl*)sx_malloc(alloc, 
         sizeof(sx_hashtbl) + capacity*(sizeof(uint32_t) + sizeof(int)) + SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     if (!tbl) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 

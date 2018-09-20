@@ -87,7 +87,7 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_
         // Commit the memory requested and save it's size
         uint8_t* ptr = (uint8_t*)sx_virtual_commit(valloc->ptr + valloc->offset, total);
         if (!ptr) {
-            SX_OUT_OF_MEMORY;
+            sx_out_of_memory();
             return NULL;
         }
         uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(sx__virtualalloc_hdr), align);
@@ -99,7 +99,7 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_
 
         return aligned;
     } else {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 }
@@ -142,7 +142,7 @@ bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz)
     valloc->alloc.user_data = valloc;
     valloc->ptr = (uint8_t*)sx_virtual_reserve(reserve_sz);
     if (!valloc->ptr) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return false;
     }
     valloc->offset = 0;

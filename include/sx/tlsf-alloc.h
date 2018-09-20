@@ -10,6 +10,13 @@
 // This is a wrapper for tlsf implementation around sx_alloc object
 //      sx_alloc::user_data is actually tlsf_t handle
 //
+// Usage:
+//      sx_alloc tlsf;
+//      char buff[64*1024];
+//      sx_tlsfalloc_init(&tlsf, buff, sizeof(buff));   // Create with one 64k pool on stack
+//      do_something_with_alloc(&tlsf);
+//      sx_tlsfalloc_release(&tlsf);
+//
 #pragma once
 
 #ifndef SX_TLSF_ALLOC_H_

@@ -95,7 +95,7 @@ static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* d
         if (!j->stack_mem.sptr) {
             // Initialize stack memory
             if (!sx_fiber_stack_init(&j->stack_mem, ctx->stack_sz)) {
-                SX_OUT_OF_MEMORY;
+                sx_out_of_memory();
                 return NULL;
             }
         }
@@ -377,7 +377,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, in
 
     sx_job_context* ctx = (sx_job_context*)sx_malloc(alloc, sizeof(sx_job_context));
     if (!ctx) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
     sx_memset(ctx, 0x0, sizeof(sx_job_context));

@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
     //
     puts("---------------------");
-    sx_tm_setup();
+    sx_tm_init();
     puts("Fiber context test: ");
     puts("Press CTRL+C to stop");
     sx_fiber_context* ctx = sx_fiber_create_context(alloc, 10, 32*1024);
