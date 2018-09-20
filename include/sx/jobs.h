@@ -68,12 +68,20 @@ typedef volatile int* sx_job_t;
 
 typedef struct sx_job_context sx_job_context;
 
-SX_EXTERN sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, 
-                                      int max_jobs, int num_fibers, int fiber_stack_sz);
-SX_EXTERN void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-SX_EXTERN sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count);
-SX_EXTERN void     sx_job_wait_del(sx_job_context* ctx, sx_job_t job);
-SX_EXTERN bool     sx_job_try_del(sx_job_context* ctx, sx_job_t job);
+sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, 
+                                      int max_jobs, int num_fibers, int fiber_stack_sz);
+void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
+
+sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count);
+void     sx_job_wait_del(sx_job_context* ctx, sx_job_t job);
+bool     sx_job_try_del(sx_job_context* ctx, sx_job_t job);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_JOBS_H_

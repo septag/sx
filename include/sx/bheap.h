@@ -40,16 +40,24 @@ typedef struct sx_bheap
     int            capacity;
 } sx_bheap;
 
-SX_EXTERN sx_bheap*     sx_bheap_create(const sx_alloc* alloc, int capacity);
-SX_EXTERN void          sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
+#ifdef __cplusplus
+#extern "C" {
+#endif
 
-SX_EXTERN void          sx_bheap_push_min(sx_bheap* bh, int key, void* user);
-SX_EXTERN sx_bheap_item sx_bheap_pop_min(sx_bheap* bh);
+sx_bheap*     sx_bheap_create(const sx_alloc* alloc, int capacity);
+void          sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
 
-SX_EXTERN void          sx_bheap_push_max(sx_bheap* bh, int key, void* user);
-SX_EXTERN sx_bheap_item sx_bheap_pop_max(sx_bheap* bh);
+void          sx_bheap_push_min(sx_bheap* bh, int key, void* user);
+sx_bheap_item sx_bheap_pop_min(sx_bheap* bh);
 
-SX_EXTERN void          sx_bheap_clear(sx_bheap* bh);
-SX_EXTERN bool          sx_bheap_empty(sx_bheap* bh);
+void          sx_bheap_push_max(sx_bheap* bh, int key, void* user);
+sx_bheap_item sx_bheap_pop_max(sx_bheap* bh);
+
+void          sx_bheap_clear(sx_bheap* bh);
+bool          sx_bheap_empty(sx_bheap* bh);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_BHEAP_H_

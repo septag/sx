@@ -64,11 +64,18 @@ typedef struct sx_cmdline_opt_s
 
 typedef struct getopt_context sx_cmdline_context;
 
-SX_EXTERN sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, const char** argv, 
-												        const sx_cmdline_opt* opts);
-SX_EXTERN void sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc);
-SX_EXTERN int sx_cmdline_next(sx_cmdline_context* ctx, SX_OUT int* index, SX_OUT const char** arg);
-SX_EXTERN const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer, 
-												 size_t buffer_size);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, const char** argv, 
+											  const sx_cmdline_opt* opts);
+void sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc);
+int sx_cmdline_next(sx_cmdline_context* ctx, SX_OUT int* index, SX_OUT const char** arg);
+const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer, size_t buffer_size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_CMDLINE_H_

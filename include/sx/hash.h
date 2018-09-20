@@ -54,42 +54,46 @@
 
 #include "allocator.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // XXH hash, we have both 32bit and 64bit versions
 // XXH32: suitable for smaller data, and it's faster in all situations
 // XXH64: suitable for bigger data, collision of this is almost zero
-SX_EXTERN uint32_t sx_hash_xxh32(const void* data, size_t len, uint32_t seed);
-SX_EXTERN uint64_t sx_hash_xxh64(const void* data, size_t len, uint64_t seed);
+uint32_t sx_hash_xxh32(const void* data, size_t len, uint32_t seed);
+uint64_t sx_hash_xxh64(const void* data, size_t len, uint64_t seed);
 
 // FNV1a: suitable for small data (usually less than 32 bytes), mainly small strings
-SX_EXTERN uint32_t sx_hash_fnv32(const void* data, size_t len);
-SX_EXTERN uint32_t sx_hash_fnv32_str(const char* str);
+uint32_t sx_hash_fnv32(const void* data, size_t len);
+uint32_t sx_hash_fnv32_str(const char* str);
 
 // CRC32: Pretty standard hash, mainly used for files
-SX_EXTERN uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed);
+uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed);
 
 // Integer hash functions: useful for pointer/index hashing
 // Reference: https://gist.github.com/badboy/6267743
-SX_EXTERN uint32_t sx_hash_u32(uint32_t key);
-SX_EXTERN uint64_t sx_hash_u64(uint64_t key);
-SX_EXTERN uint32_t sx_hash_u64_to_u32(uint64_t key);
+uint32_t sx_hash_u32(uint32_t key);
+uint64_t sx_hash_u64(uint64_t key);
+uint32_t sx_hash_u64_to_u32(uint64_t key);
 
 // Streaming (state based) hash using xxhash32
 typedef struct sx_hash_xxh32 sx_hash_xxh32_t;
 
-SX_EXTERN sx_hash_xxh32_t* sx_hash_create_xxh32(const sx_alloc* alloc);
-SX_EXTERN void sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc);
-SX_EXTERN void sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed);
-SX_EXTERN void sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len);
-SX_EXTERN uint32_t sx_hash_xxh32_digest(sx_hash_xxh32_t* state);
+sx_hash_xxh32_t* sx_hash_create_xxh32(const sx_alloc* alloc);
+void sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc);
+void sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed);
+void sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len);
+uint32_t sx_hash_xxh32_digest(sx_hash_xxh32_t* state);
 
 // Streaming (state based) hash using xxhash64
 typedef struct sx_hash_xxh64_s sx_hash_xxh64_t;
 
-SX_EXTERN sx_hash_xxh64_t* sx_hash_create_xxh64(const sx_alloc* alloc);
-SX_EXTERN void sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc);
-SX_EXTERN void sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed);
-SX_EXTERN void sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len);
-SX_EXTERN uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state);
+sx_hash_xxh64_t* sx_hash_create_xxh64(const sx_alloc* alloc);
+void sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc);
+void sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed);
+void sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len);
+uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Hash table
@@ -106,16 +110,20 @@ typedef struct sx_hashtbl_s
 #endif
 } sx_hashtbl;
 
-SX_EXTERN sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity);
-SX_EXTERN void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc);
-SX_EXTERN bool sx_hashtbl_grow(SX_INOUT sx_hashtbl** ptbl, const sx_alloc* alloc);
+sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity);
+void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc);
+bool sx_hashtbl_grow(SX_INOUT sx_hashtbl** ptbl, const sx_alloc* alloc);
 
-SX_EXTERN void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr);
-SX_EXTERN int  sx_hashtbl_valid_capacity(int capacity);
+void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr);
+int  sx_hashtbl_valid_capacity(int capacity);
 
-SX_EXTERN int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
-SX_EXTERN int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
-SX_EXTERN void sx_hashtbl_clear(sx_hashtbl* tbl);
+int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
+int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
+void sx_hashtbl_clear(sx_hashtbl* tbl);
+
+#ifdef __cplusplus
+}
+#endif
 
 SX_INLINE int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
 {

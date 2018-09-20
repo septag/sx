@@ -64,9 +64,9 @@ typedef struct sx_handle_pool_s
     sx_handle_t* sparse;
 } sx_handle_pool;
 
-SX_EXTERN sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity);
-SX_EXTERN void sx_handle_destroy_pool(sx_handle_pool* pool, const sx_alloc* alloc);
-SX_EXTERN bool sx_handle_grow_pool(SX_INOUT sx_handle_pool** ppool, const sx_alloc* alloc);
+SX_API sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity);
+SX_API void sx_handle_destroy_pool(sx_handle_pool* pool, const sx_alloc* alloc);
+SX_API bool sx_handle_grow_pool(SX_INOUT sx_handle_pool** ppool, const sx_alloc* alloc);
 
 SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
 {

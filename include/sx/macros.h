@@ -143,9 +143,9 @@
 #endif // SX_COMPILER_
 
 #ifdef __cplusplus
-#   define SX_EXTERN extern "C" 
+#   define SX_API extern "C" 
 #else
-#   define SX_EXTERN extern
+#   define SX_API extern
 #endif
 
 #define SX_ENABLED(_f)  ((_f) != 0)

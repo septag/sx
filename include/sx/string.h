@@ -11,15 +11,15 @@
 
 #include "allocator.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sx_str_block
 {
     const char* start;
     const char* end;
 } sx_str_block;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int sx_snprintf(char* str, int size, const char* fmt, ...);
 int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);

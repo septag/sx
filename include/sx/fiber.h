@@ -108,18 +108,26 @@ typedef enum sx_fiber_ret_type
     SX_FIBER_RET_WAIT           // Wait for msecs: 'arg' is msecs in sx_fiber_return
 } sx_fiber_ret_type;
 
-SX_EXTERN sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
-SX_EXTERN void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc);
-SX_EXTERN void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user);
-SX_EXTERN void sx_fiber_update(sx_fiber_context* ctx, float dt);
-SX_EXTERN void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
+void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc);
+void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user);
+void sx_fiber_update(sx_fiber_context* ctx, float dt);
+void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg);
 
 // Low-level functions
-SX_EXTERN bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size SX_DFLT(0));
-SX_EXTERN void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
-SX_EXTERN void sx_fiber_stack_release(sx_fiber_stack* fstack);
+bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size SX_DFLT(0));
+void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size);
+void sx_fiber_stack_release(sx_fiber_stack* fstack);
 
-SX_EXTERN sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
-SX_EXTERN sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);
+sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
+sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_FIBER_H_

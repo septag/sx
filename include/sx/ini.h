@@ -19,8 +19,8 @@
 
 typedef struct ini_t sx_ini;
 
-SX_EXTERN sx_ini* sx_ini_create(const sx_alloc* alloc);
-SX_EXTERN sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
+SX_API sx_ini* sx_ini_create(const sx_alloc* alloc);
+SX_API sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
 
 #define sx_ini_save                 ini_save
 #define sx_ini_destroy              ini_destroy

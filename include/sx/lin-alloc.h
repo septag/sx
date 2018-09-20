@@ -37,8 +37,8 @@ typedef struct sx_linalloc
     int peak;
 } sx_linalloc;
 
-SX_EXTERN void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size);
-SX_EXTERN void sx_linalloc_reset(sx_linalloc* linalloc);
+SX_API void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size);
+SX_API void sx_linalloc_reset(sx_linalloc* linalloc);
 
 #define sx_define_linalloc_onstack(_name, _size)  \
     uint8_t _name ## _buff_[(_size)];             \
