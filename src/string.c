@@ -23,8 +23,6 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 #define STRPOOL_FREE( ctx, ptr )        ( sx_free((const sx_alloc*)ctx, ptr) )
 #include "../3rdparty/mattias/strpool.h"
 
-// TODO: implement wildcards - https://github.com/clibs/wildcardcmp
-
 typedef struct sx__printf_ctx_s
 {
     const sx_alloc* alloc;

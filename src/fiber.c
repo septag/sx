@@ -6,6 +6,9 @@
 #include "sx/os.h"
 #include "sx/pool.h"
 
+// TODO: Implement coroutines (fibers) in emscripten
+// http://kripken.github.io/emscripten-site/docs/api_reference/emscripten.h.html#c.emscripten_coroutine
+
 #if SX_PLATFORM_WINDOWS
 #   define VC_EXTRALEAN
 #   define WIN32_LEAN_AND_MEAN
