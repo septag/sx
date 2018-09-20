@@ -40,6 +40,7 @@ bool sx_strnequalnocase(const char* a, const char* b, int num);
 const char* sx_strrchar(const char* str, char ch);
 const char* sx_strchar(const char* str, char ch);
 const char* sx_strstr(const char* str, const char* find);
+bool        sx_strstr_wildcard(const char* str, const char* pattern);
 
 const char* sx_skip_whitespace(const char* str);
 const char* sx_skip_word(const char* str);

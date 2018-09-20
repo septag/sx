@@ -2,6 +2,7 @@
 #include "sx/os.h"
 #include "sx/timer.h"
 #include <stdio.h>
+#include "sx/string.h"
 
 void fiber1_fn(sx_fiber_transfer transfer)  
 {
