@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/septag/sx.svg?branch=master)](https://travis-ci.org/septag/sx)
 
-# SX: Portable base library for C/C++ programs (WIP)
+# SX: Portable base library for C/C++ programs and games
 [@septag](https://twitter.com/septagh)
 
 SX is merely a collection of sources and 3rdparty libraries. It is written in C and can be compiled using C++ compiler like MSVC. 

@@ -192,6 +192,12 @@ endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    target_link_libraries(sx PUBLIC dl pthread m)
+endif()
+
+target_link_libraries(sx PUBLIC )
+
 # Tests
 if (SX_BUILD_TESTS)
     add_subdirectory(tests)
