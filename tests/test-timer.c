@@ -1,8 +1,6 @@
 #include "sx/timer.h"
 #include <stdio.h>
 
-#include "sx/math.h"
-
 int main(int argc, char* argv[])
 {
     sx_tm_init();
