@@ -49,6 +49,10 @@ add_executable(test-bheap test-bheap.c)
 target_link_libraries(test-bheap PRIVATE sx)
 set_target_properties(test-bheap PROPERTIES FOLDER tests)
 
+add_executable(test-tlsf test-tlsf.c)
+target_link_libraries(test-tlsf PRIVATE sx)
+set_target_properties(test-tlsf PROPERTIES FOLDER tests)
+
 # skip test-fiber, test-threads in emscripten
 if (NOT EMSCRIPTEN)
     add_executable(test-fiber test-fiber.c)
