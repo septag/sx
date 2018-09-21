@@ -11,33 +11,41 @@
 #ifndef SX_INI_H_
 #define SX_INI_H_
 
-#ifndef SX_INI_PRIVATE
-#   include "../../3rdparty/mattias/ini.h"
-#endif
-
 #include "allocator.h"
 
 typedef struct ini_t sx_ini;
 
-SX_API sx_ini* sx_ini_create(const sx_alloc* alloc);
-SX_API sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define sx_ini_save                 ini_save
-#define sx_ini_destroy              ini_destroy
-#define sx_ini_section_count        ini_section_count
-#define sx_ini_section_name         ini_section_name
-#define sx_ini_property_count       ini_property_count
-#define sx_ini_property_name        ini_property_name
-#define sx_ini_property_value       ini_property_value
-#define sx_ini_find_section         ini_find_section
-#define sx_ini_find_property        ini_find_property
-#define sx_ini_section_add          ini_section_add
-#define sx_ini_property_add         ini_property_add
-#define sx_ini_section_remove       ini_section_remove
-#define sx_ini_property_remove      ini_property_remove
-#define sx_ini_section_name_set     ini_section_name_set
-#define sx_ini_property_name_set    ini_property_name_set
-#define sx_ini_property_value_set   ini_property_value_set
+sx_ini* sx_ini_create(const sx_alloc* alloc);
+sx_ini* sx_ini_load(const char* data, const sx_alloc* alloc);
+int     sx_ini_save(sx_ini const* ini, char* data, int size);
+void    sx_ini_destroy(sx_ini* ini);
+
+int         sx_ini_section_count(sx_ini const* ini);
+char const* sx_ini_section_name(sx_ini const* ini, int section);
+
+int         sx_ini_property_count(sx_ini const* ini, int section);
+char const* sx_ini_property_name(sx_ini const* ini, int section, int property);
+char const* sx_ini_property_value(sx_ini const* ini, int section, int property);
+
+int sx_ini_find_section(sx_ini const* ini, char const* name, int name_length);
+int sx_ini_find_property(sx_ini const* ini, int section, char const* name, int name_length);
+
+int  sx_ini_section_add(sx_ini* ini, char const* name, int length);
+void sx_ini_property_add(sx_ini* ini, int section, char const* name, int name_length, char const* value, int value_length);
+void sx_ini_section_remove(sx_ini* ini, int section);
+void sx_ini_property_remove(sx_ini* ini, int section, int property);
+
+void sx_ini_section_name_set(sx_ini* ini, int section, char const* name, int length);
+void sx_ini_property_name_set(sx_ini* ini, int section, int property, char const* name, int length);
+void sx_ini_property_value_set(sx_ini* ini, int section, int property, char const* value, int length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_INI_H_
 

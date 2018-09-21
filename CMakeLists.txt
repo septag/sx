@@ -196,8 +196,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(sx PUBLIC dl pthread m)
 endif()
 
-target_link_libraries(sx PUBLIC )
-
 # Tests
 if (SX_BUILD_TESTS)
     add_subdirectory(tests)
