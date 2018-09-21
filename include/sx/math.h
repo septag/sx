@@ -19,21 +19,29 @@
 
 #include "sx.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Some math constants
-SX_EXTERN const float SX_PI;
-SX_EXTERN const float SX_PI2;
-SX_EXTERN const float SX_INVPI;
-SX_EXTERN const float SX_PIHALF;
-SX_EXTERN const float SX_PIQUARTER;
-SX_EXTERN const float SX_E;
-SX_EXTERN const float SX_FLOAT_MAX;
-SX_EXTERN const float SX_FLOAT_MIN;
-SX_EXTERN const float SX_LOG_NAT10;
-SX_EXTERN const float SX_INVLOG_NAT2;
-SX_EXTERN const float SX_LOG_NAT2H;
-SX_EXTERN const float SX_LOG_NAT2L;
-SX_EXTERN const float SX_NEAR_ZERO;
-SX_EXTERN const float SX_SQRT2;
+const float SX_PI;
+const float SX_PI2;
+const float SX_INVPI;
+const float SX_PIHALF;
+const float SX_PIQUARTER;
+const float SX_E;
+const float SX_FLOAT_MAX;
+const float SX_FLOAT_MIN;
+const float SX_LOG_NAT10;
+const float SX_INVLOG_NAT2;
+const float SX_LOG_NAT2H;
+const float SX_LOG_NAT2L;
+const float SX_NEAR_ZERO;
+const float SX_SQRT2;
+
+#ifdef __cplusplus
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Types/Primitives
@@ -200,65 +208,81 @@ SX_INLINE SX_CONSTFN float sx_log(float _a)
     return logf(_a);
 }
 #else
-SX_EXTERN SX_CONSTFN float sx_floor(float _f);
-SX_EXTERN SX_CONSTFN float sx_cos(float _a);
-SX_EXTERN SX_CONSTFN float sx_acos(float _a);
-SX_EXTERN SX_CONSTFN float sx_atan2(float _y, float _x);
-SX_EXTERN SX_CONSTFN float sx_exp(float _a);
-SX_EXTERN SX_CONSTFN float sx_log(float _a);
+#   ifdef __cplusplus
+extern "C" {
+#   endif
+
+SX_CONSTFN float sx_floor(float _f);
+SX_CONSTFN float sx_cos(float _a);
+SX_CONSTFN float sx_acos(float _a);
+SX_CONSTFN float sx_atan2(float _y, float _x);
+SX_CONSTFN float sx_exp(float _a);
+SX_CONSTFN float sx_log(float _a);
+
+#   ifdef __cplusplus
+}
+#   endif
 #endif
 
-SX_EXTERN sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
-SX_EXTERN sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
-SX_EXTERN sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num);
-SX_EXTERN sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-SX_EXTERN sx_mat4 sx_mat4_quat(const sx_quat _quat);
-SX_EXTERN sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos);
-SX_EXTERN sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_vec3 _pos, float _angle);
-SX_EXTERN void sx_mat4_lookatLH(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
-SX_EXTERN void sx_mat4_lookatRH(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
-SX_EXTERN void sx_mat4_lookat(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
-SX_EXTERN void sx_mat4_proj(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projLH_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projRH_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_projRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_inf_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_inf(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_inf_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infLH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infRH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_proj_infRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infLH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infRH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_projrev_infRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
-SX_EXTERN void sx_mat4_ortho(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
-SX_EXTERN void sx_mat4_orthoLH(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
-SX_EXTERN void sx_mat4_orthoRH(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
-SX_EXTERN sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx, float _ty, float _tz);
-SX_EXTERN sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b);
-SX_EXTERN sx_mat4 sx_mat4_inv(const sx_mat4* _a);
+sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num);
+sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num);
+
+sx_mat4 sx_mat4_quat(const sx_quat _quat);
+sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos);
+sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_vec3 _pos, float _angle);
+void sx_mat4_lookatLH(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
+void sx_mat4_lookatRH(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
+void sx_mat4_lookat(sx_mat4* _result, const sx_vec3 _eye, const sx_vec3 _at, const sx_vec3 _up);
+void sx_mat4_proj(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
+void sx_mat4_proj_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
+void sx_mat4_proj_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
+void sx_mat4_projLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
+void sx_mat4_projLH_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
+void sx_mat4_projLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
+void sx_mat4_projRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, float _far, bool _oglNdc);
+void sx_mat4_projRH_fov(sx_mat4* _result, const float _fov[4], float _near, float _far, bool _oglNdc);
+void sx_mat4_projRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, float _far, bool _oglNdc);
+void sx_mat4_proj_inf_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
+void sx_mat4_proj_inf(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
+void sx_mat4_proj_inf_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
+void sx_mat4_proj_infLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
+void sx_mat4_proj_infLH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
+void sx_mat4_proj_infLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
+void sx_mat4_proj_infRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
+void sx_mat4_proj_infRH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
+void sx_mat4_proj_infRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
+void sx_mat4_projrev_infLH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
+void sx_mat4_projrev_infLH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
+void sx_mat4_projrev_infLH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
+void sx_mat4_projrev_infRH(sx_mat4* _result, float _ut, float _dt, float _lt, float _rt, float _near, bool _oglNdc);
+void sx_mat4_projrev_infRH_fov(sx_mat4* _result, const float _fov[4], float _near, bool _oglNdc);
+void sx_mat4_projrev_infRH_fovY(sx_mat4* _result, float _fovy, float _aspect, float _near, bool _oglNdc);
+void sx_mat4_ortho(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
+void sx_mat4_orthoLH(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
+void sx_mat4_orthoRH(sx_mat4* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _oglNdc);
+sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx, float _ty, float _tz);
+sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b);
+sx_mat4 sx_mat4_inv(const sx_mat4* _a);
 /// Inverse for transform-only matrices (column4=0) (mat4x)
-SX_EXTERN sx_mat4 sx_mat4x_inv(const sx_mat4* _a);
-SX_EXTERN sx_quat sx_mat4_calc_quat(const sx_mat4* _mat);
+sx_mat4 sx_mat4x_inv(const sx_mat4* _a);
+sx_quat sx_mat4_calc_quat(const sx_mat4* _mat);
 
-SX_EXTERN sx_vec4 sx_vec4_mul_mat4(const sx_vec4 _vec, const sx_mat4* _mat);
+sx_vec4 sx_vec4_mul_mat4(const sx_vec4 _vec, const sx_mat4* _mat);
 
-SX_EXTERN sx_mat3 sx_mat3_inv(const sx_mat3* _a);
-SX_EXTERN sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
-SX_EXTERN void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
-SX_EXTERN void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
+sx_mat3 sx_mat3_inv(const sx_mat3* _a);
+sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
+void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
+void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
+
+#ifdef __cplusplus
+}
+#endif
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 SX_INLINE SX_CONSTFN int sx_nearest_pow2(int n)

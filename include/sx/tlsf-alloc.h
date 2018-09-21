@@ -10,6 +10,13 @@
 // This is a wrapper for tlsf implementation around sx_alloc object
 //      sx_alloc::user_data is actually tlsf_t handle
 //
+// Usage:
+//      sx_alloc tlsf;
+//      char buff[64*1024];
+//      sx_tlsfalloc_init(&tlsf, buff, sizeof(buff));   // Create with one 64k pool on stack
+//      do_something_with_alloc(&tlsf);
+//      sx_tlsfalloc_release(&tlsf);
+//
 #pragma once
 
 #ifndef SX_TLSF_ALLOC_H_
@@ -19,18 +26,26 @@
 
 typedef void* sx_tlsf_pool_t;
 
-SX_EXTERN bool sx_tlsfalloc_init(sx_alloc* tlsf, void* mem, int size);
-SX_EXTERN void sx_tlsfalloc_release(sx_alloc* tlsf);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool sx_tlsfalloc_init(sx_alloc* tlsf, void* mem, int size);
+void sx_tlsfalloc_release(sx_alloc* tlsf);
 
 // Pool management, additional pools
-SX_EXTERN sx_tlsf_pool_t sx_tlsfalloc_add_pool(sx_alloc* tlsf, void* mem, int size);
-SX_EXTERN void           sx_tlsfalloc_remove_pool(sx_alloc* tlsf, sx_tlsf_pool_t pool);
-SX_EXTERN sx_tlsf_pool_t sx_tlsfalloc_get_pool(sx_alloc* tlsf);
+sx_tlsf_pool_t sx_tlsfalloc_add_pool(sx_alloc* tlsf, void* mem, int size);
+void           sx_tlsfalloc_remove_pool(sx_alloc* tlsf, sx_tlsf_pool_t pool);
+sx_tlsf_pool_t sx_tlsfalloc_get_pool(sx_alloc* tlsf);
 
 // Debug
 typedef void (sx_tlsfalloc_walk_cb)(void* ptr, size_t size, int used, void* user);
-SX_EXTERN void sx_tlsfalloc_walk_pool(sx_tlsf_pool_t pool, sx_tlsfalloc_walk_cb* walker, void* user);
-SX_EXTERN bool sx_tlsfalloc_check(sx_alloc* tlsf);
-SX_EXTERN bool sx_tlsfalloc_check_pool(sx_tlsf_pool_t pool);
+void sx_tlsfalloc_walk_pool(sx_tlsf_pool_t pool, sx_tlsfalloc_walk_cb* walker, void* user);
+bool sx_tlsfalloc_check(sx_alloc* tlsf);
+bool sx_tlsfalloc_check_pool(sx_tlsf_pool_t pool);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SX_TLSF_ALLOC_H_

@@ -200,6 +200,50 @@ const char* sx_strstr(const char* str, const char* find)
     return NULL;
 }
 
+// https://github.com/clibs/wildcardcmp
+bool sx_strstr_wildcard(const char* str, const char* pattern)
+{
+    sx_assert(str);
+    sx_assert(pattern);
+
+    const char *w = NULL;   // last `*`
+    const char *s = NULL;   // last checked char
+
+    // loop 1 char at a time
+    while (1) {
+        if (!*str) {
+            if (!*pattern) 
+                return true;
+            if (!*s) 
+                return false;
+            str = s++;
+            pattern = w;
+            continue;
+        } else {
+            if (*pattern != *str) {
+                if ('*' == *pattern) {
+                    w = ++pattern;
+                    s = str;
+                    // "*" -> "foobar"
+                    if (*pattern) 
+                        continue;
+                    return true;
+                } else if (w) {
+                    str++;
+                    // "*ooba*" -> "foobar"
+                    continue;
+                }
+                return false;
+            }
+        }
+
+        str++;
+        pattern++;
+    }
+
+    return true;    
+}
+
 bool sx_strequal(const char* a, const char* b)
 {
     int alen = sx_strlen(a);
@@ -524,7 +568,7 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
 
     strpool_t* sp = (strpool_t*)sx_malloc(alloc, sizeof(strpool_t));
     if (!sp) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
     strpool_init(sp, &sconf);

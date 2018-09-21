@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 # Set all source compilation to CPP in MSVC
-set(SOURCE_FILES test-sokol.c
-                 test-ini.c
+set(SOURCE_FILES test-ini.c
                  test-fiber.c
                  test-cmdline.c
                  test-timer.c
@@ -13,12 +12,6 @@ set(SOURCE_FILES test-sokol.c
                  test-bheap.c)
 if (MSVC AND NOT (CMAKE_C_COMPILER_ID MATCHES "Clang"))
     set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
-endif()
-
-if (NOT SX_NO_GFX AND NOT SX_NO_APP)
-    add_executable(test-sokol WIN32 test-sokol.c)
-    target_link_libraries(test-sokol PRIVATE sx)
-    set_target_properties(test-sokol PROPERTIES FOLDER tests)
 endif()
 
 add_executable(test-ini test-ini.c)

@@ -31,11 +31,11 @@
 
 typedef SX_ALIGN_DECL(16, struct) sx_pool
 {
-    int iter;
-    int item_sz;
-    int capacity;
-    int _pad1;    
-    void** ptrs;
+    int      iter;
+    int      item_sz;
+    int      capacity;
+    int      _pad1;    
+    void**   ptrs;
     uint8_t* buff;
 } sx_pool;
 
@@ -47,7 +47,7 @@ SX_INLINE sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int capaci
     uint8_t* buff = (uint8_t*)sx_aligned_malloc(alloc, 
             sizeof(sx_pool) + (item_sz + sizeof(void*))*capacity, 16);
     if (!buff) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 

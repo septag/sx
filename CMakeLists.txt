@@ -37,8 +37,6 @@ endfunction()
 
 
 option(SX_BUILD_TESTS "Build test executables" TRUE)
-option(SX_NO_APP "Exclude App (sokol_app) module integration" FALSE)
-option(SX_NO_GFX "Exclude Gfx (sokol_gfx) module integration" FALSE)
 
 # Enable Assembler
 if (MSVC)
@@ -60,8 +58,6 @@ set(SOURCE_FILES src/sx.c
                  src/hash.c
                  src/handle.c
                  src/timer.c
-                 src/gfx.c
-                 src/app.c
                  src/rng.c
                  src/ini.c
                  src/virtual-alloc.c
@@ -88,8 +84,6 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/io.h
                   include/sx/cmdline.h
                   include/sx/timer.h
-                  include/sx/gfx.h
-                  include/sx/app.h
                   include/sx/rng.h
                   include/sx/ini.h
                   include/sx/virtual-alloc.h 
@@ -98,22 +92,6 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/jobs.h
                   include/sx/bheap.h
                   include/sx/tlsf-alloc.h)
-
-if (SX_NO_GFX)
-    list(REMOVE_ITEM SOURCE_FILES src/gfx.c)
-    list(REMOVE_ITEM INCLUDE_FILES include/sx/gfx.h)
-elseif (APPLE)
-    # Compile gfx.c as objective-c (m file)
-    set_source_files_properties(src/gfx.c PROPERTIES COMPILE_FLAGS "-fobjc-arc -fmodules -x objective-c")
-endif()
-
-if (SX_NO_APP)
-    list(REMOVE_ITEM SOURCE_FILES src/app.c)
-    list(REMOVE_ITEM INCLUDE_FILES include/sx/app.h)
-elseif (APPLE)
-    # Compile app.c as objective-c (m file)
-    set_source_files_properties(src/app.c PROPERTIES COMPILE_FLAGS "-fobjc-arc -fmodules -x objective-c")
-endif()
 
 # Remove fiber functions for now on emscripten
 if (EMSCRIPTEN)
@@ -214,20 +192,11 @@ endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
 
-# Link system libs
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(sx PUBLIC dl pthread)
-    if (NOT SX_NO_GFX)
-        target_link_libraries(sx PUBLIC GL GLEW)
-    endif()
-    if (NOT SX_NO_APP)
-        target_link_libraries(sx PUBLIC X11)
-    endif()
-elseif (WIN32)
-    if (NOT SX_NO_GFX)
-        target_link_libraries(sx PUBLIC dxgi d3d11)
-    endif()
+    target_link_libraries(sx PUBLIC dl pthread m)
 endif()
+
+target_link_libraries(sx PUBLIC )
 
 # Tests
 if (SX_BUILD_TESTS)

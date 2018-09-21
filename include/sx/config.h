@@ -54,8 +54,13 @@
 #endif
 
 // Define anything here, for out of memory exceptions (exit/assert/...)
-#define SX_OUT_OF_MEMORY    do { assert(0 && "Out of memory!");  exit(-1); } while(0)
-#define SX_DATA_TRUNCATE    assert(0 && "Data truncated !")
+#ifndef sx_out_of_memory
+#   define sx_out_of_memory()       do { sx_assert(0 && "Out of memory!");  exit(-1); } while(0)
+#endif
+
+#ifndef sx_data_truncate
+#   define sx_data_truncate()       sx_assert(0 && "Data truncated !")
+#endif
 
 
 #if defined(_MSC_VER) && 0

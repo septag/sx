@@ -37,7 +37,7 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
             sx_memcpy(mem->data, data, size);
         return mem;
     } else {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 }
@@ -65,7 +65,7 @@ bool sx_mem_init_block(sx_mem_block* mem, const sx_alloc* alloc, int size, const
             sx_memcpy(mem->data, data, size);
         return true;
     } else {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         mem->alloc = NULL;
         return false;
     }
@@ -125,7 +125,7 @@ int sx_mem_write(sx_mem_writer* writer, const void* data, int size)
             writer->size = mem->size;
         } else {
             size = (int)remain;
-            SX_DATA_TRUNCATE;
+            sx_data_truncate();
         }
     }
 
@@ -169,7 +169,7 @@ int sx_mem_read(sx_mem_reader* reader, void* data, int size)
     int64_t remain = reader->top - reader->pos;
     if (size > (int)remain) {
         size = (int)remain;
-        SX_DATA_TRUNCATE;
+        sx_data_truncate();
     }
     sx_memcpy(data, &reader->data[reader->pos], size);
     reader->pos += size;
@@ -222,7 +222,7 @@ int sx_file_write(sx_file_writer* writer, const void* data, int size)
     sx__file_data* fdata = (sx__file_data*)writer->data;
     int written = (int)fwrite(data, size, 1, fdata->f);
     if (written != size) {
-        SX_DATA_TRUNCATE;
+        sx_data_truncate();
     }
     return written;
 }
@@ -259,7 +259,7 @@ int sx_file_read(sx_file_reader* reader, void* data, int size)
     sx__file_data* fdata = (sx__file_data*)reader->data;
     int r = (int)fread(data, size, size, fdata->f);
     if (r != size) {
-        SX_DATA_TRUNCATE;
+        sx_data_truncate();
     }
     return r;
 }

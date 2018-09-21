@@ -701,7 +701,7 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
     uint8_t* buff = (uint8_t*)sx_malloc(alloc,
                                         sizeof(sx_queue_spsc) + (item_sz + sizeof(void*) + sizeof(_sx_queue_spsc_node))*capacity);
     if (!buff) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
 

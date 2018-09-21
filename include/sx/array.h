@@ -81,7 +81,7 @@ SX_INLINE void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_all
         p[0] = m;
         return p+2;
    } else {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
    }
 }

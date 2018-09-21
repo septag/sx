@@ -56,12 +56,12 @@ typedef struct sx_alloc
 } sx_alloc;
 
 // Default allocator: allocate from heap
-SX_EXTERN const sx_alloc* sx_alloc_malloc;
+SX_API const sx_alloc* sx_alloc_malloc;
 
 // Leak checking allocator, useful for debug and SX_CONFIG_DEBUG_ALLOCATOR=1
 //sx_alloc* sx_alloc_malloc_leak_detect();
-SX_EXTERN const sx_alloc* sx_alloc_malloc_leak_detect;
-SX_EXTERN void sx_dump_leaks();
+SX_API const sx_alloc* sx_alloc_malloc_leak_detect;
+SX_API void sx_dump_leaks();
 
 SX_INLINE bool sx_is_aligned(const void* ptr, size_t align)
 {

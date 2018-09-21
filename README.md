@@ -1,46 +1,45 @@
 [![Build Status](https://travis-ci.org/septag/sx.svg?branch=master)](https://travis-ci.org/septag/sx)
 
-# SX: Portable base library for C/C++ programs (WIP)
+# SX: Portable base library for C/C++ programs and games
 [@septag](https://twitter.com/septagh)
 
 SX is merely a collection of sources and 3rdparty libraries. It is written in C and can be compiled using C++ compiler like MSVC. 
 Designed for simplicity and performance, It is tailored more towards system and game programmers.  
 Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
 
-This library currently contains:
+This library currently contains these functionalities (by header file):
 
-- allocator.h: basic memory allocation functions and default heap/leak_check allocators. Allocators are used anywhere in the code that needs memory allocation/deallocation. There is no direct memory allocations like _malloc_ inside any function.
-- app.h: [sokol_app](https://github.com/floooh/sokol) implementation and wrapper 
-- array.h: [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
-- atomic.h: Set of portable atomic types and functions like CAS/Exchange/Incr/...
-- cmdline.h: [getopt](https://github.com/wc-duck/getopt) command line parser wrapper
-- fiber.h: Portable fibers/coroutines, backend implementation taken from my other _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
-	- Includes low-level functions for fibers (deboostified boost.context)
+- *allocator.h:* basic memory allocation functions and default heap/leak_check allocators. Allocators are used anywhere in the code that needs memory allocation/deallocation. There is no direct memory allocations like _malloc_ inside any function.
+- *array.h:* [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
+- *atomic.h:* Set of portable atomic types and functions like CAS/Exchange/Incr/...
+- *cmdline.h:* [getopt](https://github.com/wc-duck/getopt) command line parser wrapper
+- *fiber.h:* Portable fibers/coroutines, backend implementation taken from my other _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
+	- Includes low-level functions for fibers (_deboostified_ boost.context)
 	- Higher level fiber context (fiber-pool) that emulates a smiliar behaviour to unity's coroutines
-- jobs.h: Fiber based task scheduler. Proof of concept for [Christian Gyrling 2015 GDC Talk](http://gdcvault.com/play/1022186/Parallelizing-the-Naughty-Dog-Engine)
-	- Very fast assembly fibers
+- *jobs.h:* Fiber based task scheduler. Proof of concept for [Christian Gyrling 2015 GDC Talk](http://gdcvault.com/play/1022186/Parallelizing-the-Naughty-Dog-Engine)
+	- Very fast low-level (asm cpu state switch) fibers
 	- Wait on job dependencies without task chains or context switches
 	- Fixed thread pool
 	- Job execution priority support
-- gfx.h: [sokol_gfx](https://github.com/floooh/sokol) implementation and wrapper 
-- handlepool.h: Handle pool
-- hash.h:  Some nice hash functions and a fast fibonacci multiplicative hash-table
-- ini.h: [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h) implementation for sx
-- io.h: Input/output to memory/file IO
-- lin-alloc.h: Generic linear allocator
-- platform.h: Platform detection macros, taken from [bx](https://github.com/bkaradzic/bx)
-- pool.h: Fixed size pool allocator
-- rng.h: PCG random number generator
-- stack-alloc.h: Generic linear stack based allocator
-- string.h: Useful C-style string functions
-- threads.h: Portable threading primitives (Thread, Tls, Mutex, Semaphore, Signal, SpScQueue)
-- timer.h: Portable high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
-- virtual-alloc.h: Portable virtual memory allocator and functions
-- math.h: 
+- *handlepool.h:* Handle pool
+- *hash.h:*  Some nice hash functions and a fast fibonacci multiplicative hash-table
+- *ini.h:* INI file encoder/decoder. It's [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h) wrapper for sx
+- *io.h:* Input/output to memory/file IO
+- *lin-alloc.h:* Generic linear allocator
+- *platform.h:* Platform detection macros, taken from [bx](https://github.com/bkaradzic/bx)
+- *pool.h:* Fixed size pool allocator
+- *rng.h:* PCG random number generator
+- *stack-alloc.h:* Generic linear stack based allocator
+- *string.h:* Useful C-style string functions
+- *threads.h:* Portable threading primitives (Thread, Tls, Mutex, Semaphore, Signal, SpScQueue)
+- *timer.h:* Portable high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
+- *virtual-alloc.h:* Portable virtual memory allocator and functions
+- *math.h:* 
 	- Vector/Matrix math, many of the them taken from [bx](https://github.com/bkaradzic/bx)
 	- Easing functions
-- os.h: Common portable OS related routines
-- bheap.h: Binary heap implementation
+- *os.h:* Common portable OS related routines
+- *bheap.h:* Binary heap implementation
+- *tlsf-alloc.h:* Tlsf (Two-Level Segregated Fit memory) memory allocator
 
 ## Build
 ### Current supported platforms
@@ -55,8 +54,6 @@ This library currently contains:
 These are general options for cmake, where you can trim or customize the build:  
 
 - **SX_BUILD_TESTS** (Default=1): Set SX_BUILD_TESTS=0 to skip building test applications
-- **SX_NO_GFX** (Default=0): By default SX includes and implements sokol_gfx, set SX_NO_GFX=1 to ignore sokol_gfx in the build
-- **SX_NO_APP** (Default=0): By default SX includes and implements sokol_app, set SX_NO_APP=1 to ignore sokol_app in the build
 
 These are also the macros that you can override in _config.h_ or add them to compile definitions:
 
@@ -64,9 +61,9 @@ These are also the macros that you can override in _config.h_ or add them to com
 - **SX_CONFIG_DEBUG_ALLOCATOR** (Default=0): Allocations include debug information like filename and line numbers
 - **SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT** (Default=8): All memory allocators aligns pointers to this value if 'align' parameter is less than natural alignment
 - **SX_CONFIG_HASHTBL_DEBUG** (Default=0): Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
-- **SX_CONFIG_STDMATH** (Default=1): Uses stdc's math library (libm) for basic math functions. Set this to 0 if you want the library use it's own base math functions and ignore libm dependency.
-- **SX_OUT_OF_MEMORY**: What should the program do if some internal memory allocations fail. see _config.h_ for default implementation
-- **SX_DATA_TRUNCATE**: What should the program do if IO operations get truncated and goes out of bound. see _config.h_ for default implementation
+- **SX_CONFIG_STDMATH** (Default=1): Uses stdc's math library (libm) for basic math functions. Set this to 0 if you want the library use it's own base math functions and drop libm dependency.
+- **sx_out_of_memory**: What should the program do if some internal memory allocations fail. see _config.h_ for default implementation
+- **sx_data_truncate**: What should the program do if IO operations get truncated and goes out of bound. see _config.h_ for default implementation
 - **sx_assert**: Assert replacement, default is clib's _assert_
 - **sx_memset**: Memory set replacement, default is clib's _memset_
 - **sx_memcpy**: Memory copy replacement, default is clib's _memcpy_
@@ -82,13 +79,6 @@ cmake .. -G "Visual Studio 14 2015 Win64"
 
 It is possible to build it with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command (vs2015)
 
-### Linux
-
-__Dependencies__
-
-- __glew__ _(libglew-dev)_: If you are planning to use graphics (OpenGL) module, else use SX_NO_GFX flag in cmake options
-- __libx11__ (libx11-dev, libxrandr-dev, libxi-dev): If you are planning to use x11 apps, or else use SX_NO_APP flag in cmake options
-
 ### Emscripten
 
 It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some limitations:
@@ -96,7 +86,6 @@ It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some
 - _threads.h_: support is not yet implemented, blocking primitives like signals and semaphores doesn't seem to work on this platform. Support maybe added in future.
 - _fibers.h_: Emscripten doesn't seem to support boost's assembly fibers which I'm currently using, however it is possible to implement async functions using emscripten API, which I'll try to implement in the future.
 - _virtual-alloc.h_: Virtual memory allocation functions does not seem to be working, it works like normal malloc, where reserving just pre-allocates all required memory
-
 
 
 [License (BSD 2-clause)](https://github.com/septag/sx/blob/master/LICENSE)

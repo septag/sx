@@ -11,15 +11,15 @@
 
 #include "allocator.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sx_str_block
 {
     const char* start;
     const char* end;
 } sx_str_block;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int sx_snprintf(char* str, int size, const char* fmt, ...);
 int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
@@ -40,6 +40,7 @@ bool sx_strnequalnocase(const char* a, const char* b, int num);
 const char* sx_strrchar(const char* str, char ch);
 const char* sx_strchar(const char* str, char ch);
 const char* sx_strstr(const char* str, const char* find);
+bool        sx_strstr_wildcard(const char* str, const char* pattern);
 
 const char* sx_skip_whitespace(const char* str);
 const char* sx_skip_word(const char* str);

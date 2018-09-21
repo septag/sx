@@ -6,6 +6,9 @@
 #include "sx/os.h"
 #include "sx/pool.h"
 
+// TODO: Implement coroutines (fibers) in emscripten
+// http://kripken.github.io/emscripten-site/docs/api_reference/emscripten.h.html#c.emscripten_coroutine
+
 #if SX_PLATFORM_WINDOWS
 #   define VC_EXTRALEAN
 #   define WIN32_LEAN_AND_MEAN
@@ -21,8 +24,8 @@
 #define DEFAULT_STACK_SIZE 131072   // 120kb
 
 // Fwd declare ASM functions
-SX_EXTERN sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
-SX_EXTERN sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
+SX_API sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
+SX_API sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
 
 bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
 {
@@ -34,7 +37,7 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
 #if SX_PLATFORM_WINDOWS
     ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (!ptr) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return false;
     }
     DWORD old_opts;
@@ -42,14 +45,14 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
 #elif SX_PLATFORM_POSIX
     ptr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if (ptr == MAP_FAILED) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return false;
     }
     mprotect(ptr, sx_os_pagesz(), PROT_NONE);    
 #else
     ptr = malloc(size);
     if (!ptr) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return false;
     }
 #endif
@@ -152,14 +155,14 @@ sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers,
 
     sx_fiber_context* ctx = (sx_fiber_context*)sx_malloc(alloc, sizeof(sx_fiber_context));
     if (!ctx) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
     sx_memset(ctx, 0x0, sizeof(sx_fiber_context));
 
     ctx->fiber_pool = sx_pool_create(alloc, sizeof(sx__fiber_state), max_fibers);
     if (!ctx->fiber_pool) {
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
         return NULL;
     }
     sx_memset(ctx->fiber_pool->buff, 0x0, sizeof(sx__fiber_state)*max_fibers);
@@ -187,7 +190,7 @@ void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user)
         if (!fs->stack_mem.sptr) {
             // Initialize stack memory
             if (!sx_fiber_stack_init(&fs->stack_mem, ctx->stack_sz)) {
-                SX_OUT_OF_MEMORY;
+                sx_out_of_memory();
                 return;
             }            
         }

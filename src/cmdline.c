@@ -12,7 +12,7 @@ sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, c
 {
     sx_cmdline_context* ctx = (sx_cmdline_context*)sx_malloc(alloc, sizeof(sx_cmdline_context));
     if (!ctx)
-        SX_OUT_OF_MEMORY;
+        sx_out_of_memory();
 
     int r = getopt_create_context(ctx, argc, argv, (const getopt_option_t*)opts);
     if (r < 0) {
