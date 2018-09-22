@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     uint32_t results[16];
     sx_memset(results, 0x0, sizeof(results));
 
-    const sx_job_desc jobs[] = {
+    sx_job_desc jobs[] = {
         {job_fib_fn, &results[0], SX_JOB_PRIORITY_HIGH},
         {job_fib_fn, &results[1], SX_JOB_PRIORITY_HIGH},
         {job_fib_fn, &results[2], SX_JOB_PRIORITY_HIGH},

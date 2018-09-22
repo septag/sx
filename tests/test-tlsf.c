@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     sx_rng_seed(&rng, (uint32_t)time(NULL));
 
     const int count = 1000;
-    void* ptrs[count];
+    void* ptrs[1000];
     for (int i = 0; i < count; i++) {
         int sz = sx_rng_gen_irange(&rng, 100, 4*1024);
         ptrs[i] = sx_malloc(&tlsf, sz);

@@ -41,7 +41,7 @@ typedef struct sx_bheap
 } sx_bheap;
 
 #ifdef __cplusplus
-#extern "C" {
+extern "C" {
 #endif
 
 sx_bheap*     sx_bheap_create(const sx_alloc* alloc, int capacity);

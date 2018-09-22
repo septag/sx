@@ -1,19 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-# Set all source compilation to CPP in MSVC
-set(SOURCE_FILES test-ini.c
-                 test-fiber.c
-                 test-cmdline.c
-                 test-timer.c
-                 test-threads.c
-                 test-virtualmem.c 
-                 test-hash.c
-                 test-jobs.c
-                 test-bheap.c)
-if (MSVC AND NOT (CMAKE_C_COMPILER_ID MATCHES "Clang"))
-    set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
-endif()
-
 add_executable(test-ini test-ini.c)
 target_link_libraries(test-ini PRIVATE sx)
 set_target_properties(test-ini PROPERTIES FOLDER tests)

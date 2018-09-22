@@ -35,7 +35,7 @@ function(sx_remove_compile_options DEST_VAR COMPILER_FLAGS FLAGS)
     set(${DEST_VAR} ${COMPILER_FLAGS} PARENT_SCOPE)
 endfunction()
 
-
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(SX_BUILD_TESTS "Build test executables" TRUE)
 
 # Enable Assembler
@@ -171,10 +171,8 @@ if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions")
     sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "-fexceptions -frtti")
 elseif (MSVC) 
-    # Build files as CPP, C support in MSVC is crap
-    set_source_files_properties(${SOURCE_FILES} PROPERTIES LANGUAGE CXX)
     sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "/EHsc /GR")
-    add_compile_options(/GR-)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif()
 
 add_library(sx ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})

@@ -34,8 +34,13 @@
 #       define typeof(a) decltype(a)
 #   endif
 #else
+// static_assert doesn't do anything in MSVC + C compiler, because we just don't have it !
 #   ifndef static_assert
-#       define static_assert _Static_assert
+#       if SX_COMPILER_MSVC
+#           define static_assert(_e, _msg)  
+#       else
+#           define static_assert(_e, _msg) _Static_assert(_e, _msg)
+#       endif
 #   endif
 #endif
 
@@ -68,67 +73,34 @@
 /// 
 /// Intellisense and MSCV editor complains about not returning expression on macros that have {()}
 #if SX_COMPILER_GCC || SX_COMPILER_CLANG
-#define sx_swap(a, b)  do { \
-            typeof(a) __a = (a);  \
-            typeof(b) __b = (b);  \
-            (void) (&__a == &__b); \
-            a = __b;     b = __a; } while(0)
-
-#   define sx_max(a, b)  ({ \
-            typeof(a) __a = (a);  \
-            typeof(b) __b = (b);  \
-            (void) (&__a == &__b); \
+#define sx_swap(a, b, _type)  do { _type tmp = a; a = b; b = tmp; } while (0)
+#   define sx_max(a, b)  ({                 \
+            typeof(a) __a = (a);            \
+            typeof(b) __b = (b);            \
+            (void) (&__a == &__b);          \
             __a > b ? __a : __b; })
 
-#   define sx_min(a, b)  ({ \
-            typeof(a) __a = (a);  \
-            typeof(b) __b = (b);  \
-            (void) (&__a == &__b); \
+#   define sx_min(a, b)  ({                 \
+            typeof(a) __a = (a);            \
+            typeof(b) __b = (b);            \
+            (void) (&__a == &__b);          \
             __a < b ? __a : __b; })
 
-#   define sx_clamp(v_, min_, max_) ({    \
-            typeof(v_)   _v = (v_);       \
-            typeof(min_) _min = (min_);   \
-            typeof(max_) _max = (max_);   \
-            (void) (&_min == &_max);      \
-            _v = _v < _max ? _v : _max;   \
+#   define sx_clamp(v_, min_, max_) ({      \
+            typeof(v_)   _v = (v_);         \
+            typeof(min_) _min = (min_);     \
+            typeof(max_) _max = (max_);     \
+            (void) (&_min == &_max);        \
+            _v = _v < _max ? _v : _max;     \
             _v > _min ? _v : _min; })
 #elif SX_COMPILER_MSVC
-// In MSVC, it is likely built with C++, because C11 is not supported
-//          So, Use templates instead of macros in that case
-//          We do this To evaluate the inputs
-#   ifdef __cplusplus 
-template<typename Ty>
-SX_INLINE void sx_swap(Ty& _a, Ty& _b)
-{
-    Ty tmp = _a; _a = _b; _b = tmp;
-}
-
-template<typename Ty>
-SX_INLINE constexpr Ty sx_min(const Ty& _a, const Ty& _b)
-{
-    return _a < _b ? _a : _b;
-}
-
-template<typename Ty>
-SX_INLINE constexpr Ty sx_max(const Ty& _a, const Ty& _b)
-{
-    return _a > _b ? _a : _b;
-}
-
-template<typename Ty>
-SX_INLINE constexpr Ty sx_clamp(const Ty& _a, const Ty& _min, const Ty& _max)
-{
-    return sx_max(sx_min(_a, _max), _min);
-}
-#   else
-#       error "typeof in macros Not supported on this compiler, try to build with C++ instead of C"
-#       define sx_swap(a, b)             do { a = b; b = a; /* INVALID */ } while (0)
-#       define sx_max(a, b)              ((a) > (b) ? a : b)
-#       define sx_min(a, b)              ((a) < (b) ? a : b)
+// NOTE: Because we have some features lacking in MSVC+C compiler, the max,min,clamp macros does not pre-evaluate the expressions
+// So in performance critical code, make sure you re-evaluate the sx_max, sx_min, sx_clamp paramters before passing them to the macros
+#       define sx_swap(a, b, _type)      do { _type tmp = a; a = b; b = tmp; } while (0)
+#       define sx_max(a, b)              ((a) > (b) ? (a) : (b))
+#       define sx_min(a, b)              ((a) < (b) ? (a) : (b))
 #       define sx_clamp(v, min_, max_)   sx_max(sx_min((v), (max_)), (min_))
-#   endif   // __cplusplus
-#endif
+#endif  
 
 #endif  // SX_SX_H_
 

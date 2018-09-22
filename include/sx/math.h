@@ -19,29 +19,21 @@
 
 #include "sx.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Some math constants
-const float SX_PI;
-const float SX_PI2;
-const float SX_INVPI;
-const float SX_PIHALF;
-const float SX_PIQUARTER;
-const float SX_E;
-const float SX_FLOAT_MAX;
-const float SX_FLOAT_MIN;
-const float SX_LOG_NAT10;
-const float SX_INVLOG_NAT2;
-const float SX_LOG_NAT2H;
-const float SX_LOG_NAT2L;
-const float SX_NEAR_ZERO;
-const float SX_SQRT2;
-
-#ifdef __cplusplus
-}
-#endif
+SX_API const float SX_PI;
+SX_API const float SX_PI2;
+SX_API const float SX_INVPI;
+SX_API const float SX_PIHALF;
+SX_API const float SX_PIQUARTER;
+SX_API const float SX_E;
+SX_API const float SX_FLOAT_MAX;
+SX_API const float SX_FLOAT_MIN;
+SX_API const float SX_LOG_NAT10;
+SX_API const float SX_INVLOG_NAT2;
+SX_API const float SX_LOG_NAT2H;
+SX_API const float SX_LOG_NAT2L;
+SX_API const float SX_NEAR_ZERO;
+SX_API const float SX_SQRT2;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Types/Primitives
@@ -1205,7 +1197,7 @@ SX_INLINE SX_CONSTFN float sx_color_tolinear(float _a)
 {
     const float lo     = _a / 12.92f;
     const float hi     = sx_pow( (_a + 0.055f) / 1.055f, 2.4f);
-    const float result = sx_lerp(hi, lo, _a <= 0.04045f);
+    const float result = sx_lerp(hi, lo, _a <= 0.04045f ? 1.0f : 0.0f);
     return result;
 }
 
@@ -1213,7 +1205,7 @@ SX_INLINE SX_CONSTFN float sx_color_togamma(float _a)
 {
     const float lo     = _a * 12.92f;
     const float hi     = sx_pow(sx_abs(_a), 1.0f/2.4f) * 1.055f - 0.055f;
-    const float result = sx_lerp(hi, lo, _a <= 0.0031308f);
+    const float result = sx_lerp(hi, lo, _a <= 0.0031308f ? 1.0f : 0.0f);
     return result;
 }
 
