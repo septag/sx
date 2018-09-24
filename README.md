@@ -35,7 +35,7 @@ This library currently contains these functionalities (by header file):
 - *timer.h:* Portable high-res timer, wrapper for [sokol_time](https://github.com/floooh/sokol)
 - *virtual-alloc.h:* Portable virtual memory allocator and functions
 - *math.h:* 
-	- Vector/Matrix math, many of the them taken from [bx](https://github.com/bkaradzic/bx)
+	- Vector(2,3,4), Matrix (3x3, 4x4), Quaternion math
 	- Easing functions
 - *os.h:* Common portable OS related routines
 - *bheap.h:* Binary heap implementation
