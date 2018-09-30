@@ -22,6 +22,7 @@
 #   include <time.h>
 #   include <pthread.h>
 #	include <limits.h>
+#	include <dirent.h>   	// S_IFREG
 #   if !SX_PLATFORM_PS4
 #       include <dlfcn.h>   // dlopen, dlclose, dlsym
 #   endif
@@ -31,6 +32,7 @@
          SX_PLATFORM_RPI || \
          SX_PLATFORM_STEAMLINK
 #       include <sys/syscall.h>
+#		include <linux/limits.h>
 #   elif SX_PLATFORM_OSX
 #       include <mach/mach.h>
 #   elif SX_PLATFORM_HURD 
@@ -315,7 +317,7 @@ char* sx_os_path_pwd(char* dst, int size)
 #elif SX_CRT_MSVC
 		return _getcwd(dst, size);
 #else
-		return getcwd(dst, _size);
+		return getcwd(dst, size);
 #endif // SX_COMPILER_	
 }
 
