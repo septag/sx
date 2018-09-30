@@ -57,7 +57,7 @@ typedef enum sx_whence
 
 typedef enum sx_file_open_flags
 {
-    SX_OPEN_APPEND = 0x1    // Used for writing to file only
+    SX_FILE_OPEN_APPEND = 0x1    // Used for writing to file only
 } sx_file_open_flag;
 
 // sx_mem_block
@@ -74,12 +74,8 @@ extern "C" {
 #endif
 
 sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, 
-                                            const void* data SX_DFLT(NULL), int align SX_DFLT(0));
-void sx_mem_destroy_block(sx_mem_block* mem, const sx_alloc* alloc);
-
-bool sx_mem_init_block(sx_mem_block* mem, const sx_alloc* alloc, int size, 
-                                 const void* data SX_DFLT(NULL), int align SX_DFLT(0));
-void sx_mem_release_block(sx_mem_block* mem);
+                                  const void* data SX_DFLT(NULL), int align SX_DFLT(0));
+void sx_mem_destroy_block(sx_mem_block* mem);
 
 void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size);
 void* sx_mem_grow(sx_mem_block* mem, int size);
@@ -130,7 +126,8 @@ void sx_file_close_writer(sx_file_writer* writer);
 int sx_file_write(sx_file_writer* writer, const void* data, int size);
 int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset, sx_whence whence SX_DFLT(SX_WHENCE_CURRENT));
 
-#define sx_file_write_var(w, v) sx_file_write((w), &(v), sizeof(v))
+#define sx_file_write_var(w, v)     sx_file_write((w), &(v), sizeof(v))
+#define sx_file_write_text(w, s)    sx_file_write((w), (s), sx_strlen(s))
 
 // sx_file_reader
 typedef struct sx_file_reader

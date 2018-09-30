@@ -1051,7 +1051,7 @@ sx_mat4 sx_mat4_quat(const sx_quat _quat)
 
     return sx_mat4f(1.0f - (y2y + z2z),   x2y - z2w,          x2z + y2w,          0.0f,
                     x2y + z2w,            1.0f - (x2x + z2z), y2z - x2w,          0.0f,
-                    x2z - y2w, y2z + x2w, 1.0f - (x2x + y2y),                     0.0f,
+                    x2z - y2w,            y2z + x2w,          1.0f - (x2x + y2y), 0.0f,
                     0.0f,                 0.0f,               0.0f,               1.0f);
 }
 

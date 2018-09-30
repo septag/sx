@@ -42,41 +42,12 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
     }
 }
 
-void sx_mem_destroy_block(sx_mem_block* mem, const sx_alloc* alloc)
+void sx_mem_destroy_block(sx_mem_block* mem)
 {
     sx_assert(mem);
     
     if (mem->alloc) {
-        mem->alloc = NULL;
-        sx_free(alloc, mem);
-    }
-}
-
-bool sx_mem_init_block(sx_mem_block* mem, const sx_alloc* alloc, int size, const void* data, int align)
-{
-    align = sx_max(align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
-    mem->data = sx_aligned_malloc(alloc, size, align);
-
-    if (mem->data) {
-        mem->alloc = alloc;
-        mem->size = size;
-        mem->align = align;
-        if (data)
-            sx_memcpy(mem->data, data, size);
-        return true;
-    } else {
-        sx_out_of_memory();
-        mem->alloc = NULL;
-        return false;
-    }
-}
-
-void sx_mem_release_block(sx_mem_block* mem)
-{
-    sx_assert(mem);
-
-    if (mem->alloc) {
-        sx_aligned_free(mem->alloc, mem->data, mem->align);
+        sx_free(mem->alloc, mem);
         mem->alloc = NULL;
     }
 }
@@ -204,7 +175,7 @@ bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t 
     static_assert(sizeof(writer->data) >= sizeof(sx__file_data), "Invalid data buffer size");
 
     sx__file_data* data = (sx__file_data*)writer->data;
-    data->f = fopen(filepath, (flags & SX_OPEN_APPEND) ? "ab" : "wb");
+    data->f = fopen(filepath, (flags & SX_FILE_OPEN_APPEND) ? "ab" : "wb");
     return data->f != NULL;
 }
 
@@ -220,7 +191,7 @@ void sx_file_close_writer(sx_file_writer* writer)
 int sx_file_write(sx_file_writer* writer, const void* data, int size)
 {
     sx__file_data* fdata = (sx__file_data*)writer->data;
-    int written = (int)fwrite(data, size, 1, fdata->f);
+    int written = (int)fwrite(data, 1, size, fdata->f);
     if (written != size) {
         sx_data_truncate();
     }
@@ -257,8 +228,8 @@ void sx_file_close_reader(sx_file_reader* reader)
 int sx_file_read(sx_file_reader* reader, void* data, int size)
 {
     sx__file_data* fdata = (sx__file_data*)reader->data;
-    int r = (int)fread(data, size, size, fdata->f);
-    if (r != size) {
+    int r = (int)fread(data, 1, size, fdata->f);
+    if (r < size) {
         sx_data_truncate();
     }
     return r;
@@ -281,6 +252,7 @@ sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath)
             sx_file_seekr(&reader, 0, SX_WHENCE_BEGIN);
             sx_mem_block* mem = sx_mem_create_block(alloc, (int)sz + 1, NULL, 0);
             if (mem) {
+                sx_file_read(&reader, mem->data, (int)sz);
                 sx_file_close_reader(&reader);
                 ((char*)mem->data)[sz] = '\0';  // close the string
                 return mem;
@@ -301,6 +273,7 @@ sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath)
             sx_file_seekr(&reader, 0, SX_WHENCE_BEGIN);
             sx_mem_block* mem = sx_mem_create_block(alloc, (int)sz, NULL, 0);
             if (mem) {
+                sx_file_read(&reader, mem->data, (int)sz);
                 sx_file_close_reader(&reader);
                 return mem;
             }

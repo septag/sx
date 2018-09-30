@@ -23,12 +23,6 @@
 #include "platform.h"
 #include "macros.h"
 
-#if !SX_PLATFORM_WINDOWS
-#   include <stdnoreturn.h> // noreturn
-#else
-#   define noreturn 
-#endif
-
 #if defined(__cplusplus)
 #   if !defined(typeof)
 #       define typeof(a) decltype(a)

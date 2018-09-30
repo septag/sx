@@ -2,7 +2,7 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
-// string.h - v1.0 - C-String replacement/utility functions
+// string.h - v1.0.1 - C-String replacement/utility functions
 //
 #pragma once
 
@@ -116,3 +116,8 @@ void                    sx_strpool_collate_free(const sx_strpool* sp, sx_strpool
 #endif
 
 #endif
+
+// Version history
+//      1.0.0   Initial release
+//      1.0.1   Bug fixed in sx_strrchar
+//

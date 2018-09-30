@@ -162,6 +162,7 @@ const char* sx_strrchar(const char* str, char ch)
             continue;
         }
         r = str;
+        ++str;
     }
     return r;
 }

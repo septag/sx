@@ -539,22 +539,46 @@ SX_INLINE SX_CONSTFN float sx_wrap(float _a, float _wrap)
 }
 
 // Returns 0 if _a < _edge, else 1
-SX_INLINE SX_CONSTFN float sx_step(float _edge, float _a)
+SX_INLINE SX_CONSTFN float sx_step(float _a, float _edge)
 {
     return _a < _edge ? 0.0f : 1.0f;
-}
-
-// smooth Hermite interpolation (result = 0 ~ 1) when edge0 < x < edge1
-SX_INLINE SX_CONSTFN float sx_smoothstep(float _edge1, float _edge2, float _a)
-{
-    _a = sx_clamp((_a - _edge1)/(_edge2 - _edge1), 0.0f, 1.0f);
-    return _a*_a*(3.0f - 2.0f*_a);
 }
 
 SX_INLINE SX_CONSTFN float sx_pulse(float _a, float _start, float _end)
 {
     return sx_step(_a, _start) - sx_step(_a, _end);
 }
+
+SX_INLINE SX_CONSTFN float sx_saturate(float _n)
+{
+    return sx_clamp(_n, 0.0f, 1.0f);
+}
+
+// smooth Hermite interpolation (result = 0..1) when edge0 < x < edge1
+SX_INLINE SX_CONSTFN float sx_smoothstep(float _a, float _edge1, float _edge2)
+{
+    sx_assert(_edge1 < _edge2);
+    float a = sx_saturate((_a - _edge1)/(_edge2 - _edge1));
+    return a*a*(3.0f - 2.0f*a);
+}
+
+// like smoothstep but linear
+// result is 0..1 when in _min.._max range, 0 if less than _min, 1 if more than _max
+SX_INLINE SX_CONSTFN float sx_linearstep(float t, float _min, float _max)
+{
+    sx_assert(_min < _max);
+    return sx_saturate((t - _min)/(_max - _min));
+}
+
+// used for normalizing time values to 0..1
+// based on the assumption that time 't' starts from 0.._max or more than that
+SX_INLINE SX_CONSTFN float sx_normalize_time(float t, float _max)
+{
+    sx_assert(_max > 0);
+    float nt = t / _max;
+    return nt < 1.0f ? nt : 1.0f;
+}
+
 
 // References:
 //  - Bias And Gain Are Your Friend

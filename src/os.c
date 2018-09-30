@@ -6,18 +6,22 @@
 #include "sx/string.h"
 #include <alloca.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 
 #if SX_PLATFORM_WINDOWS
 #   define VC_EXTRALEAN
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <Psapi.h>
+#	include <direct.h>   	// _getcwd
 #elif SX_PLATFORM_POSIX
 #   include <unistd.h>
 #   include <sys/resource.h>
 #   include <termios.h>
 #   include <time.h>
 #   include <pthread.h>
+#	include <limits.h>
 #   if !SX_PLATFORM_PS4
 #       include <dlfcn.h>   // dlopen, dlclose, dlsym
 #   endif
@@ -32,6 +36,12 @@
 #   elif SX_PLATFORM_HURD 
 #       include <pthread/pthread.h>
 #   endif 
+#endif
+
+#if SX_PLATFORM_WINDOWS
+static const char* k_path_sep = "\\";
+#else
+static const char* k_path_sep = "/";
 #endif
 
 int sx_os_pagesz()
@@ -259,4 +269,239 @@ void* sx_os_exec(const char* const* argv)
 		SX_UNUSED(argv);
 		return NULL;
 #endif // SX_PLATFORM_
+}
+
+sx_file_info sx_os_stat(const char* filepath)
+{
+    sx_assert(filepath);
+    sx_file_info info = {SX_FILE_TYPE_INVALID, 0};
+
+#if SX_COMPILER_MSVC
+	struct _stat64 st;
+	int32_t result = _stat64(filepath, &st);
+
+	if (0 != result)
+		return info;
+
+	if (0 != (st.st_mode & _S_IFREG))
+		info.type = SX_FILE_TYPE_REGULAR;
+	else if (0 != (st.st_mode & _S_IFDIR))
+		info.type = SX_FILE_TYPE_DIRECTORY;
+#else
+	struct stat st;
+	int32_t result = stat(filepath, &st);
+	if (0 != result)
+		return info;
+
+	if (0 != (st.st_mode & S_IFREG))
+		info.type = SX_FILE_TYPE_REGULAR;
+	else if (0 != (st.st_mode & S_IFDIR))
+		info.type = SX_FILE_TYPE_DIRECTORY;
+#endif // SX_COMPILER_MSVC
+
+    info.size = st.st_size;
+	return info;
+}
+
+char* sx_os_path_pwd(char* dst, int size)
+{
+#if SX_PLATFORM_PS4     \
+ || SX_PLATFORM_XBOXONE \
+ || SX_PLATFORM_WINRT   \
+ || SX_CRT_NONE
+		SX_UNUSED(dst);
+		SX_UNUSUED(size);
+		return NULL;
+#elif SX_CRT_MSVC
+		return _getcwd(dst, size);
+#else
+		return getcwd(dst, _size);
+#endif // SX_COMPILER_	
+}
+
+char* sx_os_path_abspath(char* dst, int size, const char* path)
+{
+#if SX_PLATFORM_POSIX
+	char abs_path[PATH_MAX];
+	realpath(path, abs_path);
+	sx_strcpy(dst, size, abs_path);
+	return dst;
+#elif SX_PLATFORM_WINDOWS
+	if (GetFullPathNameA(path, (DWORD)size, dst, NULL) == 0)
+		dst[0] = '\0';
+	return dst;
+#else
+#	error "Not Implemented"
+#endif
+}
+
+char* sx_os_path_unixpath(char* dst, int size, const char* path)
+{
+	int len = sx_strlen(path);
+	len = sx_min(len, size-1);
+
+	for (int i = 0; i < len; i++) {
+		if (path[i] != '\\')
+			dst[i] = path[i];
+		else
+			dst[i] = '/';
+	}
+	dst[len] = '\0';
+	return dst;
+}
+
+char* sx_os_path_winpath(char* dst, int size, const char* path)
+{
+	int len = sx_strlen(path);
+	len = sx_min(len, size-1);
+
+	for (int i = 0; i < len; i++) {
+		if (path[i] != '/')
+			dst[i] = path[i];
+		else
+			dst[i] = '\\';
+	}
+	dst[len] = '\0';
+	return dst;
+}
+
+char*  sx_os_path_basename(char* dst, int size, const char* path)
+{
+	const char* r = sx_strrchar(path, '/');
+	if (!r)
+		r = sx_strrchar(path, '\\');
+	if (r) {
+		sx_strcpy(dst, size, r + 1);
+	} else if (dst != path) {
+		sx_strcpy(dst, size, path);
+	}
+	return dst;
+}
+
+char*  sx_os_path_dirname(char* dst, int size, const char* path)
+{
+	const char* r = sx_strrchar(path, '/');
+	if (!r) 
+		r = sx_strrchar(path, '\\');
+	if (r) {
+		int o = (int)(intptr_t)(r - path);
+		sx_strncpy(dst, size, path, o);
+	} else {
+		sx_strcpy(dst, size, path);
+	}
+	return dst;
+}
+
+char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size, const char* path)
+{
+	sx_assert(ext != path);
+	sx_assert(basename != path);
+
+	int len = sx_strlen(path);
+	const char* epos = NULL;
+	if (len > 0) {
+		const char* start = sx_strrchar(path, '/');
+		if (!start)
+			start = sx_strrchar(path, '\\');
+		if (!start)
+			start = path;
+		const char* end = &path[len-1];
+		for (const char* e = start; e < end; ++e) {
+			if (*e != '.') 
+				continue;
+			sx_strcpy(ext, ext_size, e);
+			sx_strncpy(basename, basename_size, path, (int)(intptr_t)(e - path - 1));
+			return ext;
+		}
+	}
+
+	// no extension (.) found
+	ext[0] = '\0';	
+	sx_strcpy(basename, basename_size, path);
+	return ext;
+}
+
+char* sx_os_path_ext(char* dst, int size, const char* path)
+{
+	sx_assert(size > 0);
+
+	int len = sx_strlen(path);
+	if (len > 0) {
+		const char* start = sx_strrchar(path, '/');
+		if (!start)
+			start = sx_strrchar(path, '\\');
+		if (!start)
+			start = path;
+		const char* end = &path[len-1];
+		for (const char* e = start; e < end; ++e) {
+			if (*e != '.') 
+				continue;
+			sx_strcpy(dst, size, e);
+			return dst;
+		}
+	}
+
+	dst[0] = '\0';	// no extension
+	return dst;
+}
+
+char*  sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b)
+{
+	int len = sx_strlen(path_a);
+	if (dst != path_a) {
+		if (len > 0 && path_a[len-1] == k_path_sep[0]) {
+			sx_strcpy(dst, size, path_a);
+		} else {
+			sx_strcpy(dst, size, path_a);
+			sx_strcat(dst, size, k_path_sep);
+		}
+	}
+
+	if (path_b[0] == k_path_sep[0]) 
+		++path_b;
+	sx_strcat(dst, size, path_b);		
+	return dst;
+}
+
+char* sx_os_path_normcase(char* dst, int size, const char* path)
+{
+#if SX_PLATFORM_WINDOWS
+	return sx_tolower(dst, size, path);
+#else
+	if (dst != path)
+		sx_strcpy(dst, size, path);
+	return dst;
+#endif
+}
+
+char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start)
+{
+	sx_assert(0 && "TODO");
+	sx_assert(start != path);
+
+	return NULL;
+}
+
+bool sx_os_path_exists(const char* path)
+{
+	return sx_os_stat(path).type != SX_FILE_TYPE_INVALID;
+}
+
+bool sx_os_path_isfile(const char* filepath)
+{
+	return (sx_os_stat(filepath).type == SX_FILE_TYPE_REGULAR);
+}
+
+bool sx_os_path_isdir(const char* filepath)
+{
+	return (sx_os_stat(filepath).type == SX_FILE_TYPE_DIRECTORY);
+}
+
+char* sx_os_path_normpath(char* dst, int size, const char* path)
+{
+#if SX_PLATFORM_WINDOWS
+	return sx_tolower(dst, size, sx_os_path_winpath(dst, size, path));
+#else
+	return sx_os_path_unixpath(dst, size, path);
+#endif
 }
