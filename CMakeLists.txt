@@ -192,6 +192,8 @@ target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPA
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(sx PUBLIC dl pthread m)
+elseif (WIN32)
+    target_link_libraries(sx PUBLIC psapi)
 endif()
 
 # Tests

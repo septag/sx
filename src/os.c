@@ -411,7 +411,7 @@ char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_
 			if (*e != '.') 
 				continue;
 			sx_strcpy(ext, ext_size, e);
-			sx_strncpy(basename, basename_size, path, (int)(intptr_t)(e - path - 1));
+			sx_strncpy(basename, basename_size, path, (int)(intptr_t)(e - path));
 			return ext;
 		}
 	}
