@@ -400,7 +400,6 @@ char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_
 	sx_assert(basename != path);
 
 	int len = sx_strlen(path);
-	const char* epos = NULL;
 	if (len > 0) {
 		const char* start = sx_strrchar(path, '/');
 		if (!start)
