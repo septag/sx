@@ -325,8 +325,11 @@ char* sx_os_path_abspath(char* dst, int size, const char* path)
 {
 #if SX_PLATFORM_POSIX
 	char abs_path[PATH_MAX];
-	realpath(path, abs_path);
-	sx_strcpy(dst, size, abs_path);
+	if (realpath(path, abs_path) != NULL) {
+		sx_strcpy(dst, size, abs_path);
+	} else {
+		dst[0] = '\0';
+	}
 	return dst;
 #elif SX_PLATFORM_WINDOWS
 	if (GetFullPathNameA(path, (DWORD)size, dst, NULL) == 0)
