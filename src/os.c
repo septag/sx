@@ -276,7 +276,7 @@ void* sx_os_exec(const char* const* argv)
 sx_file_info sx_os_stat(const char* filepath)
 {
     sx_assert(filepath);
-    sx_file_info info = {SX_FILE_TYPE_INVALID, 0};
+    sx_file_info info = {SX_FILE_TYPE_INVALID, 0, 0};
 
 #if SX_COMPILER_MSVC
 	WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -308,7 +308,11 @@ sx_file_info sx_os_stat(const char* filepath)
 	else if (0 != (st.st_mode & S_IFDIR))
 		info.type = SX_FILE_TYPE_DIRECTORY;
     info.size = st.st_size;
+#	if SX_PLATFORM_OSX
+	info.last_modified = st.st_mtimespec.tv_sec;
+# 	else
 	info.last_modified = st.st_mtim.tv_sec;
+#	endif
 #endif // SX_COMPILER_MSVC
 
 	return info;
