@@ -446,12 +446,31 @@ sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax
 sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx, float _ty, float _tz)
 {
     // TODO: maybe wrong
-    const float sx = sx_sin(_ax);
-    const float cx = sx_cos(_ax);
-    const float sy = sx_sin(_ay);
-    const float cy = sx_cos(_ay);
-    const float sz = sx_sin(_az);
-    const float cz = sx_cos(_az);
+    float sx, cx, sy, cy, sz, cz;
+
+    if (_ax != 0) {
+        sx = sx_sin(_ax);
+        cx = sx_cos(_ax);
+    } else {
+        sx = 0;
+        cx = 1.0f;
+    }
+
+    if (_ay != 0) {
+        sy = sx_sin(_ay);
+        cy = sx_cos(_ay);
+    } else {
+        sy = 0;
+        cy = 1.0f;
+    }
+
+    if (_az != 0) {
+        sz = sx_sin(_az);
+        cz = sx_cos(_az);
+    } else {
+        sz = 0;
+        cz = 1.0f;
+    }
 
     const float sxsz = sx*sz;
     const float cycz = cy*cz;

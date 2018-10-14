@@ -48,6 +48,7 @@ char* sx_trim_whitespace(char* dest, int dest_sz, const char* src);
 char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim);
 char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch);
 char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace);
+char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find, const char replace);
 char* sx_EOL_LF(char* dest, int dest_sz, const char* src);
 bool  sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char splitch);
 sx_str_block sx_findblock(const char* str, char open, char close);

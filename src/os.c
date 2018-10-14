@@ -279,16 +279,24 @@ sx_file_info sx_os_stat(const char* filepath)
     sx_file_info info = {SX_FILE_TYPE_INVALID, 0};
 
 #if SX_COMPILER_MSVC
-	struct _stat64 st;
-	int32_t result = _stat64(filepath, &st);
-
-	if (0 != result)
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	if (!GetFileAttributesExA(filepath, GetFileExInfoStandard, &fad)) {
 		return info;
-
-	if (0 != (st.st_mode & _S_IFREG))
-		info.type = SX_FILE_TYPE_REGULAR;
-	else if (0 != (st.st_mode & _S_IFDIR))
+	}
+	if (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		info.type = SX_FILE_TYPE_DIRECTORY;
+    else if (!(fad.dwFileAttributes & (FILE_ATTRIBUTE_DEVICE|FILE_ATTRIBUTE_SYSTEM)))
+        info.type = SX_FILE_TYPE_REGULAR;
+
+	LARGE_INTEGER size;
+    size.HighPart = fad.nFileSizeHigh;
+    size.LowPart = fad.nFileSizeLow;
+	info.size = (uint64_t)size.QuadPart;
+
+	LARGE_INTEGER tm;
+    tm.HighPart = fad.ftLastWriteTime.dwHighDateTime;
+    tm.LowPart = fad.ftLastWriteTime.dwLowDateTime;
+	info.last_modified = (uint64_t)(tm.QuadPart / 10000000 - 11644473600LL);
 #else
 	struct stat st;
 	int32_t result = stat(filepath, &st);
@@ -299,9 +307,10 @@ sx_file_info sx_os_stat(const char* filepath)
 		info.type = SX_FILE_TYPE_REGULAR;
 	else if (0 != (st.st_mode & S_IFDIR))
 		info.type = SX_FILE_TYPE_DIRECTORY;
+    info.size = st.st_size;
+	info.last_modified = st.st_mtim.tv_sec;
 #endif // SX_COMPILER_MSVC
 
-    info.size = st.st_size;
 	return info;
 }
 
@@ -400,7 +409,6 @@ char*  sx_os_path_dirname(char* dst, int size, const char* path)
 char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size, const char* path)
 {
 	sx_assert(ext != path);
-	sx_assert(basename != path);
 
 	int len = sx_strlen(path);
 	if (len > 0) {
@@ -414,14 +422,18 @@ char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_
 			if (*e != '.') 
 				continue;
 			sx_strcpy(ext, ext_size, e);
-			sx_strncpy(basename, basename_size, path, (int)(intptr_t)(e - path));
+			if (basename != path)
+				sx_strncpy(basename, basename_size, path, (int)(intptr_t)(e - path));
+			else 
+				*((char*)e) = '\0';
 			return ext;
 		}
 	}
 
 	// no extension (.) found
 	ext[0] = '\0';	
-	sx_strcpy(basename, basename_size, path);
+	if (basename != path)
+		sx_strcpy(basename, basename_size, path);
 	return ext;
 }
 
@@ -455,10 +467,12 @@ char*  sx_os_path_join(char* dst, int size, const char* path_a, const char* path
 	if (dst != path_a) {
 		if (len > 0 && path_a[len-1] == k_path_sep[0]) {
 			sx_strcpy(dst, size, path_a);
-		} else {
+		} else if (len > 0) {
 			sx_strcpy(dst, size, path_a);
 			sx_strcat(dst, size, k_path_sep);
-		}
+        } else {
+            dst[0] = '\0';
+        }
 	}
 
 	if (path_b[0] == k_path_sep[0]) 

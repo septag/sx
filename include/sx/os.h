@@ -12,11 +12,11 @@
 #include "sx.h"
 
 #if SX_PLATFORM_OSX
-#   define SX_DL_EXT "dylib"
+#   define SX_DLL_EXT ".dylib"
 #elif SX_PLATFORM_WINDOWS
-#   define SX_DL_EXT "dll"
+#   define SX_DLL_EXT ".dll"
 #else
-#   define SX_DL_EXT "so"
+#   define SX_DLL_EXT ".so"
 #endif
 
 typedef enum sx_file_type
@@ -30,6 +30,7 @@ typedef struct sx_file_info
 {
     sx_file_type type;
     uint64_t     size;
+    uint64_t     last_modified;     // time_t
 } sx_file_info;
 
 #ifdef __cplusplus

@@ -61,7 +61,9 @@ SX_API const sx_alloc* sx_alloc_malloc;
 // Leak checking allocator, useful for debug and SX_CONFIG_DEBUG_ALLOCATOR=1
 //sx_alloc* sx_alloc_malloc_leak_detect();
 SX_API const sx_alloc* sx_alloc_malloc_leak_detect;
-SX_API void sx_dump_leaks();
+
+typedef void (*sx_dump_leak_cb)(const char* formatted_msg, const char* file, int line, size_t size, void* ptr);
+SX_API void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn);
 
 SX_INLINE bool sx_is_aligned(const void* ptr, size_t align)
 {

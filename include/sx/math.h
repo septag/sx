@@ -998,7 +998,11 @@ SX_INLINE sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const float*
 SX_INLINE sx_mat4 sx_mat4v(const sx_vec4 _col1, const sx_vec4 _col2, const sx_vec4 _col3, const sx_vec4 _col4)
 {
 #ifdef __cplusplus
-    return {_col1, _col2, _col3, _col4};
+    return {_col1.f[0], _col1.f[1], _col1.f[2], _col1.f[3],
+            _col2.f[0], _col2.f[1], _col2.f[2], _col2.f[3],
+            _col3.f[0], _col3.f[1], _col3.f[2], _col3.f[3],
+            _col4.f[0], _col4.f[1], _col4.f[2], _col4.f[3]
+};
 #else
     return (sx_mat4){.col1 = _col1, .col2 = _col2, .col3 = _col3, .col4 = _col4};
 #endif
@@ -1287,7 +1291,9 @@ SX_INLINE sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float*
 SX_INLINE sx_mat3 sx_mat3v(const sx_vec3 _col1, const sx_vec3 _col2, const sx_vec3 _col3)
 {
 #ifdef __cplusplus
-    return {_col1, _col2, _col3};
+    return {_col1.f[0], _col1.f[1], _col1.f[2],
+            _col2.f[0], _col2.f[1], _col2.f[2],
+            _col3.f[0], _col3.f[1], _col3.f[2]};
 #else
     return (sx_mat3){.col1 = _col1, .col2 = _col2, .col3 = _col3};
 #endif

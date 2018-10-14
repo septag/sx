@@ -89,22 +89,111 @@ int sx_strcpy(char* dst, int dst_sz, const char* src)
     return num;
 }
 
-int sx_strlen(const char* str)
+// https://github.com/lattera/glibc/blob/master/string/strlen.c
+int sx_strlen(const char* str) 
 {
-    sx_assert(str);
+    const char *char_ptr;
+    const uintptr_t *longword_ptr;
+    uintptr_t longword, himagic, lomagic;
 
-    const char* ptr = str;
-    for (; *ptr != '\0'; ++ptr) {};
-    return (int)(intptr_t)(ptr - str);
+    for (char_ptr = str; ((uintptr_t) char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr) {
+        if (*char_ptr == '\0')
+            return (int)(intptr_t)(char_ptr - str);
+    }
+    longword_ptr = (uintptr_t *) char_ptr;
+    himagic = 0x80808080L;
+    lomagic = 0x01010101L;
+#if SX_ARCH_64BIT
+    /* 64-bit version of the magic.  */
+    /* Do the shift in two steps to avoid a warning if long has 32 bits.  */
+    himagic = ((himagic << 16) << 16) | himagic;
+    lomagic = ((lomagic << 16) << 16) | lomagic;
+#endif
+
+    for (;;) {
+        longword = *longword_ptr++;
+
+        if (((longword - lomagic) & ~longword & himagic) != 0) {
+            const char *cp = (const char *) (longword_ptr - 1);
+
+            if (cp[0] == 0)
+                return (int)(intptr_t)(cp - str);
+            if (cp[1] == 0)
+                return (int)(intptr_t)(cp - str + 1);
+            if (cp[2] == 0)
+                return (int)(intptr_t)(cp - str + 2);
+            if (cp[3] == 0)
+                return (int)(intptr_t)(cp - str + 3);
+#if SX_ARCH_64BIT
+            if (cp[4] == 0)
+                return (int)(intptr_t)(cp - str + 4);
+            if (cp[5] == 0)
+                return (int)(intptr_t)(cp - str + 5);
+            if (cp[6] == 0)
+                return (int)(intptr_t)(cp - str + 6);
+            if (cp[7] == 0)
+                return (int)(intptr_t)(cp - str + 7);
+#endif
+        }
+    }    
+
+    sx_assert(0 && "Not a null-terminated string");
+    return -1;
 }
 
-SX_INLINE int sx__strnlen(const char* str, int _max)
+static inline int sx__strnlen(const char* str, int _max)
 {
-    sx_assert(str);
+    const char *char_ptr;
+    const uintptr_t *longword_ptr;
+    uintptr_t longword, himagic, lomagic;
+    int __max = _max;
 
-    const char* ptr = str;
-    for (; _max > 0 && *ptr != '\0'; ++ptr, --_max) {};
-    return (int)(intptr_t)(ptr - str);
+    for (char_ptr = str; ((uintptr_t)char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr) {
+        if (*char_ptr == '\0') {
+            int _len = (int)(uintptr_t)(char_ptr - str);
+            return (_len > _max) ? _max : _len;
+        }
+        --__max;
+    }
+
+    longword_ptr = (uintptr_t *) char_ptr;
+    himagic = 0x80808080L;
+    lomagic = 0x01010101L;
+#if SX_ARCH_64BIT
+    /* 64-bit version of the magic.  */
+    /* Do the shift in two steps to avoid a warning if long has 32 bits.  */
+    himagic = ((himagic << 16) << 16) | himagic;
+    lomagic = ((lomagic << 16) << 16) | lomagic;
+#endif
+
+    for (int n = 0; n < __max; n++) {
+        longword = *longword_ptr++;
+
+        if (((longword - lomagic) & ~longword & himagic) != 0) {
+            const char *cp = (const char *) (longword_ptr - 1);
+
+            if (cp[0] == 0)
+                return (int)(intptr_t)(cp - str);
+            if (cp[1] == 0)
+                return (int)(intptr_t)(cp - str + 1);
+            if (cp[2] == 0)
+                return (int)(intptr_t)(cp - str + 2);
+            if (cp[3] == 0)
+                return (int)(intptr_t)(cp - str + 3);
+#if SX_ARCH_64BIT
+            if (cp[4] == 0)
+                return (int)(intptr_t)(cp - str + 4);
+            if (cp[5] == 0)
+                return (int)(intptr_t)(cp - str + 5);
+            if (cp[6] == 0)
+                return (int)(intptr_t)(cp - str + 6);
+            if (cp[7] == 0)
+                return (int)(intptr_t)(cp - str + 7);
+#endif
+        }
+    }    
+
+    return _max;
 }
 
 int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
@@ -151,33 +240,92 @@ bool sx_isspace(char ch)
             ch == '\f'*/;
 }
 
+// https://github.com/lattera/glibc/blob/master/string/strrchr.c
 const char* sx_strrchar(const char* str, char ch) 
 {
-    sx_assert(str);
+    const char *found = NULL, *p;
+    ch = (uint8_t) ch;
 
-    const char* r = NULL;
-    while (*str) {
-        if (*str != ch) {
-            ++str;
-            continue;
-        }
-        r = str;
-        ++str;
+    if (ch == '\0')
+        return sx_strchar(str, '\0');
+    while ((p = sx_strchar(str, ch)) != NULL) {
+        found = p;
+        str = p + 1;
     }
-    return r;
+    return (const char*)found;
 }
 
-const char* sx_strchar(const char* str, char ch)
+// https://github.com/lattera/glibc/blob/master/string/strchr.c
+const char* sx_strchar(const char* str, char ch) 
 {
-    sx_assert(str);
+    const uint8_t *char_ptr;
+    uintptr_t* longword_ptr;
+    uintptr_t longword, magic_bits, charmask;
+    uint8_t c = (uint8_t) ch;
 
-    while (*str) {
-        if (*str != ch) {
-            ++str;
-            continue;
-        }
-        return str;            
+    // Handle the first few characters by reading one character at a time.
+    // Do this until CHAR_PTR is aligned on a longword boundary.  
+    for (char_ptr = (const uint8_t*) str; ((uintptr_t)char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr)  {
+        if (*char_ptr == c)
+            return (const char*) char_ptr;
+        else if (*char_ptr == '\0')
+            return NULL;
     }
+
+    longword_ptr = (uintptr_t *) char_ptr;
+    magic_bits = -1;
+    magic_bits = magic_bits / 0xff * 0xfe << 1 >> 1 | 1;
+    charmask = c | (c << 8);
+    charmask |= charmask << 16;
+#if SX_ARCH_64BIT
+    charmask |= (charmask << 16) << 16;
+#endif
+
+    for (;;) {
+        longword = *longword_ptr++;
+
+        if ((((longword + magic_bits)^~longword)&~magic_bits) != 0 || 
+            ((((longword ^ charmask) + magic_bits) ^ ~(longword ^ charmask)) & ~magic_bits) != 0)
+        {
+            const uint8_t *cp = (const uint8_t *) (longword_ptr - 1);
+
+            if (*cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+#if SX_ARCH_64BIT
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+            if (*++cp == c)
+                return (const char *) cp;
+            else if (*cp == '\0')
+                return NULL;
+#endif
+        }
+    }    
+
     return NULL;
 }
 
@@ -187,15 +335,20 @@ const char* sx_strstr(const char* str, const char* find)
     sx_assert(find);
 
     char ch = find[0];
-    while (*str) {
-        if (*str != ch) {
-            ++str;
-            continue;
-        }            
+    const char* _start = sx_strchar(str, ch);
+    int find_len = sx_strlen(find);
+    int len = sx_strlen(str);
 
+    while (_start) {
         // We have the first character, check the rest
-        if (sx_strequal(str, find))
+        len -= (int)(intptr_t)(_start - str);
+        if (len < find_len)
+            return NULL;
+
+        if (sx_memcmp(_start, find, find_len) == 0)
             return str;
+
+        _start = sx_strchar(_start+1, ch);
     }
 
     return NULL;
@@ -252,8 +405,7 @@ bool sx_strequal(const char* a, const char* b)
     if (alen != blen)
         return false;
 
-    int c = sx_min(alen, blen);
-    for (int i = 0; i < c; i++) {
+    for (int i = 0; i < alen; i++) {
         if (a[i] != b[i])
             return false;
     }
@@ -267,8 +419,7 @@ bool sx_strequalnocase(const char* a, const char* b)
     if (alen != blen)
         return false;
 
-    int c = sx_min(alen, blen);
-    for (int i = 0; i < c; i++) {
+    for (int i = 0; i < alen; i++) {
         if (sx_tolowerchar(a[i]) != sx_tolowerchar(b[i]))
             return false;
     }
@@ -277,13 +428,14 @@ bool sx_strequalnocase(const char* a, const char* b)
 
 bool sx_strnequal(const char* a, const char* b, int num)
 {
-    int alen = sx_min(num, sx_strlen(a));
-    int blen = sx_min(num, sx_strlen(b));
+    int _alen = sx_strlen(a);
+    int _blen = sx_strlen(b);
+    int alen = sx_min(num, _alen);
+    int blen = sx_min(num, _blen);
     if (alen != blen)
         return false;
 
-    int c = sx_min(alen, blen);
-    for (int i = 0; i < c; i++) {
+    for (int i = 0; i < alen; i++) {
         if (a[i] != b[i])
             return false;
     }
@@ -292,13 +444,14 @@ bool sx_strnequal(const char* a, const char* b, int num)
 
 bool sx_strnequalnocase(const char* a, const char* b, int num)
 {
-    int alen = sx_min(num, sx_strlen(a));
-    int blen = sx_min(num, sx_strlen(b));
+    int _alen = sx_strlen(a);
+    int _blen = sx_strlen(b);    
+    int alen = sx_min(num, _alen);
+    int blen = sx_min(num, _blen);
     if (alen != blen)
         return false;
 
-    int c = sx_min(alen, blen);
-    for (int i = 0; i < c; i++) {
+    for (int i = 0; i < alen; i++) {
         if (sx_tolowerchar(a[i]) != sx_tolowerchar(b[i]))
             return false;
     }
@@ -312,7 +465,7 @@ char sx_tolowerchar(char ch)
 
 char sx_toupperchar(char ch)
 {
-	return ch - (sx_islowerchar(ch) ? 0x20 : 0);
+    return ch - (sx_islowerchar(ch) ? 0x20 : 0);
 }
 
 bool sx_isrange(char ch, char from, char to)
@@ -344,7 +497,7 @@ const char* sx_skip_word(const char* str)
 {
     for (char ch = *str++; ch > 0 && (sx_islowerchar(ch) || sx_isupperchar(ch) || sx_isnumchar(ch) || ch == '_'); 
          ch = *str++) {}
-	return str-1;
+    return str-1;
 }
 
 char* sx_trim_whitespace(char* dest, int dest_sz, const char* src)
@@ -397,25 +550,52 @@ char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch)
 
 char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace)
 {
+    sx_assert(dest != src);
+
     char f = find[0];
     int flen = sx_strlen(find);
     int rlen = sx_strlen(replace);
+    int srclen = sx_strlen(src);
     int offset = 0;
     int dest_max = dest_sz - 1;
+    const char* start = src;
 
     while (*src && offset < dest_max) {
         // Found first character, check for rest
-        if (f == *src && sx_strequal(src, find)) {
-            src += flen;
-            int l = sx_min(dest_max - offset, rlen);
-            sx_strncpy(dest + offset, dest_max - offset, replace, l);
-            offset += l;
-        } else {
+        if (f != *src) {
             dest[offset++] = *src;
-            ++src;
+        } else {
+            srclen -= (int)(intptr_t)(src - start);
+
+            if (srclen >= flen && sx_memcmp(src, find, flen) == 0) {
+                src += flen;
+                int l = sx_min(dest_max - offset, rlen);
+                sx_memcpy(dest + offset, replace, l);
+                offset += l;
+            } else {
+                dest[offset++] = *src;
+            }
         }
+
+        ++src;
     }
 
+    dest[offset] = '\0';
+    return dest;
+}
+
+char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find, const char replace)
+{
+    int dest_max = dest_sz - 1;
+    int offset = 0;
+    while (*src && offset < dest_max) {
+        if (*src != find)
+            dest[offset] = *src;
+        else
+            dest[offset] = replace;
+        ++src;
+    }
+    dest[offset] = '\0';
     return dest;
 }
 
@@ -521,7 +701,7 @@ char* sx_toupper(char* dst, int dst_sz, const char* str)
 bool sx_tobool(const char* str)
 {
     char ch = sx_tolowerchar(str[0]);
-	return ch == 't' ||  ch == '1';
+    return ch == 't' ||  ch == '1';
 }
 
 int sx_toint(const char* str)

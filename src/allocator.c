@@ -4,6 +4,7 @@
 //
 #include "sx/allocator.h"
 #include "sx/string.h"
+#include "sx/os.h"
 
 #include <malloc.h>
 
@@ -143,28 +144,26 @@ static void *stb_leakcheck_realloc(void *ptr, size_t sz, const char *file, int l
     }
 }
 
-static void stblkck_internal_print(const char *reason, const char *file, int line, size_t size, void *ptr)
+static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char *reason, const char *file, int line, 
+                                   size_t size, void *ptr)
 {
     char filename[64];
-    const char* slash = strrchr(file, '/');
-    if (!slash)
-        slash = strrchr(file, '\\');
-    if (slash)
-        sx_strcpy(filename, sizeof(filename), slash+1);
-    else
-        sx_strcpy(filename, sizeof(filename), file);
+    sx_os_path_basename(filename, sizeof(filename), file);
 
     char text[512];
     sx_snprintf(text, sizeof(text), "%-6s: %s (%4d): %zd bytes at %p", reason, filename, line, size, ptr);
-    puts(text);
+    if (dump_leak_fn)
+        dump_leak_fn(text, filename, line, size, ptr);
+    else
+        puts(text);
 }
 
-void sx_dump_leaks()
+void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn)
 {
     stb_leakcheck_malloc_info *mi = mi_head;
     while (mi) {
         if ((ptrdiff_t)mi->size >= 0)
-            stblkck_internal_print("LEAKED", mi->file, mi->line, mi->size, mi+1);
+            stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->line, mi->size, mi+1);
         mi = mi->next;
     }
 #ifdef STB_LEAKCHECK_SHOWALL
@@ -236,7 +235,7 @@ static void* sx_malloc_leakd_cb(void* ptr, size_t size, size_t align, const char
         if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
             return stb_leakcheck_malloc(size, file, (int)line);
 
-        return sx__aligned_alloc(&g_alloc_malloc, size, align, file, line);
+        return sx__aligned_alloc(&g_alloc_malloc_leakd, size, align, file, line);
     } else {
         if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
             return stb_leakcheck_realloc(ptr, size, file, (int)line);

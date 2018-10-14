@@ -29,7 +29,7 @@ uint64_t sx_hash_u64(uint64_t key)
     return key;
 }
 
-uint32_t sx_hash_uint64(uint64_t key)
+uint32_t sx_hash_u64_to_u32(uint64_t key)
 {
     key = ( ~key ) + ( key << 18 );
     key = key ^ ( key >> 31 );

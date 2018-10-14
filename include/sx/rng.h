@@ -18,7 +18,7 @@
 
 #include "sx.h"
 
-typedef struct sx_rng_s
+typedef struct sx_rng
 {
     uint64_t state[2];
 } sx_rng;

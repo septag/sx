@@ -12,7 +12,6 @@
 
 #include "config.h"
 
-#include <alloca.h>         // alloca
 #include <stdarg.h>         // va_list
 #include <stdint.h>         // uint32_t
 #include <stdbool.h>        // bool
