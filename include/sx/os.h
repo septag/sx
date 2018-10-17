@@ -49,6 +49,9 @@ void*  sx_os_dlsym(void* handle, const char* symbol);
 int    sx_os_chdir(const char* path);
 void   sx_os_sleep(int ms);
 void*  sx_os_exec(const char* const* argv);
+bool   sx_os_copy(const char* src, const char* dest);
+bool   sx_os_rename(const char* src, const char* dest);
+bool   sx_os_del(const char* path, sx_file_type type);
 
 char*  sx_os_path_pwd(char* dst, int size);
 char*  sx_os_path_abspath(char* dst, int size, const char* path);

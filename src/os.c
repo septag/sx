@@ -23,6 +23,7 @@
 #   include <pthread.h>
 #	include <limits.h>
 #	include <dirent.h>   	// S_IFREG
+#	include <fcntl.h>
 #   if !SX_PLATFORM_PS4
 #       include <dlfcn.h>   // dlopen, dlclose, dlsym
 #   endif
@@ -32,9 +33,12 @@
          SX_PLATFORM_RPI || \
          SX_PLATFORM_STEAMLINK
 #       include <sys/syscall.h>
+#		include <sys/sendfile.h>	// sendfile
 #		include <linux/limits.h>
-#   elif SX_PLATFORM_OSX
+#   elif SX_PLATFORM_APPLE
 #       include <mach/mach.h>
+#		include <sys/uio.h>			// sendfile
+#		include <sys/socket.h>
 #   elif SX_PLATFORM_HURD 
 #       include <pthread/pthread.h>
 #   endif 
@@ -271,6 +275,54 @@ void* sx_os_exec(const char* const* argv)
 		SX_UNUSED(argv);
 		return NULL;
 #endif // SX_PLATFORM_
+}
+
+bool sx_os_copy(const char* src, const char* dest)
+{
+#if SX_COMPILER_MSVC
+	return CopyFileA(src, dest, FALSE) ? true : false;
+#else
+    int input, output;
+    if ((input = open(src, O_RDONLY)) == -1)
+        return false;
+
+    if ((output = open(dest, O_WRONLY | O_CREAT, O_NOFOLLOW)) == -1)		{
+        close(input);
+        return false;
+    }
+
+#	if SX_PLATFORM_APPLE
+    off_t bytesCopied;
+    int result = sendfile(output, input, 0, &bytesCopied, 0, 0) != -1;
+#	else
+    int result = sendfile(output, input, NULL, 0) != -1;
+#	endif
+    close(input);
+    close(output);
+    return result > -1;
+#endif
+}
+
+bool sx_os_rename(const char* src, const char* dest)
+{
+#if SX_COMPILER_MSVC
+	return MoveFileExA(src, dest, MOVEFILE_WRITE_THROUGH | MOVEFILE_REPLACE_EXISTING) ? true : false;
+#else
+	return rename(src, dest) == 0;
+#endif
+}
+
+bool sx_os_del(const char* path, sx_file_type type)
+{
+	sx_assert(type != SX_FILE_TYPE_INVALID);
+#if SX_COMPILER_MSVC
+	if (type == SX_FILE_TYPE_REGULAR)
+		return DeleteFileA(path) ? true : false;
+	else
+		return RemoveDirectoryA(path) ? true : false;
+#else
+	return unlinkat(path, type == SX_FILE_TYPE_DIRECTORY ? AT_REMOVEDIR : 0) == 0;
+#endif
 }
 
 sx_file_info sx_os_stat(const char* filepath)

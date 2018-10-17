@@ -4,6 +4,7 @@
 //
 
 #define SOKOL_IMPL 
+#define SOKOL_API static inline
 #include "../3rdparty/sokol/sokol_time.h"
 
 void sx_tm_init()
@@ -18,7 +19,7 @@ uint64_t sx_tm_now()
 
 uint64_t sx_tm_diff(uint64_t new_ticks, uint64_t old_ticks)
 {
-    return stm_diff(new_ticks, old_ticks);    
+    return stm_diff(new_ticks, old_ticks);
 }
 
 uint64_t sx_tm_since(uint64_t start_ticks)
@@ -50,4 +51,3 @@ double sx_tm_ns(uint64_t ticks)
 {
     return stm_ns(ticks);
 }
-
