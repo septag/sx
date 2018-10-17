@@ -4,10 +4,6 @@ os:
   - osx
   - windows
 
-matrix:
-  include:
-    - os: linux
-
 addons:
   apt:
     packages:
@@ -27,7 +23,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then make; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then PATH=$PATH:/c/Program\ Files/CMake/bin; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cmake .. -G "Visual Studio 15 2017 Win64"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cmake --build ..; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cmake --build . --config Release --target ALL_BUILD -- -verbosity:m; fi
 
 branches:
   only:
@@ -36,4 +32,3 @@ branches:
 notifications:
   email: false
 
-osx_image: xcode9.3
