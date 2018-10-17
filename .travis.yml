@@ -1,16 +1,17 @@
-language: C
+language: sh
+os:
+  - linux
+  - osx
+  - windows
+
 matrix:
   include:
-    - compiler: gcc
-      os: linux
-    - compiler: clang
-      os: osx
+    - os: linux
 
 addons:
   apt:
     packages:
     - gcc
-    - clang
     - cmake
     - libglew-dev
     - libx11-dev
@@ -20,9 +21,13 @@ addons:
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release
 
-script: make
+script: 
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then cmake .. -DCMAKE_BUILD_TYPE=Release; fi
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then make; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then PATH=$PATH:/c/Program\ Files/CMake/bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cmake .. -G "Visual Studio 15 2017 Win64"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cmake --build ..; fi
 
 branches:
   only:

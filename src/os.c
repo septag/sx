@@ -23,7 +23,7 @@
 #   include <pthread.h>
 #	include <limits.h>
 #	include <dirent.h>   	// S_IFREG
-#	include <fcntl.h>
+#	include <fcntl.h>		// open
 #   if !SX_PLATFORM_PS4
 #       include <dlfcn.h>   // dlopen, dlclose, dlsym
 #   endif
@@ -321,7 +321,7 @@ bool sx_os_del(const char* path, sx_file_type type)
 	else
 		return RemoveDirectoryA(path) ? true : false;
 #else
-	return unlinkat(path, type == SX_FILE_TYPE_DIRECTORY ? AT_REMOVEDIR : 0) == 0;
+	return type == SX_FILE_TYPE_REGULAR ? (unlink(path) == 0) : (rmdir(path) == 0);
 #endif
 }
 
