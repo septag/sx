@@ -11,6 +11,16 @@
 static sx_rng g_rng;
 static sx_job_context* g_ctx = NULL;
 
+static void thread_init(int thread_index, uint32_t thread_id, void* user)
+{
+    printf("init thread id=0x%x index=%d\n", thread_id, thread_index);
+}
+
+static void thread_shutdown(int thread_index, uint32_t thread_id, void* user)
+{
+    printf("shutdown thread id=0x%x index=%d\n", thread_id, thread_index);
+}
+
 static void job_wait_fn(int index, void* user)
 {
     puts("Wait Job ...");
@@ -41,15 +51,21 @@ static void job_fib_fn(int index, void* user)
     *((uint32_t*)user) = b;
 }
 
+
+
 int main(int argc, char* argv[])
 {
     sx_rng_seed(&g_rng, (uint32_t)time(NULL));
     const sx_alloc* alloc = sx_alloc_malloc;
-    sx_job_context* ctx = sx_job_create_context(alloc, 1, MAX_JOBS, MAX_FIBERS, STACK_SIZE);
+    sx_job_context* ctx = sx_job_create_context(alloc, &(sx_job_context_desc) {
+        .thread_init_cb = thread_init,
+        .thread_shutdown_cb = thread_shutdown
+    });
     if (!ctx) {
         puts("Error: sx_job_create_context failed!");
         return -1;
     }
+    printf("jobs: %d worker threads\n", sx_job_num_worker_threads(ctx));
     g_ctx = ctx;
 
     uint32_t results[16];
