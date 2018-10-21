@@ -579,3 +579,19 @@ char* sx_os_path_normpath(char* dst, int size, const char* path)
 	return sx_os_path_unixpath(dst, size, path);
 #endif
 }
+
+// https://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+int sx_os_numcores()
+{
+#if SX_PLATFORM_WINDOWS
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	return sysinfo.dwNumberOfProcessors;
+#elif SX_PLATFORM_LINUX || SX_PLATFORM_ANDROID
+	return sysconf(_SC_NPROCESSORS_ONLN);
+#elif SX_PLATFORM_BSD
+#	error "Not implemented, see link above"
+#elif Sx_PLATFORM_IOS
+#	error "Not implemented, see link above"
+#endif
+}

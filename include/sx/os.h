@@ -71,6 +71,8 @@ bool   sx_os_path_isdir(const char* path);
 
 sx_file_info sx_os_stat(const char* filepath);
 
+int sx_os_numcores();
+
 #ifdef __cplusplus
 }
 #endif

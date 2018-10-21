@@ -73,23 +73,24 @@ static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-typedef struct malloc_info stb_leakcheck_malloc_info;
+typedef struct stb_leakcheck_malloc_info_ stb__leakcheck_malloc_info;
 
-struct malloc_info
+struct stb_leakcheck_malloc_info_
 {
-    const char *file;
-    int line;
+    char   file[16];
+    int    line;
     size_t size;
-    stb_leakcheck_malloc_info *next, *prev;
+    stb__leakcheck_malloc_info *next, *prev;
 };
 
-static stb_leakcheck_malloc_info *mi_head;
+static stb__leakcheck_malloc_info *mi_head;
 
 static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
 {
-    stb_leakcheck_malloc_info *mi = (stb_leakcheck_malloc_info *)malloc(sz + sizeof(*mi));
+    stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)malloc(sz + sizeof(*mi));
     if (mi == NULL) return mi;
-    mi->file = file;
+
+    sx_os_path_basename(mi->file, sizeof(mi->file), file);
     mi->line = line;
     mi->next = mi_head;
     if (mi_head)
@@ -103,7 +104,7 @@ static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
 static void stb_leakcheck_free(void *ptr)
 {
     if (ptr != NULL) {
-        stb_leakcheck_malloc_info *mi = (stb_leakcheck_malloc_info *)ptr - 1;
+        stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)ptr - 1;
         mi->size = ~mi->size;
 #ifndef STB_LEAKCHECK_SHOWALL
         if (mi->prev == NULL) {
@@ -126,7 +127,7 @@ static void *stb_leakcheck_realloc(void *ptr, size_t sz, const char *file, int l
         stb_leakcheck_free(ptr);
         return NULL;
     } else {
-        stb_leakcheck_malloc_info *mi = (stb_leakcheck_malloc_info *)ptr - 1;
+        stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)ptr - 1;
         if (sz <= mi->size)
             return ptr;
         else {
@@ -160,7 +161,7 @@ static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char *rea
 
 void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn)
 {
-    stb_leakcheck_malloc_info *mi = mi_head;
+    stb__leakcheck_malloc_info *mi = mi_head;
     while (mi) {
         if ((ptrdiff_t)mi->size >= 0)
             stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->line, mi->size, mi+1);

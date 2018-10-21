@@ -48,6 +48,8 @@
 #include "sx/allocator.h"
 
 typedef void (sx_job_cb)(int index, void* user);
+typedef void (sx_job_thread_init_cb)(int thread_index, uint32_t thread_id, void* user);
+typedef void (sx_job_thread_shutdown_cb)(int thread_indeex, uint32_t thread_id, void* user);
 
 typedef enum sx_job_priority
 {
@@ -64,6 +66,17 @@ typedef struct sx_job_desc
     sx_job_priority priority;   
 } sx_job_desc;
 
+typedef struct sx_job_context_desc
+{
+    int                         num_threads;            // number of worker threads to spawn (default: num_cpu_cores-1)
+    int                         max_jobs;               // maximum jobs that are allowed to be spawned at the same time (default: 256)
+    int                         max_fibers;             // maximum fibers that are allowed to be active at the same time (default: 64)
+    int                         fiber_stack_sz;         // fiber stack size (default: 1mb)
+    sx_job_thread_init_cb*      thread_init_cb;         // callback function that will be called on initialization of each worker thread
+    sx_job_thread_shutdown_cb*  thread_shutdown_cb;     // callback functions that will be called on the shutdown of each worker thread
+    void*                       thread_user_data;       // user-data to be passed to callback functions above
+} sx_job_context_desc;
+
 typedef volatile int* sx_job_t;
 
 typedef struct sx_job_context sx_job_context;
@@ -72,13 +85,13 @@ typedef struct sx_job_context sx_job_context;
 extern "C" {
 #endif
 
-sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, 
-                                      int max_jobs, int num_fibers, int fiber_stack_sz);
+sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_context_desc* desc);
 void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
 sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count);
 void     sx_job_wait_del(sx_job_context* ctx, sx_job_t job);
 bool     sx_job_try_del(sx_job_context* ctx, sx_job_t job);
+int      sx_job_num_worker_threads(sx_job_context* ctx);
 
 #ifdef __cplusplus
 }

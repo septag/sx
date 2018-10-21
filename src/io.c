@@ -48,7 +48,6 @@ void sx_mem_destroy_block(sx_mem_block* mem)
     
     if (mem->alloc) {
         sx_free(mem->alloc, mem);
-        mem->alloc = NULL;
     }
 }
 

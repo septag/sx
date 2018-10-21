@@ -4,7 +4,7 @@
 #include "sx/fiber.h"   
 #include "sx/atomic.h"  // yield, sx_lock_t
 #include "sx/pool.h"    
-#include "sx/os.h"      // sx_os_minstacksz
+#include "sx/os.h"      // sx_os_minstacksz, sx_os_numcores
 #include "sx/string.h"  // sx_snprintf
 
 #include <alloca.h>
@@ -16,6 +16,9 @@
 //       push all local list to global list for other threads to pickup the work
 //       This method may reduce the context switches in many situations, especially in root jobs
 
+#define DEFAULT_MAX_JOBS            256
+#define DEFAULT_MAX_FIBERS          64
+#define DEFAULT_FIBER_STACK_SIZE    1048576     // 1MB
 
 typedef struct sx__job
 {
@@ -369,11 +372,9 @@ static int sx__job_thread_fn(void* user)
     return 0;
 }
 
-sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, int max_jobs, int num_fibers, int fiber_stack_sz)
+sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_context_desc* desc)
 {
-    sx_assert(num_threads >= 0);
-    sx_assert(num_fibers > 0);
-    sx_assert(fiber_stack_sz >= sx_os_minstacksz() && "stack size too small");
+    sx_assert(desc->fiber_stack_sz >= sx_os_minstacksz() && "stack size too small");
 
     sx_job_context* ctx = (sx_job_context*)sx_malloc(alloc, sizeof(sx_job_context));
     if (!ctx) {
@@ -383,9 +384,12 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, in
     sx_memset(ctx, 0x0, sizeof(sx_job_context));
 
     ctx->alloc = alloc;
-    ctx->num_threads = num_threads;
+    ctx->num_threads = desc->num_threads > 0 ? desc->num_threads : (sx_os_numcores() - 1);
     ctx->thread_tls = sx_tls_create();
-    ctx->stack_sz = fiber_stack_sz;
+    ctx->stack_sz = desc->fiber_stack_sz > 0 ? desc->fiber_stack_sz : DEFAULT_FIBER_STACK_SIZE;
+    int max_fibers = desc->max_fibers > 0 ? desc->max_fibers : DEFAULT_MAX_FIBERS;
+    int max_jobs = desc->max_jobs > 0 ? desc->max_jobs : DEFAULT_MAX_JOBS;
+
     sx_semaphore_init(&ctx->sem);
 
     sx__job_thread_data* main_tdata = sx__job_create_tdata(alloc, sx_thread_tid(), true);
@@ -397,19 +401,19 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, int num_threads, in
     main_tdata->selector_fiber = sx_fiber_create(main_tdata->selector_stack, sx__job_selector_main_thrd);
 
     // pools
-    ctx->job_pool = sx_pool_create(alloc, sizeof(sx__job), num_fibers);
+    ctx->job_pool = sx_pool_create(alloc, sizeof(sx__job), max_fibers);
     ctx->counter_pool = sx_pool_create(alloc, sizeof(int), max_jobs);
     if (!ctx->job_pool || !ctx->counter_pool)
         return NULL;
-    sx_memset(ctx->job_pool->buff, 0x0, sizeof(sx__job)*num_fibers);
+    sx_memset(ctx->job_pool->buff, 0x0, sizeof(sx__job)*max_fibers);
     sx_memset(ctx->counter_pool->buff, 0x0, sizeof(int)*max_jobs);
 
     // Worker threads
-    if (num_threads > 0) {
-        ctx->threads = (sx_thread**)sx_malloc(alloc, sizeof(sx_thread*)*num_threads);
+    if (ctx->num_threads > 0) {
+        ctx->threads = (sx_thread**)sx_malloc(alloc, sizeof(sx_thread*)*ctx->num_threads);
         sx_assert(ctx->threads);
 
-        for (int i = 0; i < num_threads; i++) {
+        for (int i = 0; i < ctx->num_threads; i++) {
             char name[32];
             sx_snprintf(name, sizeof(name), "sx_job_thread(%d)", i+1);
             ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, sx_os_minstacksz(), name);
@@ -445,4 +449,8 @@ void sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc)
     sx_free(alloc, ctx);
 }
 
+int sx_job_num_worker_threads(sx_job_context* ctx)
+{
+    return ctx->num_threads;
+}
 
