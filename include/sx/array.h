@@ -24,6 +24,8 @@
 //         sx_array_pop(TYPE *a, index)                      removes an element from the array and decreases array count
 //         sx_array_pop_last(TYPE *a)                        removes last element from the array and decreases array count
 //         a[n]                                              access the nth (counting from 0) element of the array
+//         sx_array_clear(TYPE* a)                           resets the array count to zero, but does not resize memory
+//         sx_array_reserve(sx_alloc* alloc, TYPE* a, int n) reserves N elements in array without incrementing the count
 // Usage:
 //       SomeStruct *arr = NULL;
 //       while (something)
@@ -58,6 +60,7 @@
 #define sx_array_pop(a, idx)         do { (a)[idx] = sx_array_last(a); --_sx_sbn(a); } while(0)
 #define sx_array_pop_last(a)         do { --_sx_sbn(a); } while(0)
 #define sx_array_clear(a)            ((a) ? (_sx_sbn(a) = 0) : 0)
+#define sx_array_reserve(_alloc, a, n)  (sx_array_add(_alloc, a, n), sx_array_clear(a))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal
