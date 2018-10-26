@@ -374,8 +374,6 @@ static int sx__job_thread_fn(void* user)
 
 sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_context_desc* desc)
 {
-    sx_assert(desc->fiber_stack_sz >= sx_os_minstacksz() && "stack size too small");
-
     sx_job_context* ctx = (sx_job_context*)sx_malloc(alloc, sizeof(sx_job_context));
     if (!ctx) {
         sx_out_of_memory();

@@ -49,7 +49,7 @@
 
 typedef void (sx_job_cb)(int index, void* user);
 typedef void (sx_job_thread_init_cb)(int thread_index, uint32_t thread_id, void* user);
-typedef void (sx_job_thread_shutdown_cb)(int thread_indeex, uint32_t thread_id, void* user);
+typedef void (sx_job_thread_shutdown_cb)(int thread_index, uint32_t thread_id, void* user);
 
 typedef enum sx_job_priority
 {
