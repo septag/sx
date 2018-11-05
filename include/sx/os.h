@@ -46,6 +46,7 @@ size_t sx_os_processmem();
 void*  sx_os_dlopen(const char* filepath);
 void   sx_os_dlclose(void* handle);
 void*  sx_os_dlsym(void* handle, const char* symbol);
+const char* sx_os_dlerr();
 int    sx_os_chdir(const char* path);
 void   sx_os_sleep(int ms);
 void*  sx_os_exec(const char* const* argv);

@@ -344,6 +344,7 @@ const char* sx_strstr(const char* str, const char* find)
         len -= (int)(intptr_t)(_start - str);
         if (len < find_len)
             return NULL;
+        str = _start;
 
         if (sx_memcmp(_start, find, find_len) == 0)
             return str;

@@ -196,6 +196,19 @@ void* sx_os_dlsym(void* handle, const char* symbol)
 #endif
 }
 
+const char* sx_os_dlerr()
+{
+#if SX_PLATFORM_WINDOWS
+	return "";
+#elif SX_PLATFORM_EMSCRIPTEN || \
+      SX_PLATFORM_PS4 || \
+      SX_PLATFORM_XBOXONE
+	return "";
+#else	  
+	return dlerror();
+#endif
+}
+
 int sx_os_chdir(const char* path)
 {
 #if SX_PLATFORM_PS4     \

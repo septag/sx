@@ -4,7 +4,8 @@
 //
 
 #define SOKOL_IMPL 
-#define SOKOL_API static inline
+#define SOKOL_API_DECL static inline
+#define SOKOL_API_IMPL static inline
 #include "../3rdparty/sokol/sokol_time.h"
 
 void sx_tm_init()
