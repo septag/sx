@@ -54,9 +54,9 @@
 
 typedef uint16_t sx_handle_t;
 
-#define SX_INVALID_HANDLE UINT16_MAX;
+#define SX_INVALID_HANDLE 0
 
-typedef struct sx_handle_pool_s
+typedef struct sx_handle_pool
 {
     int count;
     int capacity;
@@ -102,6 +102,11 @@ SX_INLINE void sx_handle_reset_pool(sx_handle_pool* pool)
     for (int i = 0, c = pool->capacity; i < c; i++) {
         dense[i] = i;
     }
+
+    // new dummy handle, so the handle=0 is reserved
+    sx_handle_t dummy = sx_handle_new(pool);
+    sx_assert(dummy == SX_INVALID_HANDLE);
+    sx_unused(dummy);
 }
 
 SX_INLINE bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle)

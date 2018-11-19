@@ -18,8 +18,8 @@
                                       ( (uint32_t)(_c) << 16) | ( (uint32_t)(_d) << 24) ) )
 
 ///
-#define SX_STRINGIZE(_x) SX_STRINGIZE_(_x)
-#define SX_STRINGIZE_(_x) #_x
+#define sx_stringize(_x) sx_stringize_(_x)
+#define sx_stringize_(_x) #_x
 
 ///
 // Function decleration code helpers
@@ -101,7 +101,7 @@
 #if SX_COMPILER_CLANG
 #	define SX_PRAGMA_DIAGNOSTIC_PUSH_CLANG_()     _Pragma("clang diagnostic push")
 #	define SX_PRAGMA_DIAGNOSTIC_POP_CLANG_()      _Pragma("clang diagnostic pop")
-#	define SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG(_x) _Pragma(SX_STRINGIZE(clang diagnostic ignored _x) )
+#	define SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG(_x) _Pragma(sx_stringize(clang diagnostic ignored _x) )
 #else
 #	define SX_PRAGMA_DIAGNOSTIC_PUSH_CLANG_()
 #	define SX_PRAGMA_DIAGNOSTIC_POP_CLANG_()
@@ -111,7 +111,7 @@
 #if SX_COMPILER_GCC && SX_COMPILER_GCC >= 40600
 #	define SX_PRAGMA_DIAGNOSTIC_PUSH_GCC_()       _Pragma("GCC diagnostic push")
 #	define SX_PRAGMA_DIAGNOSTIC_POP_GCC_()        _Pragma("GCC diagnostic pop")
-#	define SX_PRAGMA_DIAGNOSTIC_IGNORED_GCC(_x)   _Pragma(SX_STRINGIZE(GCC diagnostic ignored _x) )
+#	define SX_PRAGMA_DIAGNOSTIC_IGNORED_GCC(_x)   _Pragma(sx_stringize(GCC diagnostic ignored _x) )
 #else
 #	define SX_PRAGMA_DIAGNOSTIC_PUSH_GCC_()
 #	define SX_PRAGMA_DIAGNOSTIC_POP_GCC_()
@@ -148,13 +148,13 @@
 #   define SX_API extern
 #endif
 
-#define SX_ENABLED(_f)  ((_f) != 0)
-#define SX_UNUSED(_a)   (void)(true ? (void)0 : ( (void)(_a) ))
+#define sx_enabled(_f)  ((_f) != 0)
+#define sx_unused(_a)   (void)(true ? (void)0 : ( (void)(_a) ))
 
 #ifdef __cplusplus
-#   define SX_BOOL(_b)   (_b) ? true : false;
+#   define sx_cppbool(_b)   (_b) ? true : false;
 #else
-#   define SX_BOOL(_b)    _b
+#   define sx_cppbool(_b)    _b
 #endif
 
 #endif // SX_MACROS_H_

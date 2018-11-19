@@ -29,10 +29,11 @@ extern "C" {
 typedef struct sx__thread_s sx_thread;
 
 // Thread callback function
-typedef int (sx_thread_cb)(void* user_data);
+typedef int (sx_thread_cb)(void* user_data1, void* user_data2);
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
-                            void* user_data SX_DFLT(NULL), int stack_sz SX_DFLT(0), const char* name SX_DFLT(NULL));
+                            void* user_data1 SX_DFLT(NULL), int stack_sz SX_DFLT(0), const char* name SX_DFLT(NULL),
+                            void* user_data2 SX_DFLT(NULL));
 int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc);
 bool sx_thread_running(sx_thread* thrd);
 void sx_thread_setname(sx_thread* thrd, const char* name);
@@ -87,6 +88,15 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
 void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc);
 bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data);
 bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data);
+bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc);
+bool sx_queue_spsc_full(const sx_queue_spsc* queue);
+
+#define sx_queue_spsc_produce_and_grow(_queue, _data, _alloc)   \
+    if (!sx_queue_spsc_produce((_queue), (_data))) {            \
+        if (sx_queue_spsc_grow((_queue), (_alloc)))             \
+            sx_queue_spsc_produce((_queue), (_data));           \
+    }
+
 
 #ifdef __cplusplus
 }

@@ -87,7 +87,8 @@ typedef struct sx__thread_s
 #   endif
 #endif
 
-    void* user_data;
+    void* user_data1;
+    void* user_data2;
     int stack_sz;
     bool running;
 } sx_thread;
@@ -140,22 +141,22 @@ sx_tls sx_tls_create()
 {
     pthread_key_t key;
     int r = pthread_key_create(&key, NULL);
-    sx_assert(r == 0 && "pthread_key_create failed");    SX_UNUSED(r);
+    sx_assert(r == 0 && "pthread_key_create failed");    sx_unused(r);
     return (sx_tls)(uintptr_t)key;
 }
 
-void sx_tl_destroy(sx_tls tls) 
+void sx_tls_destroy(sx_tls tls) 
 {
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
     int r = pthread_key_delete(key);
-    sx_assert(r == 0 && "pthread_key_delete failed");    SX_UNUSED(r);
+    sx_assert(r == 0 && "pthread_key_delete failed");    sx_unused(r);
 }
 
 void sx_tls_set(sx_tls tls, void* data) 
 {
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;    
     int r = pthread_setspecific(key, data);
-    sx_assert(r == 0 && "pthread_setspcific failed");    SX_UNUSED(r);
+    sx_assert(r == 0 && "pthread_setspcific failed");    sx_unused(r);
 }
 
 void* sx_tls_get(sx_tls tls)
@@ -180,12 +181,12 @@ static void* thread_fn(void* arg)
 #endif
 
     sx_semaphore_post(&thrd->sem, 1);
-    cast.i = thrd->callback(thrd->user_data);
+    cast.i = thrd->callback(thrd->user_data1, thrd->user_data2);
     return cast.ptr;
 }
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
-                            void* user_data, int stack_sz, const char* name)
+                            void* user_data1, int stack_sz, const char* name, void* user_data2)
 {
     sx_thread* thrd = (sx_thread*)sx_malloc(alloc, sizeof(sx_thread));
     if (!thrd)
@@ -193,12 +194,13 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
 
     sx_semaphore_init(&thrd->sem);
     thrd->callback = callback;
-    thrd->user_data = user_data;
+    thrd->user_data1 = user_data1;
+    thrd->user_data2 = user_data2;
     thrd->stack_sz = sx_max(stack_sz, sx_os_minstacksz());
     thrd->running = true;
 
     pthread_attr_t attr;
-    int r = pthread_attr_init(&attr);   SX_UNUSED(r);
+    int r = pthread_attr_init(&attr);   sx_unused(r);
     sx_assert(r == 0 && "pthread_attr_init failed");
     r = pthread_attr_setstacksize(&attr, thrd->stack_sz);
     sx_assert(r == 0 && "pthread_attr_setstacksize failed");
@@ -265,7 +267,7 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
 #elif SX_PLATFORM_LINUX
     prctl(PR_SET_NAME, name, 0, 0, 0);
 #else
-    SX_UNUSED(name);
+    sx_unused(name);
 #endif    
 }
 
@@ -342,7 +344,7 @@ void sx_signal_init(sx_signal* sig)
     r = pthread_cond_init(&_sig->cond, NULL);
     sx_assert(r == 0 && "pthread_cond_init failed");
 
-    SX_UNUSED(r);    
+    sx_unused(r);    
 }
 
 void sx_signal_release(sx_signal* sig)
@@ -360,7 +362,7 @@ void sx_signal_raise(sx_signal* sig)
     _sig->value = 1;
     pthread_mutex_unlock(&_sig->mutex);
     pthread_cond_signal(&_sig->cond);
-    SX_UNUSED(r);
+    sx_unused(r);
 }
 
 bool sx_signal_wait(sx_signal* sig, int msecs)
@@ -382,7 +384,7 @@ bool sx_signal_wait(sx_signal* sig, int msecs)
     if (ok)
         _sig->value = 0;
     r = pthread_mutex_unlock(&_sig->mutex);
-    SX_UNUSED(r);
+    sx_unused(r);
     return ok;    
 }
 
@@ -398,7 +400,7 @@ void sx_semaphore_init(sx_sem* sem)
     r = pthread_cond_init(&_sem->cond, NULL);
     sx_assert(r == 0 && "pthread_cond_init failed");
 
-    SX_UNUSED(r);
+    sx_unused(r);
 }
 
 void sx_semaphore_release(sx_sem* sem)
@@ -423,7 +425,7 @@ void sx_semaphore_post(sx_sem* sem, int count)
     r = pthread_mutex_unlock(&_sem->mutex);
     sx_assert(r == 0);
 
-    SX_UNUSED(r);
+    sx_unused(r);
 }
 
 bool sx_semaphore_wait(sx_sem* sem, int msecs)
@@ -448,7 +450,7 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs)
         --_sem->count;
     }
     r = pthread_mutex_unlock(&_sem->mutex);
-    SX_UNUSED(r);
+    sx_unused(r);
     return ok;
 }
 #   endif
@@ -584,11 +586,11 @@ static DWORD WINAPI thread_fn(LPVOID arg)
     sx_thread* thrd = (sx_thread*)arg;
     thrd->thread_id = GetCurrentThreadId();
     sx_semaphore_post(&thrd->sem, 1);
-    return (DWORD)thrd->callback(thrd->user_data);
+    return (DWORD)thrd->callback(thrd->user_data1, thrd->user_data2);
 }
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
-                              void* user_data, int stack_sz, const char* name)
+                              void* user_data1, int stack_sz, const char* name, void* user_data2)
 {
     sx_thread* thrd = (sx_thread*)sx_malloc(alloc, sizeof(sx_thread));
     if (!thrd)
@@ -596,7 +598,8 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
 
     sx_semaphore_init(&thrd->sem);
     thrd->callback = callback;
-    thrd->user_data = user_data;
+    thrd->user_data1 = user_data1;
+    thrd->user_data2 = user_data2;
     thrd->stack_sz = sx_max(stack_sz, sx_os_minstacksz());
     thrd->running = true;
 
@@ -674,24 +677,67 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
 
 // Sp-Sc-Queue
 // Reference: http://www.drdobbs.com/parallel/writing-lock-free-code-a-corrected-queue/210604448?pgno=1
-typedef struct _sx_queue_spsc_node
+typedef struct sx__queue_spsc_node
 {
-    struct _sx_queue_spsc_node* next;
-} _sx_queue_spsc_node;
+    struct sx__queue_spsc_node*  next;
+} sx__queue_spsc_node;
+
+typedef struct sx__queue_spsc_bin
+{
+    sx__queue_spsc_node**        ptrs;
+    uint8_t*                     buff;
+    struct sx__queue_spsc_bin*   next;
+    int                          iter;
+    int                          _reserved;
+} sx__queue_spsc_bin;
 
 typedef struct sx_queue_spsc
 {
-    _sx_queue_spsc_node** ptrs;
-    uint8_t*              buff;
-    int                   iter;
-    int                   capacity;
-    int                   stride;
+    sx__queue_spsc_node**   ptrs;
+    uint8_t*                buff;
+    int                     iter;
+    int                     capacity;
+    int                     stride;
+    int                     _reserved;
 
-    _sx_queue_spsc_node*  first;
-    sx_atomic_ptr         last;
-    sx_atomic_ptr         divider;
+    sx__queue_spsc_node*    first;
+    sx_atomic_ptr           last;
+    sx_atomic_ptr           divider;
+
+    sx__queue_spsc_bin*     grow_bins;   // linked-list of bins, if queue is grown
 } sx_queue_spsc;
 
+static sx__queue_spsc_bin* sx__queue_spsc_create_bin(const sx_alloc* alloc, int item_sz, int capacity)
+{
+    sx_assert(capacity % 16 == 0);
+
+    uint8_t* buff = (uint8_t*)sx_malloc(alloc, 
+                        sizeof(sx__queue_spsc_bin) + (item_sz + sizeof(void*) + sizeof(sx__queue_spsc_node))*capacity);
+    if (!buff) {
+        sx_out_of_memory();
+        return NULL;
+    }
+    sx__queue_spsc_bin* bin = (sx__queue_spsc_bin*)buff;
+    buff += sizeof(sx__queue_spsc_bin);
+    bin->ptrs = (sx__queue_spsc_node**)buff;
+    buff += sizeof(sx__queue_spsc_node*)*capacity;
+    bin->buff = buff;
+
+    bin->iter = capacity;
+
+    for (int i = 0; i < capacity; i++) {
+        bin->ptrs[capacity - i - 1] = (sx__queue_spsc_node*)
+            (bin->buff + (sizeof(sx__queue_spsc_node) + item_sz) * i);
+    }
+
+    return bin;
+}
+
+static void sx__queue_spsc_destroy_bin(sx__queue_spsc_bin* bin, const sx_alloc* alloc)
+{
+    sx_assert(bin);
+    sx_free(alloc, bin);
+}
 
 sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capacity)
 {
@@ -699,7 +745,7 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
 
     capacity = sx_align_mask(capacity, 15);
     uint8_t* buff = (uint8_t*)sx_malloc(alloc,
-                                        sizeof(sx_queue_spsc) + (item_sz + sizeof(void*) + sizeof(_sx_queue_spsc_node))*capacity);
+                                        sizeof(sx_queue_spsc) + (item_sz + sizeof(void*) + sizeof(sx__queue_spsc_node))*capacity);
     if (!buff) {
         sx_out_of_memory();
         return NULL;
@@ -707,8 +753,8 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
 
     sx_queue_spsc* queue = (sx_queue_spsc*)buff;
     buff += sizeof(sx_queue_spsc);
-    queue->ptrs = (_sx_queue_spsc_node**)buff;
-    buff += sizeof(_sx_queue_spsc_node*)*capacity;
+    queue->ptrs = (sx__queue_spsc_node**)buff;
+    buff += sizeof(sx__queue_spsc_node*)*capacity;
     queue->buff = buff;
 
     queue->iter = capacity;
@@ -716,15 +762,16 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
     queue->stride = item_sz;
 
     for (int i = 0; i < capacity; i++) {
-        queue->ptrs[capacity - i - 1] = (_sx_queue_spsc_node*)
-            (queue->buff + (sizeof(_sx_queue_spsc_node) + item_sz)*i);
+        queue->ptrs[capacity - i - 1] = (sx__queue_spsc_node*)
+            (queue->buff + (sizeof(sx__queue_spsc_node) + item_sz) * i);
     }
 
     // initialize dummy node
-    _sx_queue_spsc_node* node = queue->ptrs[--queue->iter];
+    sx__queue_spsc_node* node = queue->ptrs[--queue->iter];
     node->next = NULL;
     queue->first = node;
     queue->divider = queue->last = node;
+    queue->grow_bins = NULL;
 
     return queue;
 }
@@ -732,28 +779,59 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
 void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc)
 {
     sx_assert(queue);
+
+    if (queue->grow_bins) {
+        sx__queue_spsc_bin* bin = queue->grow_bins;
+        while (bin) {
+            sx__queue_spsc_bin* next = bin->next;
+            sx__queue_spsc_destroy_bin(bin, alloc);
+            bin = next;
+        }
+    }
+
     queue->capacity = queue->iter = 0;
     sx_free(alloc, queue);
 }
 
 bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
 {
+    sx__queue_spsc_node* node = NULL;
+    sx__queue_spsc_bin*  node_bin = NULL;
     if (queue->iter > 0) {
-        _sx_queue_spsc_node* node = queue->ptrs[--queue->iter];
+        node = queue->ptrs[--queue->iter];
+    } else {
+        // look in bins
+        sx__queue_spsc_bin* bin = queue->grow_bins;
+        while (bin && !node) {
+            if (bin->iter > 0) {
+                node = bin->ptrs[--bin->iter];
+                node_bin = bin;
+            }
+            bin = bin->next;
+        }
+    }
+
+    if (node) {
         sx_memcpy(node + 1, data, queue->stride);
         node->next = NULL;
 
-        _sx_queue_spsc_node* last = (_sx_queue_spsc_node*)queue->last;
+        sx__queue_spsc_node* last = (sx__queue_spsc_node*)queue->last;
         last->next = node;
 
         sx_atomic_xchg_ptr(&queue->last, node);
 
-        // trim unsused nodes
+        // trim/remove un-used nodes
         while (queue->first != queue->divider) {
-            _sx_queue_spsc_node* first = (_sx_queue_spsc_node*)queue->first;
+            sx__queue_spsc_node* first = (sx__queue_spsc_node*)queue->first;
             queue->first = first->next;
-            sx_assert(queue->iter != queue->capacity);
-            queue->ptrs[queue->iter++] = first;
+
+            if (!node_bin) {
+                sx_assert(queue->iter != queue->capacity);
+                queue->ptrs[queue->iter++] = first;
+            } else {
+                sx_assert(node_bin->iter != queue->capacity);
+                node_bin->ptrs[node_bin->iter++] = node;
+            }
         }
         return true;
     } else {
@@ -764,7 +842,7 @@ bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
 bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
 {
     if (queue->divider != queue->last) {
-        _sx_queue_spsc_node* divider = (_sx_queue_spsc_node*)queue->divider;
+        sx__queue_spsc_node* divider = (sx__queue_spsc_node*)queue->divider;
         sx_assert(divider->next);
         sx_memcpy(data, divider->next + 1, queue->stride);
         
@@ -774,6 +852,42 @@ bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
 
     return false;
 }
+
+bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc)
+{
+    sx__queue_spsc_bin* bin = sx__queue_spsc_create_bin(alloc, queue->stride, queue->capacity);
+    if (bin) {
+        if (queue->grow_bins) {
+            sx__queue_spsc_bin* last = queue->grow_bins;
+            while (last->next)
+                last = last->next;
+            last->next = bin;
+        } else {
+            queue->grow_bins = bin;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool sx_queue_spsc_full(const sx_queue_spsc* queue)
+{
+    if (queue->iter > 0) {
+        return true;
+    } else {
+        // look in bins
+        sx__queue_spsc_bin* bin = queue->grow_bins;
+        while (bin) {
+            if (bin->iter > 0)
+                return true;
+            bin = bin->next;
+        }
+    }    
+
+    return false;
+}
+
 
 uint32_t sx_thread_tid()
 {

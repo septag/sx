@@ -161,7 +161,7 @@ void* sx_os_dlopen(const char* filepath)
 	|| SX_PLATFORM_PS4        \
 	|| SX_PLATFORM_XBOXONE    \
 	|| SX_PLATFORM_WINRT
-	SX_UNUSED(filepath);
+	sx_unused(filepath);
 	return NULL;
 #else
 	return dlopen(filepath, RTLD_LOCAL|RTLD_LAZY);
@@ -175,7 +175,7 @@ void sx_os_dlclose(void* handle)
 #elif SX_PLATFORM_EMSCRIPTEN || \
       SX_PLATFORM_PS4 || \
       SX_PLATFORM_XBOXONE
-    SX_UNUSED(handle);
+    sx_unused(handle);
 #else
     dlclose(handle);
 #endif
@@ -188,8 +188,8 @@ void* sx_os_dlsym(void* handle, const char* symbol)
 #elif SX_PLATFORM_EMSCRIPTEN || \
       SX_PLATFORM_PS4 || \
       SX_PLATFORM_XBOXONE
-    SX_UNUSED(handle);
-    SX_UNUSED(symbol);
+    sx_unused(handle);
+    sx_unused(symbol);
     return NULL;
 #else
     return dlsym(handle, symbol);
@@ -216,7 +216,7 @@ int sx_os_chdir(const char* path)
  || SX_PLATFORM_WINRT   \
  || SX_PLATFORM_ANDROID \
  || Sx_PLATFORM_IOS
-	SX_UNUSED(_path);
+	sx_unused(path);
 	return -1;
 #elif SX_PLATFORM_WINDOWS
 	return SetCurrentDirectory(path);
@@ -245,7 +245,7 @@ void* sx_os_exec(const char* const* argv)
 
 		if (0 == pid) {
 			int result = execvp(argv[0], (char* const*)(&argv[1]) );
-			SX_UNUSED(result);
+			sx_unused(result);
 			return NULL;
 		}
 
@@ -285,7 +285,7 @@ void* sx_os_exec(const char* const* argv)
 
 		return NULL;
 #else
-		SX_UNUSED(argv);
+		sx_unused(argv);
 		return NULL;
 #endif // SX_PLATFORM_
 }
@@ -389,8 +389,8 @@ char* sx_os_path_pwd(char* dst, int size)
  || SX_PLATFORM_XBOXONE \
  || SX_PLATFORM_WINRT   \
  || SX_CRT_NONE
-		SX_UNUSED(dst);
-		SX_UNUSUED(size);
+		sx_unused(dst);
+		sx_unused(size);
 		return NULL;
 #elif SX_CRT_MSVC
 		return _getcwd(dst, size);
@@ -542,6 +542,8 @@ char*  sx_os_path_join(char* dst, int size, const char* path_a, const char* path
         } else {
             dst[0] = '\0';
         }
+	} else if (len > 0 && path_a[len-1] != k_path_sep[0]) {
+		sx_strcat(dst, size, k_path_sep);
 	}
 
 	if (path_b[0] == k_path_sep[0]) 
@@ -563,9 +565,20 @@ char* sx_os_path_normcase(char* dst, int size, const char* path)
 
 char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start)
 {
-	sx_assert(0 && "TODO");
-	sx_assert(start != path);
+	sx_assert(start != dst);
 
+
+	const char* sub = sx_strstr(path, start);
+	if (sub) {
+		int len = sx_strlen(start);
+		if (len > 0 && (sub[len-1] == '/' || sub[len-1] == '\\'))
+			len++;
+		if (path != dst)
+			sx_strcpy(dst, size, sub + len);
+		else 
+			sx_memmove(dst, sub+len, sx_strlen(sub+len)+1);
+		return dst;
+	}
 	return NULL;
 }
 
@@ -588,6 +601,8 @@ char* sx_os_path_normpath(char* dst, int size, const char* path)
 {
 #if SX_PLATFORM_WINDOWS
 	return sx_tolower(dst, size, sx_os_path_winpath(dst, size, path));
+#elif SX_PLATFORM_APPLE
+	return sx_tolower(dst, size, sx_os_path_unixpath(dst, size, path));
 #else
 	return sx_os_path_unixpath(dst, size, path);
 #endif

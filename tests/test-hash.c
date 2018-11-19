@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     }
     delta_tm = sx_tm_since(start_tm);
     printf("\tTook %lf ms (%lf secs)\n", sx_tm_ms(delta_tm), sx_tm_sec(delta_tm));
-    if (SX_ENABLED(SX_CONFIG_HASHTBL_DEBUG))
+    if (sx_enabled(SX_CONFIG_HASHTBL_DEBUG))
         printf("\tTotal miss count: %d\n\tTotal probe count: %d\n", tbl->_miss_cnt, tbl->_probe_cnt);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
     }
     delta_tm = sx_tm_since(start_tm);
     printf("\tTook %lf ms (%lf secs)\n", sx_tm_ms(delta_tm), sx_tm_sec(delta_tm));
-    if (SX_ENABLED(SX_CONFIG_HASHTBL_DEBUG))
+    if (sx_enabled(SX_CONFIG_HASHTBL_DEBUG))
         printf("\tTotal miss count: %d\n\tTotal probe count: %d\n", tbl2->_miss_cnt, tbl2->_probe_cnt);
 
     sx_hashtbl_destroy(tbl, alloc);

@@ -793,7 +793,7 @@ int sx_strpool_decref(sx_strpool* sp, sx_str_t handle)
 
 bool sx_strpool_valid(const sx_strpool* sp, sx_str_t handle)
 {
-    return SX_BOOL(strpool_isvalid(sp, (STRPOOL_U64)handle));
+    return sx_cppbool(strpool_isvalid(sp, (STRPOOL_U64)handle));
 }
 
 int sx_strpool_ref(sx_strpool* sp, sx_str_t handle)

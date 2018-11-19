@@ -19,7 +19,7 @@ typedef struct work_item
     int id;
 } work_item;
 
-static int worker_thread_fn(void* user_data)
+static int worker_thread_fn(void* user_data1, void* user_data2)
 {
     puts("Thread");
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
     g_queue = sx_queue_spsc_create(alloc, sizeof(work_item), 10);
     sx_semaphore_init(&g_sem);
-    sx_thread* thrd = sx_thread_create(alloc, worker_thread_fn, NULL, 0, "Consumer");
+    sx_thread* thrd = sx_thread_create(alloc, worker_thread_fn, NULL, 0, "Consumer", NULL);
     if (!thrd) {
         return -1;
     }

@@ -51,8 +51,6 @@ static void job_fib_fn(int index, void* user)
     *((uint32_t*)user) = b;
 }
 
-
-
 int main(int argc, char* argv[])
 {
     sx_rng_seed(&g_rng, (uint32_t)time(NULL));

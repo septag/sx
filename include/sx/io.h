@@ -65,8 +65,8 @@ typedef struct sx_mem_block
 {
     const sx_alloc* alloc;
     void* data;
-    int size;
-    int align;
+    int   size;
+    int   align;
 } sx_mem_block;
 
 #ifdef __cplusplus
@@ -75,6 +75,7 @@ extern "C" {
 
 sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, 
                                   const void* data SX_DFLT(NULL), int align SX_DFLT(0));
+sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data);
 void sx_mem_destroy_block(sx_mem_block* mem);
 
 void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size);

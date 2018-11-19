@@ -17,8 +17,6 @@
 #endif
 #endif
 
-// TODO: posix version may have problems, test it
-
 #include "sx/os.h"
 
 void* sx_virtual_reserve(size_t reserve_sz)
@@ -42,7 +40,8 @@ void  sx_virtual_release(void* ptr)
 
 void  sx_virtual_protect(void* ptr, size_t sz)
 {
-
+    // TODO
+    sx_assert(0 && "not implemented");
 }
 
 void* sx_virtual_commit(void* addr, size_t sz)

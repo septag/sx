@@ -42,6 +42,21 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
     }
 }
 
+sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data)
+{
+    sx_mem_block* mem = (sx_mem_block*)sx_malloc(alloc, sizeof(sx_mem_block));
+    if (mem) {
+        mem->alloc = alloc;
+        mem->data = data;
+        mem->size = size;
+        mem->align = 0;
+        return mem;
+    } else {
+        sx_out_of_memory();
+        return NULL;
+    }
+}
+
 void sx_mem_destroy_block(sx_mem_block* mem)
 {
     sx_assert(mem);

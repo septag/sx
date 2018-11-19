@@ -290,14 +290,14 @@
 
 #if SX_COMPILER_GCC
 #	define SX_COMPILER_NAME "GCC " \
-				SX_STRINGIZE(__GNUC__) "." \
-				SX_STRINGIZE(__GNUC_MINOR__) "." \
-				SX_STRINGIZE(__GNUC_PATCHLEVEL__)
+				sx_stringize(__GNUC__) "." \
+				sx_stringize(__GNUC_MINOR__) "." \
+				sx_stringize(__GNUC_PATCHLEVEL__)
 #elif SX_COMPILER_CLANG
 #	define SX_COMPILER_NAME "Clang " \
-				SX_STRINGIZE(__clang_major__) "." \
-				SX_STRINGIZE(__clang_minor__) "." \
-				SX_STRINGIZE(__clang_patchlevel__)
+				sx_stringize(__clang_major__) "." \
+				sx_stringize(__clang_minor__) "." \
+				sx_stringize(__clang_patchlevel__)
 #elif SX_COMPILER_MSVC
 #	if SX_COMPILER_MSVC >= 1910 // Visual Studio 2017
 #		define SX_COMPILER_NAME "MSVC 15.0"
@@ -318,14 +318,14 @@
 
 #if SX_PLATFORM_ANDROID
 #	define SX_PLATFORM_NAME "Android " \
-				SX_STRINGIZE(SX_PLATFORM_ANDROID)
+				sx_stringize(SX_PLATFORM_ANDROID)
 #elif SX_PLATFORM_BSD
 #	define SX_PLATFORM_NAME "BSD"
 #elif SX_PLATFORM_EMSCRIPTEN
 #	define SX_PLATFORM_NAME "asm.js " \
-				SX_STRINGIZE(__EMSCRIPTEN_major__) "." \
-				SX_STRINGIZE(__EMSCRIPTEN_minor__) "." \
-				SX_STRINGIZE(__EMSCRIPTEN_tiny__)
+				sx_stringize(__EMSCRIPTEN_major__) "." \
+				sx_stringize(__EMSCRIPTEN_minor__) "." \
+				sx_stringize(__EMSCRIPTEN_tiny__)
 #elif SX_PLATFORM_HURD
 #	define SX_PLATFORM_NAME "Hurd"
 #elif SX_PLATFORM_IOS

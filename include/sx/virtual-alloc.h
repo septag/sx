@@ -45,7 +45,7 @@ extern "C" {
 bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz);
 void sx_virtualalloc_release(sx_virtualalloc* valloc);
 
-// TODO: low-level virtual memory api
+// low-level virtual memory api
 void* sx_virtual_reserve(size_t reserve_sz);
 void  sx_virtual_release(void* ptr);
 void  sx_virtual_protect(void* ptr, size_t sz);

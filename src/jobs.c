@@ -46,20 +46,23 @@ typedef struct sx__job_thread_data
 
 typedef struct sx_job_context
 {
-    const sx_alloc* alloc;
-    sx_thread**     threads;
-    int             num_threads;
-    int             stack_sz;
-    sx_pool*        job_pool;
-    sx_pool*        counter_pool;
-    sx__job*        waiting_list[SX_JOB_PRIORITY_COUNT];
-    sx__job*        waiting_list_last[SX_JOB_PRIORITY_COUNT];
-    sx_lock_t       job_lk;
-    sx_lock_t       counter_lk;
-    sx_tls          thread_tls;
-    int             dummy_counter;
-    sx_sem          sem;
-    int             quit;
+    const sx_alloc*             alloc;
+    sx_thread**                 threads;
+    int                         num_threads;
+    int                         stack_sz;
+    sx_pool*                    job_pool;
+    sx_pool*                    counter_pool;
+    sx__job*                    waiting_list[SX_JOB_PRIORITY_COUNT];
+    sx__job*                    waiting_list_last[SX_JOB_PRIORITY_COUNT];
+    sx_lock_t                   job_lk;
+    sx_lock_t                   counter_lk;
+    sx_tls                      thread_tls;
+    int                         dummy_counter;
+    sx_sem                      sem;
+    int                         quit;
+    sx_job_thread_init_cb*      thread_init_cb;
+    sx_job_thread_shutdown_cb*  thread_shutdown_cb; 
+    void*                       thread_user;
 } sx_job_context;
 
 static void sx__del_job(sx_job_context* ctx, sx__job* job)
@@ -339,7 +342,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
 
     bool r = sx_fiber_stack_init(&tdata->selector_stack, sx_os_minstacksz());
     sx_assert(r && "Not enough memory for temp stacks");
-    SX_UNUSED(r);
+    sx_unused(r);
 
     return tdata;
 }
@@ -350,16 +353,22 @@ static void sx__job_destroy_tdata(sx__job_thread_data* tdata, const sx_alloc* al
     sx_free(alloc, tdata);
 }
 
-static int sx__job_thread_fn(void* user)
+static int sx__job_thread_fn(void* user1, void* user2)
 {
+    sx_job_context* ctx = (sx_job_context*)user1;
+    int index = (int)(intptr_t)user2;
+
+    uint32_t thread_id = sx_thread_tid();
+
+    if (ctx->thread_init_cb)
+        ctx->thread_init_cb(index, thread_id, ctx->thread_user);
+
     // Create thread data
-    sx_job_context* ctx = (sx_job_context*)user;
-    sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, sx_thread_tid(), false);
+    sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, false);
     if (!tdata) {
         sx_assert(tdata && "ThreadData create failed!");
         return -1;
-    }
-    
+    }    
     sx_tls_set(ctx->thread_tls, tdata);
 
     // Get first stack and run selector loop
@@ -368,6 +377,8 @@ static int sx__job_thread_fn(void* user)
 
     sx_tls_set(ctx->thread_tls, NULL);
     sx__job_destroy_tdata(tdata, ctx->alloc);
+    if (ctx->thread_shutdown_cb) 
+        ctx->thread_shutdown_cb(index, thread_id, ctx->thread_user);
 
     return 0;
 }
@@ -385,6 +396,9 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
     ctx->num_threads = desc->num_threads > 0 ? desc->num_threads : (sx_os_numcores() - 1);
     ctx->thread_tls = sx_tls_create();
     ctx->stack_sz = desc->fiber_stack_sz > 0 ? desc->fiber_stack_sz : DEFAULT_FIBER_STACK_SIZE;
+    ctx->thread_init_cb = desc->thread_init_cb;
+    ctx->thread_shutdown_cb = desc->thread_shutdown_cb;
+    ctx->thread_user = desc->thread_user_data;
     int max_fibers = desc->max_fibers > 0 ? desc->max_fibers : DEFAULT_MAX_FIBERS;
     int max_jobs = desc->max_jobs > 0 ? desc->max_jobs : DEFAULT_MAX_JOBS;
 
@@ -414,7 +428,8 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
         for (int i = 0; i < ctx->num_threads; i++) {
             char name[32];
             sx_snprintf(name, sizeof(name), "sx_job_thread(%d)", i+1);
-            ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, sx_os_minstacksz(), name);
+            ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, sx_os_minstacksz(), 
+                                               name, (void*)(intptr_t)i);
             sx_assert(ctx->threads[i] && "sx_thread_create failed!");
         }
     }
