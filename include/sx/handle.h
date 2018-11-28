@@ -3,7 +3,12 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 // handle.h - v1.0 - Handle opaque type (uint16_t) and handle pool
+//                   useful for exposing internal objects instead of pointers, with the ability to add/remove
+//                   If remove is not needed we can just use an array and expose the index
+// Reference: http://bitsquid.blogspot.com/2011/09/managing-decoupling-part-4-id-lookup.html
 // Reference: https://github.com/bkaradzic/bx/blob/master/include/bx/handlealloc.h
+// Reference: https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+//
 //
 //  sx_handle_pool: Reserves handles and manages them (new/delete)
 //                  Data can be any array, event multiple pre-allocated arrays. Handles will directly index to them
@@ -60,8 +65,8 @@ typedef struct sx_handle_pool
 {
     int          count;
     int          capacity;
-    sx_handle_t* dense;
-    sx_handle_t* sparse;
+    sx_handle_t* dense;         // [0..count] saves actual handles
+    sx_handle_t* sparse;        // [0..capacity] saves indexes-to-dense for removal lookup
 } sx_handle_pool;
 
 SX_API sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity);
@@ -71,8 +76,7 @@ SX_API bool sx_handle_grow_pool(SX_INOUT sx_handle_pool** ppool, const sx_alloc*
 SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
 {
     if (pool->count < pool->capacity) {
-        sx_handle_t index = pool->count;
-        ++pool->count;
+        sx_handle_t index = pool->count++;
         sx_handle_t handle = pool->dense[index];
         pool->sparse[handle] = index;
         return handle;
@@ -88,11 +92,10 @@ SX_INLINE void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
     sx_assert(pool->count > 0);
 
     sx_handle_t index = pool->sparse[handle];
-    --pool->count;
-    sx_handle_t tmp = pool->dense[pool->count];
+    sx_handle_t last_handle = pool->dense[--pool->count];
     pool->dense[pool->count] = handle;
-    pool->sparse[tmp] = index;
-    pool->dense[index] = tmp; 
+    pool->sparse[last_handle] = index;
+    pool->dense[index] = last_handle; 
 }
 
 SX_INLINE void sx_handle_reset_pool(sx_handle_pool* pool)
