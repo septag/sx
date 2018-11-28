@@ -119,7 +119,7 @@ int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence SX_
 // sx_file_writer
 typedef struct sx_file_writer
 {
-    SX_ALIGN_DECL(16, uint8_t) data[16];
+    sx_align_decl(16, uint8_t) data[16];
 } sx_file_writer;
 
 bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t flags SX_DFLT(0));
@@ -133,7 +133,7 @@ int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset, sx_whence whence S
 // sx_file_reader
 typedef struct sx_file_reader
 {
-    SX_ALIGN_DECL(16, uint8_t) data[16];
+    sx_align_decl(16, uint8_t) data[16];
 } sx_file_reader;
 
 bool sx_file_open_reader(sx_file_reader* reader, const char* filepath);

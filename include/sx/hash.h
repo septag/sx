@@ -121,9 +121,6 @@ int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
 int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
 void sx_hashtbl_clear(sx_hashtbl* tbl);
 
-#ifdef __cplusplus
-}
-#endif
 
 SX_INLINE int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
 {
@@ -139,6 +136,14 @@ SX_INLINE void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
     --tbl->count;    
 }
 
+SX_INLINE void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key)
+{
+    int index = sx_hashtbl_find(tbl, key);
+    if (index != -1)
+        sx_hashtbl_remove(tbl, index);
+}
+
+
 SX_INLINE bool sx_hashtbl_full(const sx_hashtbl* tbl)
 {
     return tbl->capacity == tbl->count;
@@ -149,5 +154,13 @@ SX_INLINE int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
     sx_assert(index>=0 && index<tbl->capacity);
     return tbl->values[index];
 }
+
+#define sx_hashtbl_add_and_grow(_tbl, _key, _value, _alloc) \
+    (sx_hashtbl_full(_tbl) ? sx_hashtbl_grow(&(_tbl), _alloc) : 0, sx_hashtbl_add(_tbl, _key, _value))
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SX_HASH_H_

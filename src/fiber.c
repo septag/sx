@@ -165,7 +165,7 @@ sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers,
         sx_out_of_memory();
         return NULL;
     }
-    sx_memset(ctx->fiber_pool->buff, 0x0, sizeof(sx__fiber_state)*max_fibers);
+    sx_memset(ctx->fiber_pool->pages->buff, 0x0, sizeof(sx__fiber_state)*max_fibers);
     ctx->stack_sz = stack_sz;
 
     return ctx;

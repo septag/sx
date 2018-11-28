@@ -57,12 +57,10 @@
 #endif // defined(__has_extension)
 
 #if SX_COMPILER_GCC || SX_COMPILER_CLANG
-#	define SX_ALIGN_DECL(_align, _decl) _decl __attribute__( (aligned(_align) ) )
+#	define sx_align_decl(_align, _decl) _decl __attribute__( (aligned(_align) ) )
 #	define SX_ALLOW_UNUSED              __attribute__( (unused) )
 #	define SX_FORCE_INLINE              static inline __attribute__( (__always_inline__) )
 #	define SX_FUNCTION                  __PRETTY_FUNCTION__
-#	define SX_LIKELY(_x)                __builtin_expect(!!(_x), 1)
-#	define SX_UNLIKELY(_x)              __builtin_expect(!!(_x), 0)
 #	define SX_NO_INLINE                 __attribute__( (noinline) )
 #	define SX_NO_RETURN                 __attribute__( (noreturn) )
 #	define SX_CONSTFN                   __attribute__( (const) )
@@ -81,18 +79,13 @@
 #		define __stdcall
 #	endif // SX_CRT_MSVC
 #elif SX_COMPILER_MSVC
-#	define SX_ALIGN_DECL(_align, _decl) __declspec(align(_align) ) _decl
+#	define sx_align_decl(_align, _decl) __declspec(align(_align) ) _decl
 #	define SX_ALLOW_UNUSED
 #	define SX_FORCE_INLINE              __forceinline
 #	define SX_FUNCTION                  __FUNCTION__
-#	define SX_LIKELY(_x)                (_x)
-#	define SX_UNLIKELY(_x)              (_x)
 #	define SX_NO_INLINE                 __declspec(noinline)
 #	define SX_NO_RETURN
 #	define SX_CONSTFN                   __declspec(noalias)
-#	define SX_FALLTHROUGH SX_NOOP()
-#	define SX_PRINTF_ARGS(_format, _args)
-#	define SX_ATTRIBUTE(_x)
 #   define SX_INLINE                    static inline
 #else
 #	error "Unknown SX_COMPILER_?"

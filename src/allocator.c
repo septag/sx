@@ -5,6 +5,7 @@
 #include "sx/allocator.h"
 #include "sx/string.h"
 #include "sx/os.h"
+#include "sx/atomic.h"
 
 #include <malloc.h>
 
@@ -73,17 +74,16 @@ static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-typedef struct stb_leakcheck_malloc_info_ stb__leakcheck_malloc_info;
-
-struct stb_leakcheck_malloc_info_
+typedef struct stb__leakcheck_malloc_info
 {
     char   file[16];
     int    line;
     size_t size;
-    stb__leakcheck_malloc_info *next, *prev;
-};
+    struct stb__leakcheck_malloc_info *next, *prev;
+} stb__leakcheck_malloc_info;
 
-static stb__leakcheck_malloc_info *mi_head;
+static stb__leakcheck_malloc_info *mi_head = NULL;
+static sx_lock_t mi_lock = 0;
 
 static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
 {
@@ -91,6 +91,7 @@ static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
     if (mi == NULL) return mi;
 
     sx_os_path_basename(mi->file, sizeof(mi->file), file);
+    sx_lock(&mi_lock);
     mi->line = line;
     mi->next = mi_head;
     if (mi_head)
@@ -98,6 +99,7 @@ static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
     mi->prev = NULL;
     mi->size = (int)sz;
     mi_head = mi;
+    sx_unlock(&mi_lock);
     return mi+1;
 }
 
@@ -106,6 +108,7 @@ static void stb_leakcheck_free(void *ptr)
     if (ptr != NULL) {
         stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)ptr - 1;
         mi->size = ~mi->size;
+        sx_lock(&mi_lock);
 #ifndef STB_LEAKCHECK_SHOWALL
         if (mi->prev == NULL) {
             sx_assert(mi_head == mi);
@@ -115,6 +118,7 @@ static void stb_leakcheck_free(void *ptr)
         if (mi->next)
             mi->next->prev = mi->prev;
 #endif
+        sx_unlock(&mi_lock);
         free(mi);
     }
 }

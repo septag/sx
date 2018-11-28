@@ -58,8 +58,8 @@ typedef uint16_t sx_handle_t;
 
 typedef struct sx_handle_pool
 {
-    int count;
-    int capacity;
+    int          count;
+    int          capacity;
     sx_handle_t* dense;
     sx_handle_t* sparse;
 } sx_handle_pool;
@@ -125,5 +125,8 @@ SX_INLINE bool sx_handle_full(const sx_handle_pool* pool)
 {
     return pool->count == pool->capacity;
 }
+
+#define sx_handle_new_and_grow(_pool, _alloc)  \
+    (sx_handle_full(_pool) ? sx_handle_grow_pool(&(_pool), _alloc) : 0, sx_handle_new(_pool))                 \
 
 #endif  // SX_HANDLE_H_

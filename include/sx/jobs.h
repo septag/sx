@@ -20,9 +20,7 @@
 //                                  - num_threads: number of worker threads, usually one less that number of logical cores
 //                                                 if you set this to 0, no multi-threading will be applied and all the work
 //                                                 will be done in the main thread
-//                                  - max_jobs: Maximum number of jobs that are allowed to be spawned
-//                                              This is actually the maximumm number of sx_job_t handles that are active
-//                                  - num_fibers: Total number of fibers that users can create
+//                                  - max_fibers: Total number of fibers that users can create
 //                                                This is actually the total number of sx_job_desc submitted that are still active (see sx_job_dispatch)
 //                                  - fiber_stack_sz: Stack size of fibers in bytes
 //                                                    This parameter depends on how much work you will do inside job functions
@@ -33,10 +31,11 @@
 //                                  Submitted jobs are immedietely picked up by worker threads and processed
 //                                  - descs: job descriptions, each sub-job can contain a callback function, user data and execution priority
 //                                  - count: number of sub-jots (desc array size) to be submitted
-//      sx_job_wait_del             (Thread-Safe) Blocks the program and waits on dispatched job (sx_job_t). It deletes the sx_job_t handle if the job is done
+//                                  NOTE: if max_fibers (running-jobs) is exceeded, job will be queued and automatically dispatched later on 'sx_job_wait_and_del' and 'sx_job_test_and_del'
+//      sx_job_wait_and_del         (Thread-Safe) Blocks the program and waits on dispatched job (sx_job_t). It deletes the sx_job_t handle if the job is done
 //                                  NOTE: If the sx_job_t is done this functions returns immediately
 //                                        but will do some work if any sub-jobs are remaining and sx_job_t is not finished
-//      sx_job_try_del              (Thread-Safe) This is a non-blocking function, which only checks if sx_job_t is finished
+//      sx_job_test_and_del         (Thread-Safe) This is a non-blocking function, which only checks if sx_job_t is finished
 //                                  If job is finished, it returns True and deletes the sx_job_t handle
 //                                  If not, the function moves on and returns False immediately
 //
@@ -69,7 +68,6 @@ typedef struct sx_job_desc
 typedef struct sx_job_context_desc
 {
     int                         num_threads;            // number of worker threads to spawn (default: num_cpu_cores-1)
-    int                         max_jobs;               // maximum jobs that are allowed to be spawned at the same time (default: 256)
     int                         max_fibers;             // maximum fibers that are allowed to be active at the same time (default: 64)
     int                         fiber_stack_sz;         // fiber stack size (default: 1mb)
     sx_job_thread_init_cb*      thread_init_cb;         // callback function that will be called on initialization of each worker thread
@@ -89,8 +87,8 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
 void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
 sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count);
-void     sx_job_wait_del(sx_job_context* ctx, sx_job_t job);
-bool     sx_job_try_del(sx_job_context* ctx, sx_job_t job);
+void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
+bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
 int      sx_job_num_worker_threads(sx_job_context* ctx);
 
 #ifdef __cplusplus

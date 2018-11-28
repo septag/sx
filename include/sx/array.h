@@ -59,6 +59,7 @@
 #define sx_array_last(a)             ((a)[_sx_sbn(a)-1])
 #define sx_array_pop(a, idx)         do { (a)[idx] = sx_array_last(a); --_sx_sbn(a); } while(0)
 #define sx_array_pop_last(a)         do { --_sx_sbn(a); } while(0)
+#define sx_array_pop_lastn(a, n);    do { _sx_sbn(a) -= (n); } while(0)
 #define sx_array_clear(a)            ((a) ? (_sx_sbn(a) = 0) : 0)
 #define sx_array_reserve(_alloc, a, n)  (sx_array_add(_alloc, a, n), sx_array_clear(a))
 
