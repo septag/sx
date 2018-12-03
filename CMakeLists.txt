@@ -101,7 +101,7 @@ endif()
 
 if (APPLE)
     list(APPEND SOURCE_FILES src/os.m)
-    set_source_files_properties(src/os.m PROPERTIES COMPILE_FLAGS -fobjc-arc)
+    #set_source_files_properties(src/os.m PROPERTIES COMPILE_FLAGS -fobjc-arc)
 endif()
 
 ####################################################################################################
@@ -195,7 +195,9 @@ endif()
 
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if (ANDROID)
+    target_link_libraries(sx PUBLIC dl pthread m cpufeatures)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(sx PUBLIC dl pthread m)
 elseif (APPLE)
     target_link_libraries(sx PUBLIC "-framework Foundation")
