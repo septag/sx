@@ -614,7 +614,7 @@ char* sx_os_path_normpath(char* dst, int size, const char* path)
 }
 
 // https://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
-int apple_numcores();       // fwd: os.m
+int apple__numcores();       // fwd: os.m
 
 int sx_os_numcores()
 {
