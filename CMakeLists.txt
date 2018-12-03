@@ -99,6 +99,10 @@ if (EMSCRIPTEN)
     list(REMOVE_ITEM SOURCE_FILES include/sx/fiber.h)
 endif()
 
+if (APPLE)
+    list(APPEND SOURCE_FILES src/os.m)
+endif()
+
 ####################################################################################################
 # Assembly files for fcontext
 if (APPLE)
