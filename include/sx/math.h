@@ -498,9 +498,9 @@ SX_INLINE SX_CONSTFN float sx_mod(float _a, float _b)
     return _a - _b * sx_floor(_a / _b);
 }
 
+// http://realtimecollisiondetection.net/blog/?t=89
 SX_INLINE SX_CONSTFN bool sx_equal(float _a, float _b, float _epsilon)
 {
-    // http://realtimecollisiondetection.net/blog/?t=89
     const float lhs = sx_abs(_a - _b);
     float aa = sx_abs(_a);
     float ab = sx_abs(_b);
@@ -598,7 +598,7 @@ SX_INLINE SX_CONSTFN float sx_angle_lerp(float _a, float _b, float _t)
 SX_INLINE sx_vec3 sx_vec3f(float _x, float _y, float _z) 
 {
 #ifdef __cplusplus
-    return {_x, _y, _z};
+    return {{_x, _y, _z}};
 #else
     return (sx_vec3){.x = _x, .y = _y, .z = _z};
 #endif    
@@ -607,7 +607,7 @@ SX_INLINE sx_vec3 sx_vec3f(float _x, float _y, float _z)
 SX_INLINE sx_vec3 sx_vec3fv(const float* _f)
 {
 #ifdef __cplusplus
-    return {_f[0], _f[1], _f[2]};
+    return {{_f[0], _f[1], _f[2]}};
 #else
     return (sx_vec3){.x = _f[0], .y = _f[1], .z = _f[2]};
 #endif    
@@ -627,7 +627,7 @@ SX_INLINE sx_vec3 sx_vec3splat(float _f)
 SX_INLINE sx_vec2 sx_vec2f(float _x, float _y) 
 {
 #ifdef __cplusplus
-    return {_x, _y};
+    return {{_x, _y}};
 #else
     return (sx_vec2){.x = _x, .y = _y};
 #endif    
@@ -636,7 +636,7 @@ SX_INLINE sx_vec2 sx_vec2f(float _x, float _y)
 SX_INLINE sx_vec2 sx_vec2fv(const float* _f)
 {
 #ifdef __cplusplus
-    return {_f[0], _f[1]};
+    return {{_f[0], _f[1]}};
 #else
     return (sx_vec2){.x = _f[0], .y = _f[1]};
 #endif    
@@ -651,7 +651,7 @@ SX_INLINE sx_vec2 sx_vec2splat(float _f)
 SX_INLINE sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w) 
 {
 #ifdef __cplusplus
-    return {_x, _y, _z, _w};
+    return {{_x, _y, _z, _w}};
 #else
     return (sx_vec4){.x = _x, .y = _y, .z = _z, .w = _w};
 #endif    
@@ -660,7 +660,7 @@ SX_INLINE sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w)
 SX_INLINE sx_vec4 sx_vec4fv(const float* _f)
 {
 #ifdef __cplusplus
-    return {_f[0], _f[1], _f[2], _f[3]};
+    return {{_f[0], _f[1], _f[2], _f[3]}};
 #else
     return (sx_vec4){.x = _f[0], .y = _f[1], .z = _f[2], .w = _f[3]};
 #endif    
@@ -681,7 +681,7 @@ SX_INLINE sx_vec4 sx_vec4splat(float _f)
 SX_INLINE sx_quat sx_quat4f(float _x, float _y, float _z, float _w)
 {
 #ifdef __cplusplus
-    return {_x, _y, _z, _w};
+    return {{_x, _y, _z, _w}};
 #else
     return (sx_quat){.x=_x, .y=_y, .z=_z, .w=_w};
 #endif    
@@ -690,7 +690,7 @@ SX_INLINE sx_quat sx_quat4f(float _x, float _y, float _z, float _w)
 SX_INLINE sx_quat sx_quatfv(const float* _f)
 {
 #ifdef __cplusplus
-    return {_f[0], _f[1], _f[2]};
+    return {{_f[0], _f[1], _f[2]}};
 #else
     return (sx_quat){.x=_f[0], .y=_f[1], .z=_f[2], .w=_f[3]};
 #endif    
@@ -970,10 +970,10 @@ SX_INLINE sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14,
                            float m41, float m42, float m43, float m44)
 {
 #ifdef __cplusplus
-    return { m11, m21, m31, m41,
-             m12, m22, m32, m42,
-             m13, m23, m33, m43,
-             m14, m24, m34, m44};
+    return {{ m11, m21, m31, m41,
+              m12, m22, m32, m42,
+              m13, m23, m33, m43,
+              m14, m24, m34, m44 }};
 #else
     return (sx_mat4){.m11=m11, .m12=m12, .m13=m13, .m14=m14,
                      .m21=m21, .m22=m22, .m23=m23, .m24=m24,
@@ -985,10 +985,10 @@ SX_INLINE sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14,
 SX_INLINE sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const float* _col3, const float* _col4)
 {
 #ifdef __cplusplus
-    return {_col1[0], _col1[1], _col1[2], _col1[3],
-            _col2[0], _col2[1], _col2[2], _col2[3],
-            _col3[0], _col3[1], _col3[2], _col3[3],
-            _col4[0], _col4[1], _col4[2], _col4[3]};
+    return {{_col1[0], _col1[1], _col1[2], _col1[3],
+             _col2[0], _col2[1], _col2[2], _col2[3],
+             _col3[0], _col3[1], _col3[2], _col3[3],
+             _col4[0], _col4[1], _col4[2], _col4[3]}};
 #else
     return (sx_mat4){.col1 = sx_vec4fv(_col1), .col2 = sx_vec4fv(_col2),
                      .col3 = sx_vec4fv(_col3), .col4 = sx_vec4fv(_col4)};
@@ -998,11 +998,10 @@ SX_INLINE sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const float*
 SX_INLINE sx_mat4 sx_mat4v(const sx_vec4 _col1, const sx_vec4 _col2, const sx_vec4 _col3, const sx_vec4 _col4)
 {
 #ifdef __cplusplus
-    return {_col1.f[0], _col1.f[1], _col1.f[2], _col1.f[3],
-            _col2.f[0], _col2.f[1], _col2.f[2], _col2.f[3],
-            _col3.f[0], _col3.f[1], _col3.f[2], _col3.f[3],
-            _col4.f[0], _col4.f[1], _col4.f[2], _col4.f[3]
-};
+    return {{_col1.f[0], _col1.f[1], _col1.f[2], _col1.f[3],
+             _col2.f[0], _col2.f[1], _col2.f[2], _col2.f[3],
+             _col3.f[0], _col3.f[1], _col3.f[2], _col3.f[3],
+             _col4.f[0], _col4.f[1], _col4.f[2], _col4.f[3] }};
 #else
     return (sx_mat4){.col1 = _col1, .col2 = _col2, .col3 = _col3, .col4 = _col4};
 #endif
@@ -1267,9 +1266,9 @@ SX_INLINE sx_mat3 sx_mat3f(float m11, float m12, float m13,
                            float m31, float m32, float m33)
 {
 #ifdef __cplusplus
-    return { m11, m21, m31,
-             m12, m22, m32,
-             m13, m23, m33 };
+    return {{ m11, m21, m31,
+              m12, m22, m32,
+              m13, m23, m33 }};
 #else
     return (sx_mat3){.m11=m11, .m12=m12, .m13=m13,
                      .m21=m21, .m22=m22, .m23=m23,
@@ -1280,9 +1279,9 @@ SX_INLINE sx_mat3 sx_mat3f(float m11, float m12, float m13,
 SX_INLINE sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float* _col3)
 {
 #ifdef __cplusplus
-    return {_col1[0], _col1[1], _col1[2],
-            _col2[0], _col2[1], _col2[2],
-            _col3[0], _col3[1], _col3[2]};
+    return {{_col1[0], _col1[1], _col1[2],
+             _col2[0], _col2[1], _col2[2],
+             _col3[0], _col3[1], _col3[2] }};
 #else
     return (sx_mat3){.col1 = sx_vec3fv(_col1), .col2 = sx_vec3fv(_col2), .col3 = sx_vec3fv(_col3)};
 #endif
@@ -1291,9 +1290,9 @@ SX_INLINE sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float*
 SX_INLINE sx_mat3 sx_mat3v(const sx_vec3 _col1, const sx_vec3 _col2, const sx_vec3 _col3)
 {
 #ifdef __cplusplus
-    return {_col1.f[0], _col1.f[1], _col1.f[2],
-            _col2.f[0], _col2.f[1], _col2.f[2],
-            _col3.f[0], _col3.f[1], _col3.f[2]};
+    return {{ _col1.f[0], _col1.f[1], _col1.f[2],
+              _col2.f[0], _col2.f[1], _col2.f[2],
+              _col3.f[0], _col3.f[1], _col3.f[2] }};
 #else
     return (sx_mat3){.col1 = _col1, .col2 = _col2, .col3 = _col3};
 #endif

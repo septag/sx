@@ -323,11 +323,6 @@ SX_INLINE void sx__toTimespecNs(struct timespec* _ts, uint64_t _nsecs)
     _ts->tv_nsec = _nsecs%UINT64_C(1000000000);
 }
 
-SX_INLINE void sx__toTimespecMs(struct timespec* _ts, int32_t _msecs)
-{
-    sx__toTimespecNs(_ts, (uint64_t)(_msecs)*1000000);
-}
-
 SX_INLINE void sx__tm_add(struct timespec* _ts, int32_t _msecs)
 {
     uint64_t ns = sx__toNs(_ts);

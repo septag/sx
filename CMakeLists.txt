@@ -101,7 +101,6 @@ endif()
 
 if (APPLE)
     list(APPEND SOURCE_FILES src/os.m)
-    #set_source_files_properties(src/os.m PROPERTIES COMPILE_FLAGS -fobjc-arc)
 endif()
 
 ####################################################################################################
