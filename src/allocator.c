@@ -82,8 +82,8 @@ typedef struct stb__leakcheck_malloc_info
     struct stb__leakcheck_malloc_info *next, *prev;
 } stb__leakcheck_malloc_info;
 
-static stb__leakcheck_malloc_info *mi_head = NULL;
-static sx_lock_t mi_lock = 0;
+static stb__leakcheck_malloc_info *mi_head;
+static sx_lock_t mi_lock;
 
 static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
 {

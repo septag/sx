@@ -66,7 +66,6 @@
 
 typedef int volatile    sx_atomic_int;
 typedef void* volatile  sx_atomic_ptr;
-typedef sx_atomic_int   sx_lock_t;
 
 SX_FORCE_INLINE void sx_yield_cpu()
 {
@@ -195,15 +194,26 @@ SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comp
 #endif
 }
 
-/*
-#include <stdatomic.h>  
+#if SX_COMPILER_GCC || SX_COMPILER_CLANG
+#   include <stdatomic.h>  
 typedef atomic_flag sx_lock_t;
-#define sx_lock_init()  ATOMIC_FLAG_INIT
-#define sx_lock(_l)     while(atomic_flag_test_and_set_explicit(&(_l), memory_order_acquire)) sx_yield_cpu()
-#define sx_unlock(_l)   atomic_flag_clear_explicit(&(_l), memory_order_release)
-#define sx_trylock(_l)  atomic_flag_test_and_set_explicit(&(_l), memory_order_acquire)
-*/
+SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+{
+    while(atomic_flag_test_and_set_explicit(lock, memory_order_acquire)) 
+        sx_yield_cpu();
+}
 
+SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
+{
+    atomic_flag_clear_explicit(lock, memory_order_release);
+}
+
+SX_FORCE_INLINE void sx_trylock(sx_lock_t* lock)
+{
+    atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
+}
+#else
+typedef sx_atomic_int   sx_lock_t;
 SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
 {
 #if SX_PLATFORM_WINDOWS
@@ -230,5 +240,6 @@ SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
     while (sx_trylock(lock))
         sx_yield_cpu();
 }
+#endif // SX_COMPILER_GCC || SX_COMPILER_CLANG
 
 #endif // SX_ATOMIC_H_

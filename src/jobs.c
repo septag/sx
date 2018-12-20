@@ -57,8 +57,8 @@ typedef struct sx_job_context
     sx_thread**                 threads;
     int                         num_threads;
     int                         stack_sz;
-    sx_pool*                    job_pool;
-    sx_pool*                    counter_pool;       // growable
+    sx_pool*                    job_pool;           // sx__job: not-growable !
+    sx_pool*                    counter_pool;       // int: growable
     sx__job*                    waiting_list[SX_JOB_PRIORITY_COUNT];
     sx__job*                    waiting_list_last[SX_JOB_PRIORITY_COUNT];
     sx_lock_t                   job_lk;             // used for 'job_pool', 'waiting_list' and 'pending' access
@@ -285,8 +285,8 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int coun
     if (!sx_pool_fulln(ctx->job_pool, count)) {
         for (int i = 0; i < count; i++) {
             sx__job_add_list(&ctx->waiting_list[descs[i].priority], 
-                            &ctx->waiting_list_last[descs[i].priority],
-                            sx__new_job(ctx, i, &descs[i], counter));
+                             &ctx->waiting_list_last[descs[i].priority],
+                             sx__new_job(ctx, i, &descs[i], counter));
         }
 
         // Post to semaphore to worker threads start cur_job

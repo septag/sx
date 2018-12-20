@@ -310,8 +310,8 @@ bool sx_os_copy(const char* src, const char* dest)
     }
 
 #	if SX_PLATFORM_APPLE
-    off_t bytesCopied;
-    int result = sendfile(output, input, 0, &bytesCopied, 0, 0) != -1;
+    off_t bytes_copied;
+    int result = sendfile(output, input, 0, &bytes_copied, 0, 0) != -1;
 #	else
     int result = sendfile(output, input, NULL, 0) != -1;
 #	endif
@@ -572,11 +572,10 @@ char* sx_os_path_relpath(char* dst, int size, const char* path, const char* star
 {
     sx_assert(start != dst);
 
-
     const char* sub = sx_strstr(path, start);
     if (sub) {
         int len = sx_strlen(start);
-        if (len > 0 && (sub[len-1] == '/' || sub[len-1] == '\\'))
+        if (len > 0 && (sub[len] == '/' || sub[len] == '\\'))
             len++;
         if (path != dst)
             sx_strcpy(dst, size, sub + len);

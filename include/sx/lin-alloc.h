@@ -32,9 +32,9 @@ typedef struct sx_linalloc
     sx_alloc alloc;
     uint8_t* ptr;
     uint8_t* last_ptr; 
-    int offset;
-    int size;
-    int peak;
+    int      offset;
+    int      size;
+    int      peak;
 } sx_linalloc;
 
 SX_API void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size);
