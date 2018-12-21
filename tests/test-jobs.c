@@ -11,12 +11,12 @@
 static sx_rng g_rng;
 static sx_job_context* g_ctx = NULL;
 
-static void thread_init(int thread_index, uint32_t thread_id, void* user)
+static void thread_init(sx_job_context* ctx, int thread_index, uint32_t thread_id, void* user)
 {
     printf("init thread id=0x%x index=%d\n", thread_id, thread_index);
 }
 
-static void thread_shutdown(int thread_index, uint32_t thread_id, void* user)
+static void thread_shutdown(sx_job_context* ctx, int thread_index, uint32_t thread_id, void* user)
 {
     printf("shutdown thread id=0x%x index=%d\n", thread_id, thread_index);
 }
