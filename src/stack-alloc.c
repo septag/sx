@@ -98,3 +98,11 @@ void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size)
     stackalloc->size = size;
     stackalloc->offset = stackalloc->peak = 0;   
 }
+
+void sx_stackalloc_reset(sx_stackalloc* stackalloc)
+{
+    sx_assert(stackalloc);
+    stackalloc->last_ptr =  NULL;
+    stackalloc->offset = 0;
+}
+

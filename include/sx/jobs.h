@@ -20,6 +20,7 @@
 //                                  - num_threads: number of worker threads, usually one less that number of logical cores
 //                                                 if you set this to 0, no multi-threading will be applied and all the work
 //                                                 will be done in the main thread
+//                                                 if num_threads = -1, the dispatcher will automatically spawn num_cpu_cores-1 threads
 //                                  - max_fibers: Total number of fibers that users can create
 //                                                This is actually the total number of sx_job_desc submitted that are still active (see sx_job_dispatch)
 //                                  - fiber_stack_sz: Stack size of fibers in bytes
@@ -31,6 +32,7 @@
 //                                  Submitted jobs are immedietely picked up by worker threads and processed
 //                                  - descs: job descriptions, each sub-job can contain a callback function, user data and execution priority
 //                                  - count: number of sub-jots (desc array size) to be submitted
+//                                  - tags: (default: 0) assigns work tag for the job. See below for more details on the concept of Tags
 //                                  NOTE: if max_fibers (running-jobs) is exceeded, job will be queued and automatically dispatched later on 'sx_job_wait_and_del' and 'sx_job_test_and_del'
 //      sx_job_wait_and_del         (Thread-Safe) Blocks the program and waits on dispatched job (sx_job_t). It deletes the sx_job_t handle if the job is done
 //                                  NOTE: If the sx_job_t is done this functions returns immediately
@@ -38,6 +40,23 @@
 //      sx_job_test_and_del         (Thread-Safe) This is a non-blocking function, which only checks if sx_job_t is finished
 //                                  If job is finished, it returns True and deletes the sx_job_t handle
 //                                  If not, the function moves on and returns False immediately
+//      sx_job_num_worker_threads   Returns number of worker threads running (does not include main thread)
+//      sx_job_set_current_thread_tags Sets thread-tag for the current running thread. better call this inside `sx_job_thread_init_cb` callback function
+//                                     See below for more details on the concept of Tags
+//
+//  Tags (Advanced):
+//      The concept is that every worker thread can be assigned a tag (which is a uint32_t bitset), and by default, every thread's tag is 0xffffffff
+//      You can change each worker-thread tag by calling `sx_job_set_current_thread_tags` function inside `sx_job_thread_init_cb` callback
+//      Now by assigning tags to each job dispatch, you can determine exacly which worker-thread (or threads) can pick up and run the job
+//      use this wisely, because if job tag bits are not found in thread tags, the job will not be executed ever
+//      Example:
+//          Worker threads:
+//          thread #1 (tag = 0x7 (binary: 0111))        thread #2 (0x7 (binary: 0111))        thread #3 (0x7 (binary: 0111))
+//
+//          dispatch_job (with tag-bits = 0x4 (0100)) - runs on threads #1 and #2 because the tag bits match
+//          dispatch_job (with tag-bits = 0x8 (1000)) - only runs on thread #3
+//          dispatch_job (with tag = 0)               - default value. runs on all threads
+//          dispatch_job (with tag = 0xffff)          - runs on all threads
 //
 #pragma once
 
@@ -46,9 +65,12 @@
 
 #include "sx/allocator.h"
 
+typedef struct sx_job_context sx_job_context;
+typedef volatile int* sx_job_t;
+
 typedef void (sx_job_cb)(int index, void* user);
-typedef void (sx_job_thread_init_cb)(int thread_index, uint32_t thread_id, void* user);
-typedef void (sx_job_thread_shutdown_cb)(int thread_index, uint32_t thread_id, void* user);
+typedef void (sx_job_thread_init_cb)(sx_job_context* ctx, int thread_index, uint32_t thread_id, void* user);
+typedef void (sx_job_thread_shutdown_cb)(sx_job_context* ctx, int thread_index, uint32_t thread_id, void* user);
 
 typedef enum sx_job_priority
 {
@@ -75,10 +97,6 @@ typedef struct sx_job_context_desc
     void*                       thread_user_data;       // user-data to be passed to callback functions above
 } sx_job_context_desc;
 
-typedef volatile int* sx_job_t;
-
-typedef struct sx_job_context sx_job_context;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -86,10 +104,11 @@ extern "C" {
 sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_context_desc* desc);
 void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
-sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count);
+sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count, uint32_t tags SX_DFLT(0));
 void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
 bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
 int      sx_job_num_worker_threads(sx_job_context* ctx);
+void     sx_job_set_current_thread_tags(sx_job_context* ctx, uint32_t tags);
 
 #ifdef __cplusplus
 }

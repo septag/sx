@@ -26,6 +26,7 @@ typedef struct sx__job
     int             job_index;
     int             done;
     uint32_t        owner_tid;
+    uint32_t        tags;
     sx_fiber_stack  stack_mem;
     sx_fiber_t      fiber;
     sx_job_t        counter;
@@ -42,6 +43,7 @@ typedef struct sx__job_thread_data
     sx_fiber_stack  selector_stack;
     sx_fiber_t      selector_fiber;
     uint32_t        tid;
+    uint32_t        tags;
     bool            main_thrd;
 } sx__job_thread_data;
 
@@ -49,6 +51,7 @@ typedef struct sx__job_pending
 {
     sx_job_t        counter;
     sx_job_desc*    descs;
+    uint32_t        tags;
 } sx__job_pending;
 
 typedef struct sx_job_context
@@ -98,13 +101,14 @@ static void fiber_fn(sx_fiber_transfer transfer)
     sx_fiber_switch(transfer.from, transfer.user);
 }
 
-static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* desc, sx_job_t counter)
+static sx__job* sx__new_job(sx_job_context* ctx, int index, const sx_job_desc* desc, sx_job_t counter, uint32_t tags)
 {
     sx__job* j = (sx__job*)sx_pool_new(ctx->job_pool);
 
     if (j) {
         j->job_index = index;
         j->owner_tid = 0;
+        j->tags = tags;
         j->done = 0;
         if (!j->stack_mem.sptr) {
             // Initialize stack memory
@@ -155,7 +159,7 @@ typedef struct sx__job_select_result
 } sx__job_select_result;
 
 
-static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid)
+static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid, uint32_t tags)
 {
     sx__job_select_result r;
     r.job = NULL;
@@ -167,7 +171,9 @@ static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid)
         while (node) {
             r.waiting_list_alive = true;
             if (*node->wait_counter == 0) { // job must not be waiting/depend on any jobs
-                if (node->owner_tid == 0 || node->owner_tid == tid) {
+                if ((node->owner_tid == 0 || node->owner_tid == tid) &&
+                    (node->tags == 0 || (node->tags & tags))) 
+                {
                     r.job = node;
                     sx__job_remove_list(&ctx->waiting_list[pr], &ctx->waiting_list_last[pr], node);
                     break;
@@ -189,7 +195,8 @@ static void sx__job_selector_main_thrd(sx_fiber_transfer transfer)
     sx_assert(tdata);
 
     // Select the best job in the waiting list
-    sx__job_select_result r = sx__job_select(ctx, tdata->tid);
+    sx__job_select_result r = sx__job_select(ctx, tdata->tid, 
+                                             ctx->num_threads > 0 ? tdata->tags : 0xffffffff);
 
     // 
     if (r.job) {
@@ -226,7 +233,7 @@ static void sx__job_selector_fn(sx_fiber_transfer transfer)
         sx_semaphore_wait(&ctx->sem, -1);   // Wait for a job
 
         // Select the best job in the waiting list
-        sx__job_select_result r = sx__job_select(ctx, tdata->tid);
+        sx__job_select_result r = sx__job_select(ctx, tdata->tid, tdata->tags);
 
         // 
         if (r.job) {
@@ -256,7 +263,7 @@ static void sx__job_selector_fn(sx_fiber_transfer transfer)
     sx_fiber_switch(transfer.from, transfer.user);
 }
 
-sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count)
+sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count, uint32_t tags)
 {
     sx_assert(count > 0);
     sx_assert(count <= ctx->job_pool->capacity && "this amount of jobs at a time cannot be done. increase max_jobs");
@@ -286,7 +293,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int coun
         for (int i = 0; i < count; i++) {
             sx__job_add_list(&ctx->waiting_list[descs[i].priority], 
                              &ctx->waiting_list_last[descs[i].priority],
-                             sx__new_job(ctx, i, &descs[i], counter));
+                             sx__new_job(ctx, i, &descs[i], counter, tags));
         }
 
         // Post to semaphore to worker threads start cur_job
@@ -302,7 +309,8 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int coun
         sx_memcpy(descs_copy, descs, sizeof(sx_job_desc)*count);
         sx__job_pending pending = {
             .counter = counter,
-            .descs = descs_copy
+            .descs = descs_copy,
+            .tags = tags
         };
         sx_array_push(ctx->alloc, ctx->pending, pending);
     }
@@ -324,7 +332,7 @@ static void sx__job_process_pending(sx_job_context* ctx)
             for (int i = 0; i < count; i++) {
                 sx__job_add_list(&ctx->waiting_list[pending.descs[i].priority], 
                                 &ctx->waiting_list_last[pending.descs[i].priority],
-                                sx__new_job(ctx, i, &pending.descs[i], pending.counter));
+                                sx__new_job(ctx, i, &pending.descs[i], pending.counter, pending.tags));
             }            
             sx_free(ctx->alloc, pending.descs);
 
@@ -346,7 +354,7 @@ static void sx__job_process_pending_single(sx_job_context* ctx, int index)
         for (int i = 0; i < count; i++) {
             sx__job_add_list(&ctx->waiting_list[pending.descs[i].priority], 
                             &ctx->waiting_list_last[pending.descs[i].priority],
-                            sx__new_job(ctx, i, &pending.descs[i], pending.counter));
+                            sx__new_job(ctx, i, &pending.descs[i], pending.counter, pending.tags));
         }            
         sx_free(ctx->alloc, pending.descs);
 
@@ -428,6 +436,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_malloc(alloc, sizeof(sx__job_thread_data));
     sx_memset(tdata, 0x0, sizeof(sx__job_thread_data));
     tdata->tid = sx_thread_tid();
+    tdata->tags = 0xffffffff;
     tdata->main_thrd = main_thrd;
 
     bool r = sx_fiber_stack_init(&tdata->selector_stack, sx_os_minstacksz());
@@ -450,9 +459,6 @@ static int sx__job_thread_fn(void* user1, void* user2)
 
     uint32_t thread_id = sx_thread_tid();
 
-    if (ctx->thread_init_cb)
-        ctx->thread_init_cb(index, thread_id, ctx->thread_user);
-
     // Create thread data
     sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, false);
     if (!tdata) {
@@ -461,6 +467,9 @@ static int sx__job_thread_fn(void* user1, void* user2)
     }    
     sx_tls_set(ctx->thread_tls, tdata);
 
+    if (ctx->thread_init_cb)
+        ctx->thread_init_cb(ctx, index, thread_id, ctx->thread_user);
+
     // Get first stack and run selector loop
     sx_fiber_t fiber = sx_fiber_create(tdata->selector_stack, sx__job_selector_fn);
     sx_fiber_switch(fiber, ctx);
@@ -468,7 +477,7 @@ static int sx__job_thread_fn(void* user1, void* user2)
     sx_tls_set(ctx->thread_tls, NULL);
     sx__job_destroy_tdata(tdata, ctx->alloc);
     if (ctx->thread_shutdown_cb) 
-        ctx->thread_shutdown_cb(index, thread_id, ctx->thread_user);
+        ctx->thread_shutdown_cb(ctx, index, thread_id, ctx->thread_user);
 
     return 0;
 }
@@ -483,7 +492,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
     sx_memset(ctx, 0x0, sizeof(sx_job_context));
 
     ctx->alloc = alloc;
-    ctx->num_threads = desc->num_threads > 0 ? desc->num_threads : (sx_os_numcores() - 1);
+    ctx->num_threads = desc->num_threads >= 0 ? desc->num_threads : (sx_os_numcores() - 1);
     ctx->thread_tls = sx_tls_create();
     ctx->stack_sz = desc->fiber_stack_sz > 0 ? desc->fiber_stack_sz : DEFAULT_FIBER_STACK_SIZE;
     ctx->thread_init_cb = desc->thread_init_cb;
@@ -561,3 +570,8 @@ int sx_job_num_worker_threads(sx_job_context* ctx)
     return ctx->num_threads;
 }
 
+void sx_job_set_current_thread_tags(sx_job_context* ctx, uint32_t tags)
+{
+    sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
+    tdata->tags = tags;
+}

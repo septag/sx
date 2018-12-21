@@ -46,7 +46,8 @@ typedef struct sx_stackalloc
     int peak;
 } sx_stackalloc;
 
-SX_API void sx_stackalloc_init(sx_stackalloc* linalloc, void* ptr, int size);
+SX_API void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size);
+SX_API void sx_stackalloc_reset(sx_stackalloc* stackalloc);
 
 #define sx_define_stackalloc_onstack(_name, _size)  \
     uint8_t _name ## _buff_[(_size)];  \

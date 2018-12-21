@@ -44,7 +44,7 @@ static void job_fib_fn(int index, void* user)
         {job_wait_fn, NULL, SX_JOB_PRIORITY_HIGH}
     };
     //if (sx_rng_gen_irange(&g_rng, 1, 100) < 50) {
-        sx_job_t job = sx_job_dispatch(g_ctx, jobs, 1);
+        sx_job_t job = sx_job_dispatch(g_ctx, jobs, 1, 0);
         sx_job_wait_and_del(g_ctx, job);
     //}
 
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     };
 
     puts("Dispatching jobs ...");
-    sx_job_t jhandle = sx_job_dispatch(ctx, jobs, 3);
+    sx_job_t jhandle = sx_job_dispatch(ctx, jobs, 3, 0);
     //sx_os_sleep(1000);
 
     puts("Waiting ...");
