@@ -196,7 +196,7 @@ SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comp
 
 #if (SX_COMPILER_GCC || SX_COMPILER_CLANG) && \
     __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__) && \
-    (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40700)
+    (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
 #   include <stdatomic.h>  
 typedef atomic_flag sx_lock_t;
 SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
