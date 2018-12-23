@@ -31,7 +31,7 @@ typedef struct sx_linalloc
 {
     sx_alloc alloc;
     uint8_t* ptr;
-    uint8_t* last_ptr; 
+    int      last_ptr_offset; 
     int      offset;
     int      size;
     int      peak;

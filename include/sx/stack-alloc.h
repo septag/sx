@@ -10,8 +10,8 @@
 // Suitable for operations that needs loading/unloading of temp memory blocks
 //
 // Pros: Very Fast allocator, very low fragmentation
-// Cons: You have to 'free' in the reverse order of your 'alloc' calls, this is pretty important
-//       limitation and will corrupt memory if not done properly. in debug mode it breaks the program
+// Cons: You have to 'free' in the reverse order of your 'alloc' calls, to properly free the memory 
+//       limitation and will corrupt memory if not done properly.
 //
 // Usage:
 //      struct sx_stackalloc salloc;
@@ -38,12 +38,12 @@
 
 typedef struct sx_stackalloc
 {
-    sx_alloc alloc;
-    uint8_t* ptr;
-    uint8_t* last_ptr;
-    int offset;
-    int size;
-    int peak;
+    sx_alloc    alloc;
+    uint8_t*    ptr;
+    int         last_ptr_offset;
+    int         offset;
+    int         size;
+    int         peak;
 } sx_stackalloc;
 
 SX_API void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size);

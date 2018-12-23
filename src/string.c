@@ -146,14 +146,12 @@ static inline int sx__strnlen(const char* str, int _max)
     const char *char_ptr;
     const uintptr_t *longword_ptr;
     uintptr_t longword, himagic, lomagic;
-    int __max = _max;
 
     for (char_ptr = str; ((uintptr_t)char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr) {
         if (*char_ptr == '\0') {
             int _len = (int)(uintptr_t)(char_ptr - str);
             return (_len > _max) ? _max : _len;
         }
-        --__max;
     }
 
     longword_ptr = (uintptr_t *) char_ptr;
@@ -166,34 +164,38 @@ static inline int sx__strnlen(const char* str, int _max)
     lomagic = ((lomagic << 16) << 16) | lomagic;
 #endif
 
-    for (int n = 0; n < __max; n++) {
+    for (;;) {
         longword = *longword_ptr++;
 
         if (((longword - lomagic) & ~longword & himagic) != 0) {
             const char *cp = (const char *) (longword_ptr - 1);
+            int base_offset = (int)(intptr_t)(cp - str);
+            if (base_offset > _max)
+                return _max;
 
             if (cp[0] == 0)
-                return (int)(intptr_t)(cp - str);
+                return sx_min(_max, base_offset);
             if (cp[1] == 0)
-                return (int)(intptr_t)(cp - str + 1);
+                return sx_min(_max, base_offset + 1);
             if (cp[2] == 0)
-                return (int)(intptr_t)(cp - str + 2);
+                return sx_min(_max, base_offset + 2);
             if (cp[3] == 0)
-                return (int)(intptr_t)(cp - str + 3);
+                return sx_min(_max, base_offset + 3);
 #if SX_ARCH_64BIT
             if (cp[4] == 0)
-                return (int)(intptr_t)(cp - str + 4);
+                return sx_min(_max, base_offset + 4);
             if (cp[5] == 0)
-                return (int)(intptr_t)(cp - str + 5);
+                return sx_min(_max, base_offset + 5);
             if (cp[6] == 0)
-                return (int)(intptr_t)(cp - str + 6);
+                return sx_min(_max, base_offset + 6);
             if (cp[7] == 0)
-                return (int)(intptr_t)(cp - str + 7);
+                return sx_min(_max, base_offset + 7);
 #endif
         }
     }    
 
-    return _max;
+    sx_assert(0 && "Not a null-terminated string");
+    return -1;
 }
 
 int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
