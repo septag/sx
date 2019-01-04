@@ -258,6 +258,7 @@ sx_quat sx_mat4_calc_quat(const sx_mat4* _mat);
 
 sx_mat3 sx_mat3_inv(const sx_mat3* _a);
 sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
+
 void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
 void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
 
@@ -674,6 +675,56 @@ SX_INLINE sx_vec4 sx_vec4v3(const sx_vec3 _vec, float _w)
 SX_INLINE sx_vec4 sx_vec4splat(float _f)
 {
     return sx_vec4f(_f, _f, _f, _f);
+}
+
+//
+SX_INLINE sx_ivec2 sx_ivec2i(int _x, int _y) 
+{
+#ifdef __cplusplus
+    return {{_x, _y}};
+#else
+    return (sx_ivec2){.x = _x, .y = _y};
+#endif    
+}
+
+SX_INLINE sx_ivec2 sx_ivec2iv(const int* _f)
+{
+#ifdef __cplusplus
+    return {{_f[0], _f[1]}};
+#else
+    return (sx_ivec2){.x = _f[0], .y = _f[1]};
+#endif    
+}
+
+SX_INLINE sx_ivec2 sx_ivec2splat(int _f)
+{
+    return sx_ivec2i(_f, _f);
+}
+
+//
+SX_INLINE sx_color sx_color4u(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a SX_DFLT(255))
+{
+#ifdef __cplusplus
+    return {{_r, _g, _b, _a}};
+#else
+    return (sx_color){.r = _r, .g = _g, .b = _b, .a = _a};
+#endif    
+}
+
+SX_INLINE sx_color sx_color4f(float _r, float _g, float _b, float _a SX_DFLT(1.0f))
+{
+    return sx_color4f((uint8_t)(_r * 255.0f), (uint8_t)(_g * 255.0f), (uint8_t)(_b * 255.0f), (uint8_t)(_a * 255.0f));
+}
+
+SX_INLINE sx_color sx_colorn(uint32_t _n)
+{
+#ifdef __cplusplus
+    sx_color c;
+    c.n = _n;
+    return c;
+#else
+    return (sx_color) {.n = _n};
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

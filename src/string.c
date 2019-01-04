@@ -491,7 +491,8 @@ const char* sx_skip_whitespace(const char* str)
     while (*str) {
         if (sx_isspace(*str))
             ++str;
-        break;
+        else 
+            break;
     }
     return str;
 }

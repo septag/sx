@@ -37,11 +37,10 @@
 #       include <sys/sendfile.h>    // sendfile
 #       include <linux/limits.h>
 #   elif SX_PLATFORM_APPLE
+//      https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/sendfile.2.html
 #       include <mach/mach.h>
-#       include <sys/uio.h>         // sendfile
-#       include <sys/socket.h>
-#       include <sys/sysctl.h>
-#   elif SX_PLATFORM_HURD 
+#       include <copyfile.h>
+#   elif SX_PLATFORM_HURD
 #       include <pthread/pthread.h>
 #   elif SX_PLATFORM_BSD
 #       include <sys/types.h>
@@ -297,27 +296,31 @@ void* sx_os_exec(const char* const* argv)
 
 bool sx_os_copy(const char* src, const char* dest)
 {
-#if SX_COMPILER_MSVC
+#if SX_PLATFORM_WINDOWS
     return CopyFileA(src, dest, FALSE) ? true : false;
-#else
+#elif SX_PLATFORM_APPLE
+    return copyfile(src, dest, NULL, COPYFILE_ALL|COPYFILE_NOFOLLOW_DST) == 0;
+#elif SX_PLATFORM_LINUX || SX_PLATFORM_ANDROID || SX_PLATFORM_RPI
+    // Reference: http://www.informit.com/articles/article.aspx?p=23618&seqNum=13
     int input, output;
-    if ((input = open(src, O_RDONLY)) == -1)
+    struct stat src_stat;
+    if ((input = open(src, O_RDONLY)) == -1) {
         return false;
-
-    if ((output = open(dest, O_WRONLY | O_CREAT, O_NOFOLLOW)) == -1)		{
+    }
+    fstat(input, &src_stat);
+    
+    if ((output = open(dest, O_WRONLY|O_CREAT, O_NOFOLLOW|src_stat.st_mode)) == -1) {
         close(input);
         return false;
     }
-
-#	if SX_PLATFORM_APPLE
-    off_t bytes_copied;
-    int result = sendfile(output, input, 0, &bytes_copied, 0, 0) != -1;
-#	else
-    int result = sendfile(output, input, NULL, 0) != -1;
-#	endif
+    
+    int result = sendfile(output, input, NULL, src_stat.st_size);
     close(input);
     close(output);
     return result > -1;
+#else
+    sx_assert(0 && "not implemented");
+    return false;
 #endif
 }
 
