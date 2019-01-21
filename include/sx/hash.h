@@ -35,6 +35,8 @@
 //                                   alloc must be same as the one in create call (DO NOT use this on sx_hashtbl_init type of tables)
 //      sx_hashtbl_init              initialize the hash-table with pre-allocated memory
 //                                          size/capacity of 'keys' and 'values' array must be the same, and must be fetched from 'sx_hashtbl_valid_capacity'
+//                                          if initialized with `sx_hashtbl_init` the user should not call sx_hashtbl_destroy
+//                                          and free the pointers himself
 //      sx_hashtbl_valid_capacity    returns a valid/corrected hash-table capacity from the input, use this to pass a valid capacity to sx_hashtbl_init
 //      sx_hashtbl_add               adds a key to the table
 //      sx_hashtbl_remove            removes a key from table
@@ -97,7 +99,7 @@ uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Hash table
-typedef struct sx_hashtbl_s
+typedef struct sx_hashtbl
 {
     uint32_t* keys;
     int*      values;

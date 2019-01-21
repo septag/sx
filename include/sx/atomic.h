@@ -2,7 +2,7 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
-// atomic.h - v1.0 - Atomic primitives and operations
+// atomic.h - v1.1 - Atomic primitives and operations
 // Reference: http://en.cppreference.com/w/c/atomic
 // GCC: http://gcc.gnu.org/onlinedocs/gcc-4.6.2/gcc/Atomic-Builtins.html
 //
@@ -64,8 +64,9 @@
 #endif
 
 
-typedef int volatile    sx_atomic_int;
-typedef void* volatile  sx_atomic_ptr;
+typedef int volatile      sx_atomic_int;
+typedef void* volatile    sx_atomic_ptr;
+typedef int64_t volatile  sx_atomic_int64;
 
 SX_FORCE_INLINE void sx_yield_cpu()
 {
@@ -131,12 +132,22 @@ SX_FORCE_INLINE void sx_compiler_write_barrier()
 #endif
 }
 
+// int atomic
 SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b)
 {
 #if SX_PLATFORM_WINDOWS
     return _InterlockedExchangeAdd((LONG volatile*)a, b);
 #else
     return __sync_fetch_and_add(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchangeAdd((LONG volatile*)a, b) + b;
+#else
+    return __sync_add_and_fetch(a, b);
 #endif
 }
 
@@ -176,6 +187,7 @@ SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand)
 #endif
 }
 
+// pointer
 SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b)
 {
 #if SX_PLATFORM_WINDOWS
@@ -193,6 +205,62 @@ SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comp
     return __sync_val_compare_and_swap(a, comparand, xchg);
 #endif
 }
+
+// Int64 atomic
+SX_FORCE_INLINE int64_t sx_atomic_fetch_add64(sx_atomic_int64* a, int64_t b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchangeAdd64(a, b);
+#else
+    return __sync_fetch_and_add(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int64_t sx_atomic_add_fetch64(sx_atomic_int64* a, int64_t b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchangeAdd64(a, b) + b;
+#else
+    return __sync_add_and_fetch(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int64_t sx_atomic_incr64(sx_atomic_int64* a)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedIncrement64(a);
+#else
+    return __sync_add_and_fetch(a, 1);
+#endif
+}
+
+SX_FORCE_INLINE int64_t sx_atomic_decr64(sx_atomic_int64* a)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedDecrement64(a);
+#else
+    return __sync_sub_and_fetch(a, 1);
+#endif
+}
+
+SX_FORCE_INLINE int64_t sx_atomic_xchg64(sx_atomic_int64* a, int64_t b)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedExchange64(a, b);
+#else
+    return __sync_lock_test_and_set(a, b);
+#endif
+}
+
+SX_FORCE_INLINE int64_t sx_atomic_cas64(sx_atomic_int64* a, int64_t xchg, int64_t comparand)
+{
+#if SX_PLATFORM_WINDOWS
+    return _InterlockedCompareExchange64(a, xchg, comparand);
+#else
+    return __sync_val_compare_and_swap(a, comparand, xchg);
+#endif
+}
+
 
 #if (SX_COMPILER_GCC || SX_COMPILER_CLANG) && \
     __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__) && \

@@ -2,7 +2,7 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
-// math.h - 1.1.1  Scalar and Vector math functions
+// math.h - 1.2.1  Scalar and Vector math functions
 //                 Contains vector primitives and vector/fpu math functions, event functions implemented in libm
 //                 Many functions are from bx library (https://github.com/bkaradzic/bx)
 // Easings:
@@ -171,43 +171,43 @@ typedef union sx_mat4
     float f[16];
 } sx_mat4;
 
-
-#if SX_CONFIG_STDMATH
-#include <math.h>
-
-SX_INLINE SX_CONSTFN float sx_floor(float _f)
+typedef union sx_rect
 {
-    return floorf(_f);
-}
+    struct 
+    {
+        float xmin, ymin;
+        float xmax, ymax;
+    };
 
-SX_INLINE SX_CONSTFN float sx_cos(float _a)
-{
-    return cosf(_a);
-}
+    struct 
+    {
+        sx_vec2 vmin;
+        sx_vec2 vmax;
+    };
 
-SX_INLINE SX_CONSTFN float sx_acos(float _a)
-{
-    return acosf(_a);
-}
+    float f[4];
+} sx_rect;
 
-SX_INLINE SX_CONSTFN float sx_atan2(float _y, float _x)
+typedef union sx_irect
 {
-    return atan2f(_y, _x);
-}
+    struct 
+    {
+        int xmin, ymin;
+        int xmax, ymax;
+    };
 
-SX_INLINE SX_CONSTFN float sx_exp(float _a)
-{
-    return expf(_a);
-}
+    struct 
+    {
+        sx_ivec2 vmin;
+        sx_ivec2 vmax;
+    };
 
-SX_INLINE SX_CONSTFN float sx_log(float _a)
-{
-    return logf(_a);
-}
-#else
-#   ifdef __cplusplus
+    int f[4];    
+} sx_irect;
+
+#ifdef __cplusplus
 extern "C" {
-#   endif
+#endif
 
 SX_CONSTFN float sx_floor(float _f);
 SX_CONSTFN float sx_cos(float _a);
@@ -215,15 +215,8 @@ SX_CONSTFN float sx_acos(float _a);
 SX_CONSTFN float sx_atan2(float _y, float _x);
 SX_CONSTFN float sx_exp(float _a);
 SX_CONSTFN float sx_log(float _a);
-
-#   ifdef __cplusplus
-}
-#   endif
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_CONSTFN float sx_sqrt(float _a);
+SX_CONSTFN float sx_rsqrt(float _a);
 
 sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
 sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
@@ -447,39 +440,6 @@ SX_INLINE SX_CONSTFN float sx_log2(float _a)
 {
     return sx_log(_a) * SX_INVLOG_NAT2;
 }
-
-#if SX_CONFIG_STDMATH
-SX_INLINE SX_CONSTFN float sx_sqrt(float _a)
-{
-    return sqrtf(_a);
-}
-
-SX_INLINE SX_CONSTFN float sx_rsqrt(float _a)
-{
-    return 1.0f/sqrtf(_a);
-}
-#else
-// Reference: http://en.wikipedia.org/wiki/Fast_inverse_square_root
-SX_INLINE SX_CONSTFN float sx_rsqrt(float _a)
-{
-    union { float f; uint32_t ui; } u = { _a };
-    float y, r;
-
-    y = _a * 0.5f;
-    u.ui = 0x5F3759DF - (u.ui >> 1);
-    r = u.f;
-    r = r * (1.5f - (r * r * y));
-
-    return r;
-}
-
-SX_INLINE SX_CONSTFN float sx_sqrt(float _a)
-{
-    sx_assert (_a >= SX_NEAR_ZERO);
-    return 1.0f/sx_rsqrt(_a);
-}
-#endif
-
 
 // Returns the nearest integer not greater in magnitude than _a.
 SX_INLINE SX_CONSTFN float sx_trunc(float _a)
@@ -713,7 +673,7 @@ SX_INLINE sx_color sx_color4u(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a SX_
 
 SX_INLINE sx_color sx_color4f(float _r, float _g, float _b, float _a SX_DFLT(1.0f))
 {
-    return sx_color4f((uint8_t)(_r * 255.0f), (uint8_t)(_g * 255.0f), (uint8_t)(_b * 255.0f), (uint8_t)(_a * 255.0f));
+    return sx_color4u((uint8_t)(_r * 255.0f), (uint8_t)(_g * 255.0f), (uint8_t)(_b * 255.0f), (uint8_t)(_a * 255.0f));
 }
 
 SX_INLINE sx_color sx_colorn(uint32_t _n)
@@ -1481,6 +1441,68 @@ SX_INLINE sx_vec2 sx_vec2_mulf(const sx_vec2 _a, float _b)
     return sx_vec2f(_a.x * _b, _a.y * _b);
 }
 
+SX_INLINE sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _ymax)
+{
+#ifdef __cplusplus
+    return {{_xmin, _ymin, _xmax, _ymax}};
+#else
+    return (sx_rect) {.xmin = _xmin, .ymin = _ymin, .xmax = _xmax, .ymax = _ymax};
+#endif
+}
+
+SX_INLINE sx_rect sx_rectwh(float _x, float _y, float _w, float _h)
+{
+    return sx_rectf(_x, _y, _x + _w, _y + _h);
+}
+
+SX_INLINE sx_rect sx_rectv(const sx_vec2 _min, const sx_vec2 _max)
+{
+#ifdef __cplusplus
+    return {{_min.x, _min.y, _max.x, _max.y}};
+#else
+    return (sx_rect) {.vmin = _min, .vmax = _max};
+#endif
+}
+
+SX_INLINE bool sx_rect_test_point(const sx_rect rc, const sx_vec2 pt)
+{
+    if (pt.x < rc.xmin || pt.y < rc.ymin || pt.x > rc.xmax || pt.y > rc.ymax)
+        return false;
+    return true;
+}
+
+SX_INLINE bool sx_rect_test_rect(const sx_rect rc1, const sx_rect rc2)
+{
+    if (rc1.xmax < rc2.xmin || rc1.xmin > rc2.xmax)
+        return false;
+    if (rc1.ymax < rc2.ymin || rc1.ymin > rc2.ymax)
+        return false;
+    return true;
+}
+
+SX_INLINE sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax)
+{
+#ifdef __cplusplus
+    return {{_xmin, _ymin, _xmax, _ymax}};
+#else
+    return (sx_irect) {.xmin = _xmin, .ymin = _ymin, .xmax = _xmax, .ymax = _ymax};
+#endif
+}
+
+SX_INLINE sx_irect sx_irectwh(int _x, int _y, int _w, int _h)
+{
+    return sx_irecti(_x, _y, _x + _w, _y + _h);
+}
+
+SX_INLINE sx_irect sx_irectv(const sx_ivec2 _min, const sx_ivec2 _max)
+{
+#ifdef __cplusplus
+    return {{_min.x, _min.y, _max.x, _max.y}};
+#else
+    return (sx_irect) {.vmin = _min, .vmax = _max};
+#endif   
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // easing 
 SX_INLINE float sx_easein_quad(float t)
@@ -1726,4 +1748,6 @@ SX_API sx_vec4 SX_VEC4_UNITZ;
 //      v1.1.0      Matrices are now column-major (in memory)
 //                  Added SX_VECx_ constants
 //      v1.1.1      Fixed through the whole API for RH proj and view calculations
+//      v1.2.0      Added new primitives like color and rect
+//      v1.2.1      Moved std-math.h to C unit
 //

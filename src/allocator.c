@@ -9,16 +9,16 @@
 
 #include <malloc.h>
 
-static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
-static void* sx_malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
+static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
 
-static const sx_alloc g_alloc_malloc = {sx_malloc_cb, NULL};
-static const sx_alloc g_alloc_malloc_leakd = {sx_malloc_leakd_cb, NULL};
+static const sx_alloc g_alloc_malloc = {sx__malloc_cb, NULL};
+static const sx_alloc g_alloc_malloc_leakd = {sx__malloc_leakd_cb, NULL};
 
 const sx_alloc* sx_alloc_malloc = &g_alloc_malloc;
 const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
 
-static void* sx_malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
+static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
 {
     if (size == 0) {
         if (ptr) {
@@ -224,7 +224,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
 
-static void* sx_malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
 {
     if (size ==0) {
         if (ptr) {

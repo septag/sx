@@ -321,6 +321,9 @@ void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* val
 {
     sx_assert(sx_ispow2(capacity) && "Table size must be power of 2, get it from sx_hashtbl_valid_capacity");
 
+    sx_memset(keys_ptr, 0x0, capacity*sizeof(uint32_t));
+    sx_memset(values_ptr, 0x0, capacity*sizeof(int));
+    
     tbl->keys = keys_ptr;
     tbl->values = values_ptr;
     tbl->_bitshift = sx__calc_bitshift(capacity);

@@ -35,8 +35,21 @@
 
 // Some libc function overrides
 // Use sx_ versions in the code and override if required
+
+// internal
+SX_API void sx__break_program(const char* text);
+
+// normal assert: used 
 #ifndef sx_assert
 #   define sx_assert(_e)                assert(_e)
+#endif
+
+#ifndef sx_assert_rel
+#   ifdef SX_DISABLE_ASSERT_REL
+#      define sx_assert_rel(_e)
+#   else
+#      define sx_assert_rel(_e)            if (!(_e))  sx__break_program(#_e)
+#   endif
 #endif
 
 #ifndef sx_memset

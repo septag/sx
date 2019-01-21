@@ -105,9 +105,10 @@ SX_INLINE void* sx__aligned_alloc(const sx_alloc* alloc, size_t size, size_t ali
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     const size_t total = size + align + sizeof(uint32_t);
     uint8_t* ptr = (uint8_t*)sx__malloc(alloc, total, 0, file, line);
+    sx_assert(ptr);
     uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(uint32_t), align);
     uint32_t* header = (uint32_t*)aligned - 1;
-    *header = (uint32_t)(aligned - ptr);
+    *header = (uint32_t)(uintptr_t)(aligned - ptr);
     return aligned;
 }
 
@@ -122,26 +123,27 @@ SX_INLINE void sx__aligned_free(const sx_alloc* alloc, void* ptr, size_t align, 
 SX_INLINE void* sx__aligned_realloc(const sx_alloc* alloc, void* ptr, size_t size, size_t align, 
                                  const char* file, uint32_t line)
 {
-		if (ptr == NULL)
+        if (ptr == NULL)
             return sx__aligned_alloc(alloc, size, align, file, line);
 
-		uint8_t* aligned = (uint8_t*)ptr;
-		uint32_t offset = *( (uint32_t*)aligned - 1);
-		ptr = aligned - offset;
+        uint8_t* aligned = (uint8_t*)ptr;
+        uint32_t offset = *( (uint32_t*)aligned - 1);
+        ptr = aligned - offset;
 
-		align = sx_max(align, sizeof(uint32_t));
-		const size_t total = size + align;
-		ptr = sx__realloc(alloc, ptr, total, 0, file, line);
-		uint8_t* new_aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(uint32_t), align);
+        align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
+        const size_t total = size + align + sizeof(uint32_t);
+        ptr = sx__realloc(alloc, ptr, total, 0, file, line);
+        sx_assert(ptr);
+        uint8_t* new_aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(uint32_t), align);
 
-		if (new_aligned == aligned)
-			return aligned;
+        if (new_aligned == aligned)
+            return aligned;
 
-		aligned = (uint8_t*)ptr + offset;
-		sx_memmove(new_aligned, aligned, size);
-		uint32_t* header = (uint32_t*)new_aligned - 1;
-		*header = (uint32_t)(new_aligned - (uint8_t*)ptr);
-		return new_aligned;
+        aligned = (uint8_t*)ptr + offset;
+        sx_memmove(new_aligned, aligned, size);
+        uint32_t* header = (uint32_t*)new_aligned - 1;
+        *header = (uint32_t)(new_aligned - (uint8_t*)ptr);
+        return new_aligned;
 }
 
 #endif // SX_ALLOCATOR_H_

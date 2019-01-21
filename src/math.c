@@ -4,6 +4,10 @@
 //
 #include "sx/math.h"
 
+#if SX_CONFIG_STDMATH
+#   include <math.h>
+#endif
+
 const float SX_PI          = 3.1415926535897932384626433832795f;
 const float SX_PI2         = 6.2831853071795864769252867665590f;
 const float SX_INVPI       = 1.0f/3.1415926535897932384626433832795f;
@@ -265,6 +269,66 @@ SX_CONSTFN float sx_log(float _a)
     const float result = hi - ( (hfsq - (ss*(hfsq+t12) + lo) ) - ff);
 
     return result;
+}
+
+// Reference: http://en.wikipedia.org/wiki/Fast_inverse_square_root
+SX_CONSTFN float sx_rsqrt(float _a)
+{
+    union { float f; uint32_t ui; } u = { _a };
+    float y, r;
+
+    y = _a * 0.5f;
+    u.ui = 0x5F3759DF - (u.ui >> 1);
+    r = u.f;
+    r = r * (1.5f - (r * r * y));
+
+    return r;
+}
+
+SX_CONSTFN float sx_sqrt(float _a)
+{
+    sx_assert (_a >= SX_NEAR_ZERO);
+    return 1.0f/sx_rsqrt(_a);
+}
+#else
+SX_CONSTFN float sx_floor(float _f)
+{
+    return floorf(_f);
+}
+
+SX_CONSTFN float sx_cos(float _a)
+{
+    return cosf(_a);
+}
+
+SX_CONSTFN float sx_acos(float _a)
+{
+    return acosf(_a);
+}
+
+SX_CONSTFN float sx_atan2(float _y, float _x)
+{
+    return atan2f(_y, _x);
+}
+
+SX_CONSTFN float sx_exp(float _a)
+{
+    return expf(_a);
+}
+
+SX_CONSTFN float sx_log(float _a)
+{
+    return logf(_a);
+}
+
+SX_CONSTFN float sx_sqrt(float _a)
+{
+    return sqrtf(_a);
+}
+
+SX_CONSTFN float sx_rsqrt(float _a)
+{
+    return 1.0f/sqrtf(_a);
 }
 #endif
 

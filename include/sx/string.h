@@ -27,10 +27,10 @@ int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
 SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
-int  sx_strcpy(char* dst, int dst_sz, const char* src);
-int  sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
-int  sx_strcat(char* dst, int dst_sz, const char* src);
-int  sx_strncat(char* dst, int dst_sz, const char* src, int _num);
+char*  sx_strcpy(char* dst, int dst_sz, const char* src);
+char*  sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
+char*  sx_strcat(char* dst, int dst_sz, const char* src);
+char*  sx_strncat(char* dst, int dst_sz, const char* src, int _num);
 int  sx_strlen(const char* str);
 bool sx_strequal(const char* a, const char* b);
 bool sx_strequalnocase(const char* a, const char* b);

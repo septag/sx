@@ -75,7 +75,7 @@ char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args)
     return ctx.buff;
 }
 
-int sx_strcpy(char* dst, int dst_sz, const char* src)
+char* sx_strcpy(char* dst, int dst_sz, const char* src)
 {
     sx_assert(dst);
     sx_assert(src);
@@ -86,7 +86,7 @@ int sx_strcpy(char* dst, int dst_sz, const char* src)
     sx_memcpy(dst, src, num);
     dst[num] = '\0';
 
-    return num;
+    return dst;
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strlen.c
@@ -198,7 +198,7 @@ static inline int sx__strnlen(const char* str, int _max)
     return -1;
 }
 
-int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
+char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
 {
     sx_assert(dst);
     sx_assert(src);
@@ -209,10 +209,10 @@ int sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
     sx_memcpy(dst, src, num);
     dst[num] = '\0';
 
-    return num;
+    return dst;
 }
 
-int sx_strcat(char* dst, int dst_sz, const char* src)
+char* sx_strcat(char* dst, int dst_sz, const char* src)
 {
     sx_assert(dst);
     sx_assert(src);
@@ -222,7 +222,7 @@ int sx_strcat(char* dst, int dst_sz, const char* src)
     return sx_strcpy(dst + len, dst_sz - len, src);
 }
 
-int sx_strncat(char* dst, int dst_sz, const char* src, int _num)
+char* sx_strncat(char* dst, int dst_sz, const char* src, int _num)
 {
     sx_assert(dst);
     sx_assert(src);
@@ -632,9 +632,9 @@ sx_str_block sx_findblock(const char* str, char open, char close)
     int count = 0;
     sx_str_block b = {NULL, NULL};
 
-    for (char ch = *str++; ch != '\0' && count >= 0; ch = *str++) {
+    for (char ch = *str; ch && count >= 0; ch = *++str) {
         if (ch == open) {
-            b.start = str-1;
+            b.start = str+1;
             count++;
         } else if (ch == close) {
             count--;
