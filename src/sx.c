@@ -8,13 +8,13 @@
 #if SX_PLATFORM_ANDROID
 #	include <android/log.h>
 #elif SX_PLATFORM_WINDOWS
-extern "C" __declspec(dllimport) void __stdcall OutputDebugStringA(const char* _str);
+__declspec(dllimport) void __stdcall OutputDebugStringA(const char* _str);
 #elif SX_PLATFORM_APPLE
 #	if defined(__OBJC__)
 #		import <Foundation/NSObjCRuntime.h>
 #	else
 #		include <CoreFoundation/CFString.h>
-extern "C" void NSLog(CFStringRef _format, ...);
+void NSLog(CFStringRef _format, ...);
 #	endif // defined(__OBJC__)
 #else
 #	include <stdio.h> // fputs, fflush
