@@ -1,26 +1,23 @@
 #if SX_PLATFORM_WINDOWS
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# include <conio.h>
+#    define WIN32_LEAN_AND_MEAN
+#    include <conio.h>
+#    include <windows.h>
 #endif
 #include <stdio.h>
 
 #include "sx/atomic.h"
-#include "sx/threads.h"
-#include "sx/atomic.h"
 #include "sx/os.h"
+#include "sx/threads.h"
 
-sx_sem g_sem;
+sx_sem         g_sem;
 sx_queue_spsc* g_queue = NULL;
-bool g_quit = false;
+bool           g_quit = false;
 
-typedef struct work_item
-{
+typedef struct work_item {
     int id;
 } work_item;
 
-static int worker_thread_fn(void* user_data1, void* user_data2)
-{
+static int worker_thread_fn(void* user_data1, void* user_data2) {
     puts("Thread");
 
     while (!g_quit) {
@@ -33,8 +30,7 @@ static int worker_thread_fn(void* user_data1, void* user_data2)
     return 0;
 }
 
-int main(int argc, char* argv[]) 
-{
+int main(int argc, char* argv[]) {
     const sx_alloc* alloc = sx_alloc_malloc;
 
     g_queue = sx_queue_spsc_create(alloc, sizeof(work_item), 10);
@@ -64,7 +60,7 @@ int main(int argc, char* argv[])
             g_quit = true;
         }
     }
-   
+
     sx_thread_destroy(thrd, alloc);
     sx_queue_spsc_destroy(g_queue, alloc);
     sx_semaphore_release(&g_sem);

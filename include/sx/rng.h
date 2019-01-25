@@ -13,13 +13,9 @@
 //
 #pragma once
 
-#ifndef SX_RNG_H_
-#define SX_RNG_H_
-
 #include "sx.h"
 
-typedef struct sx_rng
-{
+typedef struct sx_rng {
     uint64_t state[2];
 } sx_rng;
 
@@ -35,5 +31,3 @@ int      sx_rng_gen_irange(sx_rng* rng, int _min, int _max);
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // SX_RNG_H_

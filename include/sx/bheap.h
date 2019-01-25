@@ -3,8 +3,9 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 // bheap.h - v1.0 - Binary heap implmenetation
-//                  I discovered this algorithm when reading Randy Paul's [blog](http://www.randygaul.net/)
-//                  Which is a partially sorted binary tree and is used for pulling up minimum or maximum values at a time
+//                  I discovered this algorithm when reading Randy Paul's
+//                  [blog](http://www.randygaul.net/) Which is a partially sorted binary tree and is
+//                  used for pulling up minimum or maximum values at a time
 // Reference: https://en.wikipedia.org/wiki/Binary_heap
 //
 //  API:
@@ -22,19 +23,14 @@
 //
 #pragma once
 
-#ifndef SX_BHEAP_H_
-#define SX_BHEAP_H_
-
 #include "sx/allocator.h"
 
-typedef struct sx_bheap_item
-{
-    int     key;
-    void*   user;
+typedef struct sx_bheap_item {
+    int   key;
+    void* user;
 } sx_bheap_item;
 
-typedef struct sx_bheap
-{
+typedef struct sx_bheap {
     sx_bheap_item* items;
     int            count;
     int            capacity;
@@ -44,8 +40,8 @@ typedef struct sx_bheap
 extern "C" {
 #endif
 
-sx_bheap*     sx_bheap_create(const sx_alloc* alloc, int capacity);
-void          sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
+sx_bheap* sx_bheap_create(const sx_alloc* alloc, int capacity);
+void      sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
 
 void          sx_bheap_push_min(sx_bheap* bh, int key, void* user);
 sx_bheap_item sx_bheap_pop_min(sx_bheap* bh);
@@ -53,11 +49,9 @@ sx_bheap_item sx_bheap_pop_min(sx_bheap* bh);
 void          sx_bheap_push_max(sx_bheap* bh, int key, void* user);
 sx_bheap_item sx_bheap_pop_max(sx_bheap* bh);
 
-void          sx_bheap_clear(sx_bheap* bh);
-bool          sx_bheap_empty(sx_bheap* bh);
+void sx_bheap_clear(sx_bheap* bh);
+bool sx_bheap_empty(sx_bheap* bh);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif // SX_BHEAP_H_

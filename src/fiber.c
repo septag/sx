@@ -10,25 +10,24 @@
 // http://kripken.github.io/emscripten-site/docs/api_reference/emscripten.h.html#c.emscripten_coroutine
 
 #if SX_PLATFORM_WINDOWS
-#   define VC_EXTRALEAN
-#   define WIN32_LEAN_AND_MEAN
-#	include <windows.h>
+#    define VC_EXTRALEAN
+#    define WIN32_LEAN_AND_MEAN
+#    include <windows.h>
 #elif SX_PLATFORM_POSIX
-#   include <unistd.h>
-#   include <sys/mman.h>
-#if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
-#   define MAP_ANONYMOUS MAP_ANON
-#endif
+#    include <sys/mman.h>
+#    include <unistd.h>
+#    if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
+#        define MAP_ANONYMOUS MAP_ANON
+#    endif
 #endif
 
-#define DEFAULT_STACK_SIZE 131072   // 120kb
+#define DEFAULT_STACK_SIZE 131072    // 120kb
 
 // Fwd declare ASM functions
 SX_API sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
 SX_API sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
 
-bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
-{
+bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size) {
     if (size == 0)
         size = DEFAULT_STACK_SIZE;
     size = sx_os_align_pagesz(size);
@@ -43,12 +42,12 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
     DWORD old_opts;
     VirtualProtect(ptr, sx_os_pagesz(), PAGE_READWRITE | PAGE_GUARD, &old_opts);
 #elif SX_PLATFORM_POSIX
-    ptr = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (ptr == MAP_FAILED) {
         sx_out_of_memory();
         return false;
     }
-    mprotect(ptr, sx_os_pagesz(), PROT_NONE);    
+    mprotect(ptr, sx_os_pagesz(), PROT_NONE);
 #else
     ptr = malloc(size);
     if (!ptr) {
@@ -56,14 +55,13 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, size_t size)
         return false;
     }
 #endif
-    
+
     fstack->sptr = (uint8_t*)ptr + size;    // Move to end of the memory block for stack pointer
     fstack->ssize = size;
     return true;
 }
 
-void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size)
-{
+void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size) {
     int page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
     sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
@@ -72,8 +70,7 @@ void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, size_t size)
     fstack->ssize = size;
 }
 
-void sx_fiber_stack_release(sx_fiber_stack* fstack)
-{
+void sx_fiber_stack_release(sx_fiber_stack* fstack) {
     sx_assert(fstack->sptr);
     void* ptr = (uint8_t*)fstack->sptr - fstack->ssize;
 
@@ -86,24 +83,20 @@ void sx_fiber_stack_release(sx_fiber_stack* fstack)
 #endif
 }
 
-sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb)
-{
+sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb) {
     return make_fcontext(stack.sptr, stack.ssize, fiber_cb);
 }
 
-sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user)
-{
+sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user) {
     return jump_fcontext(to, user);
 }
 
-typedef union sx__fiber_state_counter
-{
+typedef union sx__fiber_state_counter {
     float tm;
     int   n;
 } sx__fiber_state_counter;
 
-typedef struct sx__fiber_state
-{
+typedef struct sx__fiber_state {
     sx_fiber_t              fiber;
     sx_fiber_stack          stack_mem;
     void*                   user;
@@ -114,8 +107,7 @@ typedef struct sx__fiber_state
     struct sx__fiber_state* prev;
 } sx__fiber_state;
 
-typedef struct sx_fiber_context
-{
+typedef struct sx_fiber_context {
     sx_pool*         fiber_pool;
     sx__fiber_state* run_list;
     sx__fiber_state* run_list_last;
@@ -123,20 +115,20 @@ typedef struct sx_fiber_context
     int              stack_sz;
 } sx_fiber_context;
 
-SX_INLINE void sx__fiber_add_list(sx__fiber_state** pfirst, sx__fiber_state** plast, sx__fiber_state* node)
-{
+static inline void sx__fiber_add_list(sx__fiber_state** pfirst, sx__fiber_state** plast,
+                                      sx__fiber_state* node) {
     // Add to the end of the list
     if (*plast) {
         (*plast)->next = node;
         node->prev = *plast;
-    } 
+    }
     *plast = node;
     if (*pfirst == NULL)
         *pfirst = node;
 }
 
-SX_INLINE void sx__fiber_remove_list(sx__fiber_state** pfirst, sx__fiber_state** plast, sx__fiber_state* node)
-{
+static inline void sx__fiber_remove_list(sx__fiber_state** pfirst, sx__fiber_state** plast,
+                                         sx__fiber_state* node) {
     if (node->prev)
         node->prev->next = node->next;
     if (node->next)
@@ -148,8 +140,7 @@ SX_INLINE void sx__fiber_remove_list(sx__fiber_state** pfirst, sx__fiber_state**
     node->prev = node->next = NULL;
 }
 
-sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz)
-{
+sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz) {
     sx_assert(max_fibers > 0);
     sx_assert(stack_sz >= sx_os_minstacksz() && "stack size too small");
 
@@ -165,14 +156,13 @@ sx_fiber_context* sx_fiber_create_context(const sx_alloc* alloc, int max_fibers,
         sx_out_of_memory();
         return NULL;
     }
-    sx_memset(ctx->fiber_pool->pages->buff, 0x0, sizeof(sx__fiber_state)*max_fibers);
+    sx_memset(ctx->fiber_pool->pages->buff, 0x0, sizeof(sx__fiber_state) * max_fibers);
     ctx->stack_sz = stack_sz;
 
     return ctx;
 }
 
-void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc)
-{
+void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc) {
     sx_assert(ctx);
     if (ctx->fiber_pool)
         sx_pool_destroy(ctx->fiber_pool, alloc);
@@ -182,8 +172,7 @@ void sx_fiber_destroy_context(sx_fiber_context* ctx, const sx_alloc* alloc)
     sx_free(alloc, ctx);
 }
 
-void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user)
-{
+void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb* callback, void* user) {
     sx__fiber_state* fs = (sx__fiber_state*)sx_pool_new(ctx->fiber_pool);
 
     if (fs) {
@@ -192,7 +181,7 @@ void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user)
             if (!sx_fiber_stack_init(&fs->stack_mem, ctx->stack_sz)) {
                 sx_out_of_memory();
                 return;
-            }            
+            }
         }
         fs->fiber = sx_fiber_create(fs->stack_mem, callback);
         fs->user = user;
@@ -204,8 +193,7 @@ void sx_fiber_invoke(sx_fiber_context* ctx, sx_fiber_cb callback, void* user)
     }
 }
 
-void sx_fiber_update(sx_fiber_context* ctx, float dt)
-{
+void sx_fiber_update(sx_fiber_context* ctx, float dt) {
     // Update and fetch fibers only if no fiber is currently running
     if (ctx->cur_fiber == NULL) {
         sx__fiber_state* fs = ctx->run_list;
@@ -214,17 +202,15 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt)
 
             // Check state and take action for pending fibers
             switch (fs->ret_state) {
-            case SX_FIBER_RET_PASS:
-            {
+            case SX_FIBER_RET_PASS: {
                 ++fs->counter.n;
-                if (fs->counter.n >= fs->arg.n)   {
+                if (fs->counter.n >= fs->arg.n) {
                     ctx->cur_fiber = fs;
                     fs->fiber = sx_fiber_switch(fs->fiber, fs->user).from;
                 }
                 break;
             }
-            case SX_FIBER_RET_WAIT:
-            {
+            case SX_FIBER_RET_WAIT: {
                 fs->counter.tm += dt;
                 if (fs->counter.tm >= fs->arg.tm) {
                     ctx->cur_fiber = fs;
@@ -232,9 +218,7 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt)
                 }
                 break;
             }
-            default:
-                sx_assert(0 && "Invalid ret type in update loop");
-                break;
+            default: sx_assert(0 && "Invalid ret type in update loop"); break;
             }
 
             fs = next;
@@ -242,9 +226,9 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt)
     }
 }
 
-void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg)
-{
-    sx_assert(ctx->cur_fiber && "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
+void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type type, int arg) {
+    sx_assert(ctx->cur_fiber &&
+              "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
     sx_assert(type != SX_FIBER_RET_NONE && "Invalid enum for type");
 
     sx__fiber_state* fs = ctx->cur_fiber;
@@ -257,9 +241,9 @@ void sx_fiber_return(sx_fiber_context* ctx, sx_fiber_t* pfrom, sx_fiber_ret_type
         fs->ret_state = type;
         fs->counter.n = 0;
         if (type == SX_FIBER_RET_WAIT)
-            fs->arg.tm = ((float)arg) * 0.001f;     // Convert msecs to seconds
+            fs->arg.tm = ((float)arg) * 0.001f;    // Convert msecs to seconds
         else if (type == SX_FIBER_RET_PASS)
-            fs->arg.n = arg;                        // Number of next update passes
+            fs->arg.n = arg;    // Number of next update passes
     }
 
     ctx->cur_fiber = NULL;

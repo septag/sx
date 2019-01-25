@@ -6,13 +6,9 @@
 //
 #pragma once
 
-#ifndef SX_STRING_H_
-#define SX_STRING_H_
-
 #include "allocator.h"
 
-typedef struct sx_str_block
-{
+typedef struct sx_str_block {
     const char* start;
     const char* end;
 } sx_str_block;
@@ -27,15 +23,15 @@ int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
 SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
-char*  sx_strcpy(char* dst, int dst_sz, const char* src);
-char*  sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
-char*  sx_strcat(char* dst, int dst_sz, const char* src);
-char*  sx_strncat(char* dst, int dst_sz, const char* src, int _num);
-int  sx_strlen(const char* str);
-bool sx_strequal(const char* a, const char* b);
-bool sx_strequalnocase(const char* a, const char* b);
-bool sx_strnequal(const char* a, const char* b, int num);
-bool sx_strnequalnocase(const char* a, const char* b, int num);
+char* sx_strcpy(char* dst, int dst_sz, const char* src);
+char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
+char* sx_strcat(char* dst, int dst_sz, const char* src);
+char* sx_strncat(char* dst, int dst_sz, const char* src, int _num);
+int   sx_strlen(const char* str);
+bool  sx_strequal(const char* a, const char* b);
+bool  sx_strequalnocase(const char* a, const char* b);
+bool  sx_strnequal(const char* a, const char* b, int num);
+bool  sx_strnequalnocase(const char* a, const char* b, int num);
 
 const char* sx_strrchar(const char* str, char ch);
 const char* sx_strchar(const char* str, char ch);
@@ -44,9 +40,9 @@ bool        sx_strstr_wildcard(const char* str, const char* pattern);
 
 const char* sx_skip_whitespace(const char* str);
 const char* sx_skip_word(const char* str);
-char* sx_trim_whitespace(char* dest, int dest_sz, const char* src);
-char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim);
-char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch);
+char*       sx_trim_whitespace(char* dest, int dest_sz, const char* src);
+char*       sx_trim(char* dest, int dest_sz, const char* src, const char* trim);
+char*       sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch);
 char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace);
 char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find, const char replace);
 char* sx_EOL_LF(char* dest, int dest_sz, const char* src);
@@ -76,25 +72,23 @@ double   sx_todouble(const char* str);
 // strpool (string interning) implementation
 // By Mattias Gustavsson: https://github.com/mattiasgustavsson/libs/blob/master/strpool.h
 //
-typedef struct sx_strpool_config
-{
-    int ignore_case;        // =1 case insensitive
-    int counter_bits;       // counter bits in 32bit value for ref count (def: 12bits -> 4096)
-    int index_bits;         // index bits in 32bit value for array index (def: 20bits -> 1 million)
-    int entry_capacity;     // preallocate number of string entities (def: 4096) 
-    int block_capacity;     // number of storage blocks (def: 32), only one is allocated on init
-    int block_sz_kb;        // size of each block in kb (def: 256)
-    int min_str_len;        // minimum allocated size for each string, in chars (def: 23)
+typedef struct sx_strpool_config {
+    int ignore_case;       // =1 case insensitive
+    int counter_bits;      // counter bits in 32bit value for ref count (def: 12bits -> 4096)
+    int index_bits;        // index bits in 32bit value for array index (def: 20bits -> 1 million)
+    int entry_capacity;    // preallocate number of string entities (def: 4096)
+    int block_capacity;    // number of storage blocks (def: 32), only one is allocated on init
+    int block_sz_kb;       // size of each block in kb (def: 256)
+    int min_str_len;       // minimum allocated size for each string, in chars (def: 23)
 } sx_strpool_config;
 
-typedef struct sx_strpool_collate_data
-{
-    char* first;     // null-terminated strings, after each '\0' comes another str
+typedef struct sx_strpool_collate_data {
+    char* first;    // null-terminated strings, after each '\0' comes another str
     int   count;
 } sx_strpool_collate_data;
 
-typedef struct strpool_t    sx_strpool;
-typedef uint32_t            sx_str_t;
+typedef struct strpool_t sx_strpool;
+typedef uint32_t         sx_str_t;
 
 sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf SX_DFLT(NULL));
 void        sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc);
@@ -114,8 +108,6 @@ void                    sx_strpool_collate_free(const sx_strpool* sp, sx_strpool
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // Version history

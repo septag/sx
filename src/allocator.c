@@ -3,23 +3,25 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/allocator.h"
-#include "sx/string.h"
-#include "sx/os.h"
 #include "sx/atomic.h"
+#include "sx/os.h"
+#include "sx/string.h"
 
 #include <malloc.h>
 
-static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
-static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data);
+static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, const char* func,
+                           uint32_t line, void* user_data);
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file,
+                                 const char* func, uint32_t line, void* user_data);
 
-static const sx_alloc g_alloc_malloc = {sx__malloc_cb, NULL};
-static const sx_alloc g_alloc_malloc_leakd = {sx__malloc_leakd_cb, NULL};
+static const sx_alloc g_alloc_malloc = { sx__malloc_cb, NULL };
+static const sx_alloc g_alloc_malloc_leakd = { sx__malloc_leakd_cb, NULL };
 
 const sx_alloc* sx_alloc_malloc = &g_alloc_malloc;
 const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
 
-static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
-{
+static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, const char* func,
+                           uint32_t line, void* user_data) {
     if (size == 0) {
         if (ptr) {
             if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT) {
@@ -30,7 +32,7 @@ static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* fil
 #if SX_COMPILER_MSVC
             _aligned_free(ptr);
 #else
-            sx__aligned_free(&g_alloc_malloc, ptr, align, file, line);
+            sx__aligned_free(&g_alloc_malloc, ptr, align, file, func, line);
 #endif
         }
         return NULL;
@@ -41,21 +43,21 @@ static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* fil
 #if SX_COMPILER_MSVC
         return _aligned_malloc(size, align);
 #else
-        return sx__aligned_alloc(&g_alloc_malloc, size, align, file, line);
-#endif 
+        return sx__aligned_alloc(&g_alloc_malloc, size, align, file, func, line);
+#endif
     } else {
-		if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
-			return realloc(ptr, size);
+        if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
+            return realloc(ptr, size);
 
 #if SX_COMPILER_MSVC
-		return _aligned_realloc(ptr, size, align);
+        return _aligned_realloc(ptr, size, align);
 #else
-		return sx__aligned_realloc(&g_alloc_malloc, ptr, size, align, file, line);
+        return sx__aligned_realloc(&g_alloc_malloc, ptr, size, align, file, func, line);
 #endif
     }
 }
 
-// 
+//
 // Leakchecker: https://raw.githubusercontent.com/nothings/stb/master/stb_leakcheck.h
 // TODO: make it thread-safe
 // stb_leakcheck.h - v0.4 - quick & dirty malloc leak-checking - public domain
@@ -65,32 +67,33 @@ static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* fil
 
 // if we've already included leakcheck before, undefine the macros
 #ifdef malloc
-#   undef malloc
-#   undef free
-#   undef realloc
+#    undef malloc
+#    undef free
+#    undef realloc
 #endif
 
-#include <string.h>
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-typedef struct stb__leakcheck_malloc_info
-{
-    char   file[16];
-    int    line;
-    size_t size;
+#include <stdlib.h>
+#include <string.h>
+typedef struct stb__leakcheck_malloc_info {
+    char                               file[32];
+    char                               func[64];
+    int                                line;
+    size_t                             size;
     struct stb__leakcheck_malloc_info *next, *prev;
 } stb__leakcheck_malloc_info;
 
-static stb__leakcheck_malloc_info *mi_head;
-static sx_lock_t mi_lock;
+static stb__leakcheck_malloc_info* mi_head;
+static sx_lock_t                   mi_lock;
 
-static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
-{
-    stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)malloc(sz + sizeof(*mi));
-    if (mi == NULL) return mi;
+static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func, int line) {
+    stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)malloc(sz + sizeof(*mi));
+    if (mi == NULL)
+        return mi;
 
     sx_os_path_basename(mi->file, sizeof(mi->file), file);
+    sx_strcpy(mi->func, sizeof(mi->func), func);
     sx_lock(&mi_lock);
     mi->line = line;
     mi->next = mi_head;
@@ -100,13 +103,12 @@ static void *stb_leakcheck_malloc(size_t sz, const char *file, int line)
     mi->size = (int)sz;
     mi_head = mi;
     sx_unlock(&mi_lock);
-    return mi+1;
+    return mi + 1;
 }
 
-static void stb_leakcheck_free(void *ptr)
-{
+static void stb_leakcheck_free(void* ptr) {
     if (ptr != NULL) {
-        stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)ptr - 1;
+        stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         mi->size = ~mi->size;
         sx_lock(&mi_lock);
 #ifndef STB_LEAKCHECK_SHOWALL
@@ -123,22 +125,22 @@ static void stb_leakcheck_free(void *ptr)
     }
 }
 
-static void *stb_leakcheck_realloc(void *ptr, size_t sz, const char *file, int line)
-{
+static void* stb_leakcheck_realloc(void* ptr, size_t sz, const char* file, const char* func,
+                                   int line) {
     if (ptr == NULL) {
-        return stb_leakcheck_malloc(sz, file, line);
+        return stb_leakcheck_malloc(sz, file, func, line);
     } else if (sz == 0) {
         stb_leakcheck_free(ptr);
         return NULL;
     } else {
-        stb__leakcheck_malloc_info *mi = (stb__leakcheck_malloc_info *)ptr - 1;
+        stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         if (sz <= mi->size)
             return ptr;
         else {
 #ifdef STB_LEAKCHECK_REALLOC_PRESERVE_MALLOC_FILELINE
-            void *q = stb_leakcheck_malloc(sz, mi->file, mi->line);
+            void* q = stb_leakcheck_malloc(sz, mi->file, mi->line);
 #else
-            void *q = stb_leakcheck_malloc(sz, file, line);
+            void* q = stb_leakcheck_malloc(sz, file, func, line);
 #endif
             if (q) {
                 sx_memcpy(q, ptr, mi->size);
@@ -149,34 +151,38 @@ static void *stb_leakcheck_realloc(void *ptr, size_t sz, const char *file, int l
     }
 }
 
-static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char *reason, const char *file, int line, 
-                                   size_t size, void *ptr)
-{
-    char filename[64];
+static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char* reason,
+                                   const char* file, const char* func, int line, size_t size,
+                                   void* ptr) {
+    char filename[32];
+    char _func[64];
     sx_os_path_basename(filename, sizeof(filename), file);
+    sx_strcpy(_func, sizeof(_func), func);
 
     char text[512];
-    sx_snprintf(text, sizeof(text), "%-6s: %s (%4d): %zd bytes at %p", reason, filename, line, size, ptr);
+    sx_snprintf(text, sizeof(text), "%-6s: %s@%4d - %s: %$.2d at 0x%p", reason, filename, line,
+                func, size, ptr);
     if (dump_leak_fn)
-        dump_leak_fn(text, filename, line, size, ptr);
+        dump_leak_fn(text, filename, func, line, size, ptr);
     else
         puts(text);
 }
 
-void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn)
-{
-    stb__leakcheck_malloc_info *mi = mi_head;
+void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn) {
+    stb__leakcheck_malloc_info* mi = mi_head;
     while (mi) {
         if ((ptrdiff_t)mi->size >= 0)
-            stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->line, mi->size, mi+1);
+            stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->func, mi->line, mi->size,
+                                   mi + 1);
         mi = mi->next;
     }
 #ifdef STB_LEAKCHECK_SHOWALL
     mi = mi_head;
     while (mi) {
         if ((ptrdiff_t)mi->size < 0)
-            stblkck_internal_print("FREED", mi->file, mi->line, ~mi->size, mi+1);
-        printf("FREED : %s (%4d): %8d bytes at %p\n", mi->file, mi->line, (int)~mi->size, mi+1);
+            stblkck_internal_print("FREED", mi->file, mi->line, ~mi->size, mi + 1);
+        printf("FREED : %s@%4d - %s: %$.2d at 0x%p\n", mi->file, mi->line, mi->func, (int)~mi->size,
+               mi + 1);
         mi = mi->next;
     }
 #endif
@@ -224,28 +230,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
 
-static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file, uint32_t line, void* user_data)
-{
-    if (size ==0) {
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file,
+                                 const char* func, uint32_t line, void* user_data) {
+    if (size == 0) {
         if (ptr) {
             if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT) {
                 stb_leakcheck_free(ptr);
                 return NULL;
             }
 
-            sx__aligned_free(&g_alloc_malloc_leakd, ptr, align, file, line);
+            sx__aligned_free(&g_alloc_malloc_leakd, ptr, align, file, func, line);
         }
         return NULL;
     } else if (ptr == NULL) {
         if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
-            return stb_leakcheck_malloc(size, file, (int)line);
+            return stb_leakcheck_malloc(size, file, func, (int)line);
 
-        return sx__aligned_alloc(&g_alloc_malloc_leakd, size, align, file, line);
+        return sx__aligned_alloc(&g_alloc_malloc_leakd, size, align, file, func, line);
     } else {
         if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT)
-            return stb_leakcheck_realloc(ptr, size, file, (int)line);
+            return stb_leakcheck_realloc(ptr, size, file, func, (int)line);
 
-        return sx__aligned_realloc(&g_alloc_malloc_leakd, ptr, size, align, file, line);
+        return sx__aligned_realloc(&g_alloc_malloc_leakd, ptr, size, align, file, func, line);
     }
 }
-

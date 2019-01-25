@@ -15,24 +15,22 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 
 // Mattias' strpool implementation
 #define STRPOOL_IMPLEMENTATION
-#define STRPOOL_MEMSET( ptr, val, cnt ) ( sx_memset(ptr, val, cnt) )
-#define STRPOOL_MEMCPY( dst, src, cnt ) ( sx_memcpy(dst, src, cnt) )
-#define STRPOOL_MEMCMP( pr1, pr2, cnt ) ( sx_memcmp(pr1, pr2, cnt) )
+#define STRPOOL_MEMSET(ptr, val, cnt) (sx_memset(ptr, val, cnt))
+#define STRPOOL_MEMCPY(dst, src, cnt) (sx_memcpy(dst, src, cnt))
+#define STRPOOL_MEMCMP(pr1, pr2, cnt) (sx_memcmp(pr1, pr2, cnt))
 //#define STRPOOL_STRNICMP(s1, s2, len)   ( sx_strncmpnocase(s1, s2, len) )
-#define STRPOOL_MALLOC( ctx, size )     ( sx_malloc((const sx_alloc*)ctx, size) )
-#define STRPOOL_FREE( ctx, ptr )        ( sx_free((const sx_alloc*)ctx, ptr) )
+#define STRPOOL_MALLOC(ctx, size) (sx_malloc((const sx_alloc*)ctx, size))
+#define STRPOOL_FREE(ctx, ptr) (sx_free((const sx_alloc*)ctx, ptr))
 #include "../3rdparty/mattias/strpool.h"
 
-typedef struct sx__printf_ctx_s
-{
+typedef struct sx__printf_ctx_s {
     const sx_alloc* alloc;
-    char* buff;
-    int len;
-    char tmp[STB_SPRINTF_MIN];
+    char*           buff;
+    int             len;
+    char            tmp[STB_SPRINTF_MIN];
 } sx__printf_ctx;
 
-int sx_snprintf(char* str, int size, const char* fmt, ...)
-{
+int sx_snprintf(char* str, int size, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     int r = sx_vsnprintf(str, size, fmt, args);
@@ -40,13 +38,11 @@ int sx_snprintf(char* str, int size, const char* fmt, ...)
     return r;
 }
 
-int sx_vsnprintf(char* str, int size, const char* fmt, va_list args)
-{
+int sx_vsnprintf(char* str, int size, const char* fmt, va_list args) {
     return stbsp_vsnprintf(str, size, fmt, args);
 }
 
-char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...)
-{
+char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     char* str = sx_vsnprintf_alloc(alloc, fmt, args);
@@ -54,18 +50,16 @@ char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...)
     return str;
 }
 
-static char* sx__vsnprintf_callback(char* buff, void* user, int len)
-{
+static char* sx__vsnprintf_callback(char* buff, void* user, int len) {
     sx__printf_ctx* ctx = (sx__printf_ctx*)user;
-    int len_ = len + 1;     // Reserve one character for null-termination
+    int             len_ = len + 1;    // Reserve one character for null-termination
     sx_array_add(ctx->alloc, ctx->buff, len_);
     sx_memcpy(ctx->buff + ctx->len, ctx->tmp, len);
     ctx->len += len;
     return ctx->tmp;
 }
 
-char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args)
-{
+char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args) {
     sx__printf_ctx ctx;
     ctx.alloc = alloc;
     ctx.buff = NULL;
@@ -75,13 +69,12 @@ char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args)
     return ctx.buff;
 }
 
-char* sx_strcpy(char* dst, int dst_sz, const char* src)
-{
+char* sx_strcpy(char* dst, int dst_sz, const char* src) {
     sx_assert(dst);
     sx_assert(src);
 
-    const int len = sx_strlen(src);
-    const int32_t max = dst_sz-1;
+    const int     len = sx_strlen(src);
+    const int32_t max = dst_sz - 1;
     const int32_t num = (len < max ? len : max);
     sx_memcpy(dst, src, num);
     dst[num] = '\0';
@@ -90,17 +83,16 @@ char* sx_strcpy(char* dst, int dst_sz, const char* src)
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strlen.c
-int sx_strlen(const char* str) 
-{
-    const char *char_ptr;
-    const uintptr_t *longword_ptr;
-    uintptr_t longword, himagic, lomagic;
+int sx_strlen(const char* str) {
+    const char*      char_ptr;
+    const uintptr_t* longword_ptr;
+    uintptr_t        longword, himagic, lomagic;
 
-    for (char_ptr = str; ((uintptr_t) char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr) {
+    for (char_ptr = str; ((uintptr_t)char_ptr & (sizeof(longword) - 1)) != 0; ++char_ptr) {
         if (*char_ptr == '\0')
             return (int)(intptr_t)(char_ptr - str);
     }
-    longword_ptr = (uintptr_t *) char_ptr;
+    longword_ptr = (uintptr_t*)char_ptr;
     himagic = 0x80808080L;
     lomagic = 0x01010101L;
 #if SX_ARCH_64BIT
@@ -114,7 +106,7 @@ int sx_strlen(const char* str)
         longword = *longword_ptr++;
 
         if (((longword - lomagic) & ~longword & himagic) != 0) {
-            const char *cp = (const char *) (longword_ptr - 1);
+            const char* cp = (const char*)(longword_ptr - 1);
 
             if (cp[0] == 0)
                 return (int)(intptr_t)(cp - str);
@@ -135,26 +127,25 @@ int sx_strlen(const char* str)
                 return (int)(intptr_t)(cp - str + 7);
 #endif
         }
-    }    
+    }
 
     sx_assert(0 && "Not a null-terminated string");
     return -1;
 }
 
-static inline int sx__strnlen(const char* str, int _max)
-{
-    const char *char_ptr;
-    const uintptr_t *longword_ptr;
-    uintptr_t longword, himagic, lomagic;
+static inline int sx__strnlen(const char* str, int _max) {
+    const char*      char_ptr;
+    const uintptr_t* longword_ptr;
+    uintptr_t        longword, himagic, lomagic;
 
-    for (char_ptr = str; ((uintptr_t)char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr) {
+    for (char_ptr = str; ((uintptr_t)char_ptr & (sizeof(longword) - 1)) != 0; ++char_ptr) {
         if (*char_ptr == '\0') {
             int _len = (int)(uintptr_t)(char_ptr - str);
             return (_len > _max) ? _max : _len;
         }
     }
 
-    longword_ptr = (uintptr_t *) char_ptr;
+    longword_ptr = (uintptr_t*)char_ptr;
     himagic = 0x80808080L;
     lomagic = 0x01010101L;
 #if SX_ARCH_64BIT
@@ -168,8 +159,8 @@ static inline int sx__strnlen(const char* str, int _max)
         longword = *longword_ptr++;
 
         if (((longword - lomagic) & ~longword & himagic) != 0) {
-            const char *cp = (const char *) (longword_ptr - 1);
-            int base_offset = (int)(intptr_t)(cp - str);
+            const char* cp = (const char*)(longword_ptr - 1);
+            int         base_offset = (int)(intptr_t)(cp - str);
             if (base_offset > _max)
                 return _max;
 
@@ -192,19 +183,18 @@ static inline int sx__strnlen(const char* str, int _max)
                 return sx_min(_max, base_offset + 7);
 #endif
         }
-    }    
+    }
 
     sx_assert(0 && "Not a null-terminated string");
     return -1;
 }
 
-char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
-{
+char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num) {
     sx_assert(dst);
     sx_assert(src);
 
-    const int len = sx__strnlen(src, _num);
-    const int32_t max = dst_sz-1;
+    const int     len = sx__strnlen(src, _num);
+    const int32_t max = dst_sz - 1;
     const int32_t num = (len < max ? len : max);
     sx_memcpy(dst, src, num);
     dst[num] = '\0';
@@ -212,8 +202,7 @@ char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num)
     return dst;
 }
 
-char* sx_strcat(char* dst, int dst_sz, const char* src)
-{
+char* sx_strcat(char* dst, int dst_sz, const char* src) {
     sx_assert(dst);
     sx_assert(src);
     sx_assert(dst_sz > 0);
@@ -222,8 +211,7 @@ char* sx_strcat(char* dst, int dst_sz, const char* src)
     return sx_strcpy(dst + len, dst_sz - len, src);
 }
 
-char* sx_strncat(char* dst, int dst_sz, const char* src, int _num)
-{
+char* sx_strncat(char* dst, int dst_sz, const char* src, int _num) {
     sx_assert(dst);
     sx_assert(src);
     sx_assert(dst_sz > 0);
@@ -232,21 +220,17 @@ char* sx_strncat(char* dst, int dst_sz, const char* src, int _num)
     return sx_strncpy(dst + len, dst_sz - len, src, _num);
 }
 
-bool sx_isspace(char ch)
-{
-    return  ch == ' ' ||
-            ch == '\t' ||
-            ch == '\n' ||
-            ch == '\r'/* ||
-            ch == '\v' ||
-            ch == '\f'*/;
+bool sx_isspace(char ch) {
+    return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' /* ||
+                                                     ch == '\v' ||
+                                                     ch == '\f'*/
+        ;
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strrchr.c
-const char* sx_strrchar(const char* str, char ch) 
-{
+const char* sx_strrchar(const char* str, char ch) {
     const char *found = NULL, *p;
-    ch = (uint8_t) ch;
+    ch = (uint8_t)ch;
 
     if (ch == '\0')
         return sx_strchar(str, '\0');
@@ -258,23 +242,23 @@ const char* sx_strrchar(const char* str, char ch)
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strchr.c
-const char* sx_strchar(const char* str, char ch) 
-{
-    const uint8_t *char_ptr;
-    uintptr_t* longword_ptr;
-    uintptr_t longword, magic_bits, charmask;
-    uint8_t c = (uint8_t) ch;
+const char* sx_strchar(const char* str, char ch) {
+    const uint8_t* char_ptr;
+    uintptr_t*     longword_ptr;
+    uintptr_t      longword, magic_bits, charmask;
+    uint8_t        c = (uint8_t)ch;
 
     // Handle the first few characters by reading one character at a time.
-    // Do this until CHAR_PTR is aligned on a longword boundary.  
-    for (char_ptr = (const uint8_t*) str; ((uintptr_t)char_ptr & (sizeof (longword) - 1)) != 0; ++char_ptr)  {
+    // Do this until CHAR_PTR is aligned on a longword boundary.
+    for (char_ptr = (const uint8_t*)str; ((uintptr_t)char_ptr & (sizeof(longword) - 1)) != 0;
+         ++char_ptr) {
         if (*char_ptr == c)
-            return (const char*) char_ptr;
+            return (const char*)char_ptr;
         else if (*char_ptr == '\0')
             return NULL;
     }
 
-    longword_ptr = (uintptr_t *) char_ptr;
+    longword_ptr = (uintptr_t*)char_ptr;
     magic_bits = -1;
     magic_bits = magic_bits / 0xff * 0xfe << 1 >> 1 | 1;
     charmask = c | (c << 8);
@@ -286,60 +270,58 @@ const char* sx_strchar(const char* str, char ch)
     for (;;) {
         longword = *longword_ptr++;
 
-        if ((((longword + magic_bits)^~longword)&~magic_bits) != 0 || 
-            ((((longword ^ charmask) + magic_bits) ^ ~(longword ^ charmask)) & ~magic_bits) != 0)
-        {
-            const uint8_t *cp = (const uint8_t *) (longword_ptr - 1);
+        if ((((longword + magic_bits) ^ ~longword) & ~magic_bits) != 0 ||
+            ((((longword ^ charmask) + magic_bits) ^ ~(longword ^ charmask)) & ~magic_bits) != 0) {
+            const uint8_t* cp = (const uint8_t*)(longword_ptr - 1);
 
             if (*cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
 #if SX_ARCH_64BIT
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
             if (*++cp == c)
-                return (const char *) cp;
+                return (const char*)cp;
             else if (*cp == '\0')
                 return NULL;
 #endif
         }
-    }    
+    }
 
     return NULL;
 }
 
-const char* sx_strstr(const char* str, const char* find)
-{
+const char* sx_strstr(const char* str, const char* find) {
     sx_assert(str);
     sx_assert(find);
 
-    char ch = find[0];
+    char        ch = find[0];
     const char* _start = sx_strchar(str, ch);
-    int find_len = sx_strlen(find);
-    int len = sx_strlen(str);
+    int         find_len = sx_strlen(find);
+    int         len = sx_strlen(str);
 
     while (_start) {
         // We have the first character, check the rest
@@ -351,27 +333,26 @@ const char* sx_strstr(const char* str, const char* find)
         if (sx_memcmp(_start, find, find_len) == 0)
             return str;
 
-        _start = sx_strchar(_start+1, ch);
+        _start = sx_strchar(_start + 1, ch);
     }
 
     return NULL;
 }
 
 // https://github.com/clibs/wildcardcmp
-bool sx_strstr_wildcard(const char* str, const char* pattern)
-{
+bool sx_strstr_wildcard(const char* str, const char* pattern) {
     sx_assert(str);
     sx_assert(pattern);
 
-    const char *w = NULL;   // last `*`
-    const char *s = NULL;   // last checked char
+    const char* w = NULL;    // last `*`
+    const char* s = NULL;    // last checked char
 
     // loop 1 char at a time
     while (1) {
         if (!*str) {
-            if (!*pattern) 
+            if (!*pattern)
                 return true;
-            if (!*s) 
+            if (!*s)
                 return false;
             str = s++;
             pattern = w;
@@ -382,7 +363,7 @@ bool sx_strstr_wildcard(const char* str, const char* pattern)
                     w = ++pattern;
                     s = str;
                     // "*" -> "foobar"
-                    if (*pattern) 
+                    if (*pattern)
                         continue;
                     return true;
                 } else if (w) {
@@ -398,11 +379,10 @@ bool sx_strstr_wildcard(const char* str, const char* pattern)
         pattern++;
     }
 
-    return true;    
+    return true;
 }
 
-bool sx_strequal(const char* a, const char* b)
-{
+bool sx_strequal(const char* a, const char* b) {
     int alen = sx_strlen(a);
     int blen = sx_strlen(b);
     if (alen != blen)
@@ -415,8 +395,7 @@ bool sx_strequal(const char* a, const char* b)
     return true;
 }
 
-bool sx_strequalnocase(const char* a, const char* b)
-{
+bool sx_strequalnocase(const char* a, const char* b) {
     int alen = sx_strlen(a);
     int blen = sx_strlen(b);
     if (alen != blen)
@@ -429,8 +408,7 @@ bool sx_strequalnocase(const char* a, const char* b)
     return true;
 }
 
-bool sx_strnequal(const char* a, const char* b, int num)
-{
+bool sx_strnequal(const char* a, const char* b, int num) {
     int _alen = sx_strlen(a);
     int _blen = sx_strlen(b);
     int alen = sx_min(num, _alen);
@@ -445,10 +423,9 @@ bool sx_strnequal(const char* a, const char* b, int num)
     return true;
 }
 
-bool sx_strnequalnocase(const char* a, const char* b, int num)
-{
+bool sx_strnequalnocase(const char* a, const char* b, int num) {
     int _alen = sx_strlen(a);
-    int _blen = sx_strlen(b);    
+    int _blen = sx_strlen(b);
     int alen = sx_min(num, _alen);
     int blen = sx_min(num, _blen);
     if (alen != blen)
@@ -461,52 +438,46 @@ bool sx_strnequalnocase(const char* a, const char* b, int num)
     return true;
 }
 
-char sx_tolowerchar(char ch)
-{
+char sx_tolowerchar(char ch) {
     return ch + (sx_isupperchar(ch) ? 0x20 : 0);
 }
 
-char sx_toupperchar(char ch)
-{
+char sx_toupperchar(char ch) {
     return ch - (sx_islowerchar(ch) ? 0x20 : 0);
 }
 
-bool sx_isrange(char ch, char from, char to)
-{
+bool sx_isrange(char ch, char from, char to) {
     return (uint8_t)(ch - from) <= (uint8_t)(to - from);
 }
 
-bool sx_isupperchar(char ch)
-{
+bool sx_isupperchar(char ch) {
     return sx_isrange(ch, 'A', 'Z');
 }
 
-bool sx_islowerchar(char ch)
-{
+bool sx_islowerchar(char ch) {
     return sx_isrange(ch, 'a', 'z');
 }
 
-const char* sx_skip_whitespace(const char* str)
-{
+const char* sx_skip_whitespace(const char* str) {
     while (*str) {
         if (sx_isspace(*str))
             ++str;
-        else 
+        else
             break;
     }
     return str;
 }
 
-const char* sx_skip_word(const char* str)
-{
-    for (char ch = *str++; ch > 0 && (sx_islowerchar(ch) || sx_isupperchar(ch) || sx_isnumchar(ch) || ch == '_'); 
-         ch = *str++) {}
-    return str-1;
+const char* sx_skip_word(const char* str) {
+    for (char ch = *str++;
+         ch > 0 && (sx_islowerchar(ch) || sx_isupperchar(ch) || sx_isnumchar(ch) || ch == '_');
+         ch = *str++) {
+    }
+    return str - 1;
 }
 
-char* sx_trim_whitespace(char* dest, int dest_sz, const char* src)
-{
-    int len = sx_min(sx_strlen(src), dest_sz-1);
+char* sx_trim_whitespace(char* dest, int dest_sz, const char* src) {
+    int len = sx_min(sx_strlen(src), dest_sz - 1);
     int offset = 0;
     for (int i = 0; i < len; i++) {
         if (!sx_isspace(src[i]))
@@ -516,14 +487,13 @@ char* sx_trim_whitespace(char* dest, int dest_sz, const char* src)
     return dest;
 }
 
-char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim)
-{
-    int len = sx_min(sx_strlen(src), dest_sz-1);
+char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim) {
+    int len = sx_min(sx_strlen(src), dest_sz - 1);
     int offset = 0;
     for (int i = 0; i < len; i++) {
         const char* t = trim;
-        char sch = src[i];
-        bool trim_it = false;
+        char        sch = src[i];
+        bool        trim_it = false;
         while (*t) {
             if (sch != *t) {
                 ++t;
@@ -540,9 +510,8 @@ char* sx_trim(char* dest, int dest_sz, const char* src, const char* trim)
     return dest;
 }
 
-char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch)
-{
-    int len = sx_min(sx_strlen(src), dest_sz-1);
+char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch) {
+    int len = sx_min(sx_strlen(src), dest_sz - 1);
     int offset = 0;
     for (int i = 0; i < len; i++) {
         if (trim_ch != src[i])
@@ -552,16 +521,15 @@ char* sx_trimchar(char* dest, int dest_sz, const char* src, char trim_ch)
     return dest;
 }
 
-char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace)
-{
+char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, const char* replace) {
     sx_assert(dest != src);
 
-    char f = find[0];
-    int flen = sx_strlen(find);
-    int rlen = sx_strlen(replace);
-    int srclen = sx_strlen(src);
-    int offset = 0;
-    int dest_max = dest_sz - 1;
+    char        f = find[0];
+    int         flen = sx_strlen(find);
+    int         rlen = sx_strlen(replace);
+    int         srclen = sx_strlen(src);
+    int         offset = 0;
+    int         dest_max = dest_sz - 1;
     const char* start = src;
 
     while (*src && offset < dest_max) {
@@ -588,8 +556,8 @@ char* sx_replace(char* dest, int dest_sz, const char* src, const char* find, con
     return dest;
 }
 
-char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find, const char replace)
-{
+char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find,
+                     const char replace) {
     int dest_max = dest_sz - 1;
     int offset = 0;
     while (*src && offset < dest_max) {
@@ -603,8 +571,7 @@ char* sx_replacechar(char* dest, int dest_sz, const char* src, const char find, 
     return dest;
 }
 
-char* sx_EOL_LF(char* dest, int dest_sz, const char* src)
-{
+char* sx_EOL_LF(char* dest, int dest_sz, const char* src) {
     assert(dest_sz > 0);
     char* end = dest + dest_sz - 1;
     for (char ch = *src++; ch != '\0' && dest < end; ch = *src++) {
@@ -615,8 +582,7 @@ char* sx_EOL_LF(char* dest, int dest_sz, const char* src)
     return dest;
 }
 
-bool sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char splitch)
-{
+bool sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* src, char splitch) {
     const char* sptr = sx_strchar(src, splitch);
     if (sptr) {
         sx_strncpy(dest1, dest1_sz, src, (int)(uintptr_t)(sptr - src));
@@ -627,19 +593,18 @@ bool sx_split(char* dest1, int dest1_sz, char* dest2, int dest2_sz, const char* 
     return false;
 }
 
-sx_str_block sx_findblock(const char* str, char open, char close)
-{
-    int count = 0;
-    sx_str_block b = {NULL, NULL};
+sx_str_block sx_findblock(const char* str, char open, char close) {
+    int          count = 0;
+    sx_str_block b = { NULL, NULL };
 
     for (char ch = *str; ch && count >= 0; ch = *++str) {
         if (ch == open) {
-            b.start = str+1;
+            b.start = str + 1;
             count++;
         } else if (ch == close) {
             count--;
             if (count == 0) {
-                b.end = str-1;
+                b.end = str - 1;
                 return b;
             }
         }
@@ -648,13 +613,11 @@ sx_str_block sx_findblock(const char* str, char open, char close)
     return b;
 }
 
-bool sx_isnumchar(char ch)
-{
+bool sx_isnumchar(char ch) {
     return sx_isrange(ch, '0', '9');
 }
 
-bool sx_isnum(const char* str)
-{
+bool sx_isnum(const char* str) {
     while (*str) {
         if (!sx_isnumchar(*str))
             return false;
@@ -663,23 +626,20 @@ bool sx_isnum(const char* str)
     return true;
 }
 
-bool sx_ishexchar(char ch)
-{
+bool sx_ishexchar(char ch) {
     return sx_isrange(sx_tolowerchar(ch), 'a', 'f') || sx_isnumchar(ch);
 }
 
-bool sx_ishex(const char* str)
-{   
+bool sx_ishex(const char* str) {
     while (*str) {
         if (!sx_ishexchar(*str))
             return false;
         ++str;
     }
-    return true;    
+    return true;
 }
 
-char* sx_tolower(char* dst, int dst_sz, const char* str)
-{
+char* sx_tolower(char* dst, int dst_sz, const char* str) {
     int offset = 0;
     int dst_max = dst_sz - 1;
     while (*str && offset < dst_max) {
@@ -690,8 +650,7 @@ char* sx_tolower(char* dst, int dst_sz, const char* str)
     return dst;
 }
 
-char* sx_toupper(char* dst, int dst_sz, const char* str)
-{
+char* sx_toupper(char* dst, int dst_sz, const char* str) {
     int offset = 0;
     int dst_max = dst_sz - 1;
     while (*str && offset < dst_max) {
@@ -702,35 +661,29 @@ char* sx_toupper(char* dst, int dst_sz, const char* str)
     return dst;
 }
 
-bool sx_tobool(const char* str)
-{
+bool sx_tobool(const char* str) {
     char ch = sx_tolowerchar(str[0]);
-    return ch == 't' ||  ch == '1';
+    return ch == 't' || ch == '1';
 }
 
-int sx_toint(const char* str)
-{
+int sx_toint(const char* str) {
     return atoi(str);
 }
 
-uint32_t sx_touint(const char* str)
-{
+uint32_t sx_touint(const char* str) {
     return strtoul(str, NULL, 10);
 }
 
-float sx_tofloat(const char* str)
-{
+float sx_tofloat(const char* str) {
     return strtof(str, NULL);
 }
 
-double sx_todouble(const char* str)
-{
+double sx_todouble(const char* str) {
     return strtod(str, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf)
-{
+sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf) {
     strpool_config_t sconf;
     sconf.memctx = (void*)alloc;
     if (!conf) {
@@ -739,7 +692,7 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
         sconf.index_bits = 20;
         sconf.entry_capacity = 4096;
         sconf.block_capacity = 32;
-        sconf.block_size = 256*1024;
+        sconf.block_size = 256 * 1024;
         sconf.min_length = 23;
     } else {
         sconf.ignore_case = conf->ignore_case;
@@ -747,7 +700,7 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
         sconf.index_bits = conf->index_bits;
         sconf.entry_capacity = conf->entry_capacity;
         sconf.block_capacity = conf->block_capacity;
-        sconf.block_size = conf->block_sz_kb*1024;
+        sconf.block_size = conf->block_sz_kb * 1024;
         sconf.min_length = conf->min_str_len;
     }
 
@@ -760,69 +713,58 @@ sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* co
     return sp;
 }
 
-void sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc)
-{
+void sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc) {
     sx_assert(sp);
     strpool_term(sp);
     sx_free(alloc, sp);
 }
 
-void sx_strpool_defrag(sx_strpool* sp)
-{
+void sx_strpool_defrag(sx_strpool* sp) {
     strpool_defrag(sp);
 }
 
-sx_str_t sx_strpool_add(sx_strpool* sp, const char* str, int len)
-{
+sx_str_t sx_strpool_add(sx_strpool* sp, const char* str, int len) {
     STRPOOL_U64 handle = strpool_inject(sp, str, len);
-    sx_assert((handle & 0xffffffff) == handle && "uint32_t overflow, check index_bits and counter_bits in config!");
+    sx_assert((handle & 0xffffffff) == handle &&
+              "uint32_t overflow, check index_bits and counter_bits in config!");
     return (uint32_t)handle;
 }
 
-void sx_strpool_del(sx_strpool* sp, sx_str_t handle)
-{
+void sx_strpool_del(sx_strpool* sp, sx_str_t handle) {
     strpool_discard(sp, (STRPOOL_U64)handle);
 }
 
-int sx_strpool_incref(sx_strpool* sp, sx_str_t handle)
-{
+int sx_strpool_incref(sx_strpool* sp, sx_str_t handle) {
     return strpool_incref(sp, (STRPOOL_U64)handle);
 }
 
-int sx_strpool_decref(sx_strpool* sp, sx_str_t handle)
-{
+int sx_strpool_decref(sx_strpool* sp, sx_str_t handle) {
     return strpool_decref(sp, (STRPOOL_U64)handle);
 }
 
-bool sx_strpool_valid(const sx_strpool* sp, sx_str_t handle)
-{
+bool sx_strpool_valid(const sx_strpool* sp, sx_str_t handle) {
     return sx_cppbool(strpool_isvalid(sp, (STRPOOL_U64)handle));
 }
 
-int sx_strpool_ref(sx_strpool* sp, sx_str_t handle)
-{
+int sx_strpool_ref(sx_strpool* sp, sx_str_t handle) {
     return strpool_getref(sp, (STRPOOL_U64)handle);
 }
 
-const char* sx_strpool_cstr(const sx_strpool* sp, sx_str_t handle)
-{
+const char* sx_strpool_cstr(const sx_strpool* sp, sx_str_t handle) {
     return strpool_cstr(sp, (STRPOOL_U64)handle);
 }
 
-int sx_strpool_len(const sx_strpool* sp, sx_str_t handle)
-{
+int sx_strpool_len(const sx_strpool* sp, sx_str_t handle) {
     return strpool_length(sp, (STRPOOL_U64)handle);
 }
 
-sx_strpool_collate_data sx_strpool_collate(const sx_strpool* sp)
-{
+sx_strpool_collate_data sx_strpool_collate(const sx_strpool* sp) {
     sx_strpool_collate_data d;
     d.first = strpool_collate(sp, &d.count);
     return d;
 }
 
-void sx_strpool_collate_free(const sx_strpool* sp, sx_strpool_collate_data data)
-{
+void sx_strpool_collate_free(const sx_strpool* sp, sx_strpool_collate_data data) {
     sx_assert(data.first);
     strpool_free_collated(sp, data.first);
 }

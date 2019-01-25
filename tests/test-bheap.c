@@ -1,18 +1,17 @@
 #include "sx/bheap.h"
 #include "sx/rng.h"
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     static const int N = 32;
 
     sx_rng rng;
     sx_rng_seed(&rng, (uint32_t)time(NULL));
 
     const sx_alloc* alloc = sx_alloc_malloc;
-    sx_bheap* bh = sx_bheap_create(alloc, N);
+    sx_bheap*       bh = sx_bheap_create(alloc, N);
 
     puts("\nPushing values to _MIN_ binary heap:");
     for (int i = 0; i < N; i++) {
@@ -65,8 +64,7 @@ int main(int argc, char* argv[])
 
         if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_min(bh).key;
-            for (int k = 0; k < bh->count; k++)
-                sx_assert(key <= bh->items[k].key);
+            for (int k = 0; k < bh->count; k++) sx_assert(key <= bh->items[k].key);
             num_pop++;
         }
     }
@@ -90,8 +88,7 @@ int main(int argc, char* argv[])
 
         if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_max(bh).key;
-            for (int k = 0; k < bh->count; k++)
-                sx_assert(key >= bh->items[k].key);
+            for (int k = 0; k < bh->count; k++) sx_assert(key >= bh->items[k].key);
             num_pop++;
         }
     }
