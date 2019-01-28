@@ -111,7 +111,9 @@ int sx_mem_write(sx_mem_writer* writer, const void* data, int size) {
 
 int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset, sx_whence whence) {
     switch (whence) {
-    case SX_WHENCE_BEGIN: writer->pos = sx_clamp(offset, (int64_t)0ll, writer->top); break;
+    case SX_WHENCE_BEGIN:
+        writer->pos = sx_clamp(offset, (int64_t)0ll, writer->top);
+        break;
     case SX_WHENCE_CURRENT:
         writer->pos = sx_clamp(writer->pos + offset, (int64_t)0ll, writer->top);
         break;
@@ -146,7 +148,9 @@ int sx_mem_read(sx_mem_reader* reader, void* data, int size) {
 
 int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence) {
     switch (whence) {
-    case SX_WHENCE_BEGIN: reader->pos = sx_clamp(offset, (int64_t)0ll, reader->top); break;
+    case SX_WHENCE_BEGIN:
+        reader->pos = sx_clamp(offset, (int64_t)0ll, reader->top);
+        break;
     case SX_WHENCE_CURRENT:
         reader->pos = sx_clamp(reader->pos + offset, (int64_t)0ll, reader->top);
         break;

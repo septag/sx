@@ -149,6 +149,14 @@ SX_CONSTFN float sx_acos(float _a) {
     return result;
 }
 
+SX_CONSTFN float sx_sin(float _a) {
+    return sx_cos(_a - SX_PIHALF);
+}
+
+SX_CONSTFN float sx_asin(float _a) {
+    return SX_PIHALF - sx_acos(_a);
+}
+
 SX_CONSTFN float sx_atan2(float _y, float _x) {
     static const float kAtan2C0 = -0.013480470f;
     static const float kAtan2C1 = 0.057477314f;
@@ -307,6 +315,14 @@ SX_CONSTFN float sx_acos(float _a) {
     return acosf(_a);
 }
 
+SX_CONSTFN float sx_sin(float _a) {
+    return sinf(_a);
+}
+
+SX_CONSTFN float sx_asin(float _a) {
+    return asinf(_a);
+}
+
 SX_CONSTFN float sx_atan2(float _y, float _x) {
     return atan2f(_y, _x);
 }
@@ -329,8 +345,8 @@ SX_CONSTFN float sx_rsqrt(float _a) {
 #endif
 
 sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
-    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(eye, target), NULL);
-    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis), NULL);
+    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(eye, target));
+    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis));
     sx_vec3 yaxis = sx_vec3_cross(zaxis, xaxis);
 
     return sx_mat4f(xaxis.x, xaxis.y, xaxis.z, -sx_vec3_dot(xaxis, eye), yaxis.x, yaxis.y, yaxis.z,
@@ -339,8 +355,8 @@ sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_ve
 }
 
 sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
-    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(target, eye), NULL);
-    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis), NULL);
+    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(target, eye));
+    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis));
     sx_vec3 yaxis = sx_vec3_cross(zaxis, xaxis);
 
     return sx_mat4f(xaxis.x, xaxis.y, xaxis.z, -sx_vec3_dot(xaxis, eye), yaxis.x, yaxis.y, yaxis.z,
@@ -367,7 +383,7 @@ sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot, const sx_vec
     // CameraMat = Tobj * Rcam * Tcam;      // move -> rotate around pivot pt -> move to object pos
     // ViewMat = CameraMat(inv) = Tobj(inv) * Rcam(inv) * Tobj(inv)
     sx_mat4 translate_inv = sx_mat4_translate(-move.x, -move.y, -move.z);
-    sx_mat4 rotate_inv = sx_mat4_quat(sx_quat_inv(rot));
+    sx_mat4 rotate_inv = sx_quat_mat4(sx_quat_inv(rot));
     sx_mat4 translate_obj_inv = sx_mat4_translate(-target_pos.x, -target_pos.y, -target_pos.z);
     sx_mat4 TR = sx_mat4_mul(&translate_obj_inv, &rotate_inv);
     return sx_mat4_mul(&TR, &translate_inv);
@@ -688,22 +704,22 @@ sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b) {
 
 // Reference: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
 sx_quat sx_mat4_calc_quat(const sx_mat4* _mat) {
-    float trace = _mat->f[0] + _mat->f[5] + _mat->m33;
+    float trace = _mat->f[0] + _mat->f[5] + _mat->f[10];
     if (trace > 0.00001f) {
         float s = sx_rsqrt(trace + 1.0f) * 0.5f;
         return sx_quat4f((_mat->f[9] - _mat->f[6]) * s, (_mat->f[2] - _mat->f[8]) * s,
                          (_mat->f[4] - _mat->f[1]) * s, 0.25f / s);
     } else {
-        if (_mat->f[0] > _mat->f[5] && _mat->f[0] > _mat->m33) {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->f[0] - _mat->f[5] - _mat->m33);
+        if (_mat->f[0] > _mat->f[5] && _mat->f[0] > _mat->f[10]) {
+            float s = 2.0f * sx_sqrt(1.0f + _mat->f[0] - _mat->f[5] - _mat->f[10]);
             return sx_quat4f(0.25f * s, (_mat->f[1] + _mat->f[4]) / s,
                              (_mat->f[2] + _mat->f[8]) / s, (_mat->f[9] - _mat->f[6]) / s);
-        } else if (_mat->f[5] > _mat->m33) {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->f[5] - _mat->f[0] - _mat->m33);
+        } else if (_mat->f[5] > _mat->f[10]) {
+            float s = 2.0f * sx_sqrt(1.0f + _mat->f[5] - _mat->f[0] - _mat->f[10]);
             return sx_quat4f((_mat->f[1] + _mat->f[4]) / s, 0.25f * s,
                              (_mat->f[6] + _mat->f[9]) / s, (_mat->f[2] - _mat->f[8]) / s);
         } else {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->m33 - _mat->f[0] - _mat->f[5]);
+            float s = 2.0f * sx_sqrt(1.0f + _mat->f[10] - _mat->f[0] - _mat->f[5]);
             return sx_quat4f((_mat->f[2] + _mat->f[8]) / s, (_mat->f[6] + _mat->f[9]) / s,
                              0.25f * s, (_mat->f[4] - _mat->f[1]) / s);
         }
@@ -762,29 +778,35 @@ sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_
     return sx_mat4fv(row1.f, row2.f, row3.f, sx_vec4v3(_pos, 1.0f).f);
 }
 
-sx_mat4 sx_mat4_quat(const sx_quat _quat) {
-    const float x = _quat.f[0];
-    const float y = _quat.f[1];
-    const float z = _quat.f[2];
-    const float w = _quat.f[3];
+sx_mat4 sx_quat_mat4(const sx_quat quat) {
+    float w, x, y, z, xx, yy, zz, xy, yz, xz, wx, wy, wz, norm, s;
 
-    const float x2 = x + x;
-    const float y2 = y + y;
-    const float z2 = z + z;
-    const float x2x = x2 * x;
-    const float x2y = x2 * y;
-    const float x2z = x2 * z;
-    const float x2w = x2 * w;
-    const float y2y = y2 * y;
-    const float y2z = y2 * z;
-    const float y2w = y2 * w;
-    const float z2z = z2 * z;
-    const float z2w = z2 * w;
+    sx_quat q = sx_quat_norm_get(quat, &norm);
+    s = norm > 0.0f ? (2.0f / norm) : 0.0f;
 
-    return sx_mat4f(1.0f - (y2y + z2z), x2y - z2w, x2z + y2w, 0.0f, x2y + z2w, 1.0f - (x2x + z2z),
-                    y2z - x2w, 0.0f, x2z - y2w, y2z + x2w, 1.0f - (x2x + y2y), 0.0f, 0.0f, 0.0f,
-                    0.0f, 1.0f);
+    x = q.x;
+    y = q.y;
+    z = q.z;
+    w = q.w;
+
+    xx = s * x * x;
+    xy = s * x * y;
+    wx = s * w * x;
+    yy = s * y * y;
+    yz = s * y * z;
+    wy = s * w * y;
+    zz = s * z * z;
+    xz = s * x * z;
+    wz = s * w * z;
+
+    // clang-format off
+    return sx_mat4f(1.0f - yy - zz,     xy - wz,            xz + wy,        0.0f,
+                    xy + wz,            1.0f - xx - zz,     yz - wx,        0.0f,
+                    xz - wy,            yz + wx,            1.0f - xx - yy, 0.0f,
+                    0.0f,               0.0f,               0.0f,           1.0f);
+    // clang-format on
 }
+
 
 sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b) {
     return sx_mat4fv(sx_mat4_mul_vec4(_a, _b->col1).f, sx_mat4_mul_vec4(_a, _b->col2).f,
@@ -796,7 +818,7 @@ sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 
     sx_vec3 ca = sx_vec3_sub(_vc, _va);
     sx_vec3 baca = sx_vec3_cross(ba, ca);
 
-    return sx_vec3_norm(baca, NULL);
+    return sx_vec3_norm(baca);
 }
 
 sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc) {

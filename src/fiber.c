@@ -218,7 +218,9 @@ void sx_fiber_update(sx_fiber_context* ctx, float dt) {
                 }
                 break;
             }
-            default: sx_assert(0 && "Invalid ret type in update loop"); break;
+            default:
+                sx_assert(0 && "Invalid ret type in update loop");
+                break;
             }
 
             fs = next;
