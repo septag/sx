@@ -12,9 +12,9 @@
 #if SX_PLATFORM_WINDOWS
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
-#    include <Psapi.h>
 #    include <direct.h>    // _getcwd
 #    include <windows.h>
+#    include <Psapi.h>
 #elif SX_PLATFORM_POSIX
 #    include <dirent.h>    // S_IFREG
 #    include <fcntl.h>     // open
