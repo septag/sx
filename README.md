@@ -4,15 +4,16 @@
 [@septag](https://twitter.com/septagh)
 
 SX is a minimal and performant base C library, designed to run on different platforms and OSes. Designed to help C developers (and C++ programmers who hate stl) with their multiplatform programs and games.
+
+Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
+
 - The API is simple and portable across many other languages
 - Heap memory is under control: Almost every entity that allocates from heap accepts `allocator` object and native `malloc` and `free` are not used anywhere else.
 - Runs on multiple platforms
 - Performant. Uses fast algorithms and C-implementations (some assembly) with plain C-structs and functions. And unlike `stl`, performance is not much different in debug builds. 
 - Fast compile time: It takes about 1 sec to build the lib (it's about 15kloc with 3rdparty sources) on my windows machine and vc14 (cl.exe) compiler. (i7-2nd gen CPU + ninja build). Also headers include minimal headers and system libs for faster compile times in programs that use them.
 
-Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
-
-This library currently contains these functionalities (by header file):
+This library currently contains these functionalities (listed by header files):
 
 - [allocator.h](https://github.com/septag/sx/blob/master/include/sx/allocator.h): basic memory allocation functions and default heap/leak_check allocators. 
 - [array.h](https://github.com/septag/sx/blob/master/include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
