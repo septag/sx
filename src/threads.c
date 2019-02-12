@@ -4,24 +4,22 @@
 //
 
 #include "sx/threads.h"
+#include "sx/allocator.h"
 #include "sx/os.h"
-#include "sx/platform.h"
 #include "sx/string.h"
 
 #if SX_PLATFORM_APPLE
 #    include <dispatch/dispatch.h>
-#    include <pthread.h>
 #    include <mach/mach.h>
+#    include <pthread.h>
 #elif SX_PLATFORM_POSIX
 #    define __USE_GNU
 #    include <errno.h>
 #    include <pthread.h>
 #    include <semaphore.h>
+#    include <sys/prctl.h>
 #    include <time.h>
 #    include <unistd.h>
-#    if BX_PLATFORM_LINUX && (SX_CRT_GLIBC < 21200)
-#        include <sys/prctl.h>
-#    endif    // BX_PLATFORM_
 #    if defined(__FreeBSD__)
 #        include <pthread_np.h>
 #    endif
@@ -31,8 +29,8 @@
 #elif SX_PLATFORM_WINDOWS
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
-#    include <windows.h>
 #    include <limits.h>
+#    include <windows.h>
 #endif    // SX_PLATFORM_
 
 #include "sx/atomic.h"

@@ -1,6 +1,8 @@
+#include "sx/allocator.h"
 #include "sx/jobs.h"
 #include "sx/os.h"
 #include "sx/rng.h"
+
 #include <stdio.h>
 #include <time.h>
 

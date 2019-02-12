@@ -85,16 +85,18 @@
 // clang-format on
 #pragma once
 
-#include "sx/allocator.h"
+#include "macros.h"
+#include <stdbool.h>
 
+typedef struct sx_alloc       sx_alloc;
 typedef struct sx_job_context sx_job_context;
 typedef volatile int*         sx_job_t;
 
 typedef void(sx_job_cb)(int index, void* user);
-typedef void(sx_job_thread_init_cb)(sx_job_context* ctx, int thread_index, uint32_t thread_id,
+typedef void(sx_job_thread_init_cb)(sx_job_context* ctx, int thread_index, unsigned int thread_id,
                                     void* user);
-typedef void(sx_job_thread_shutdown_cb)(sx_job_context* ctx, int thread_index, uint32_t thread_id,
-                                        void* user);
+typedef void(sx_job_thread_shutdown_cb)(sx_job_context* ctx, int thread_index,
+                                        unsigned int thread_id, void* user);
 
 typedef enum sx_job_priority {
     SX_JOB_PRIORITY_HIGH = 0,
@@ -129,11 +131,11 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
 void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
 sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count,
-                         uint32_t tags SX_DFLT(0));
+                         unsigned int tags sx_default(0));
 void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
 bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
 int      sx_job_num_worker_threads(sx_job_context* ctx);
-void     sx_job_set_current_thread_tags(sx_job_context* ctx, uint32_t tags);
+void     sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);
 
 #ifdef __cplusplus
 }

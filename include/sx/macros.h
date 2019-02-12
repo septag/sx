@@ -23,23 +23,16 @@
 
 // Default parameter value, only for C++ and kind of a self documenting for C
 #ifdef __cplusplus
-#    define SX_DFLT(_e) = (_e)
+#    define sx_default(_e) = (_e)
 #else
-#    define SX_DFLT(_e)
+#    define sx_default(_e)
 #endif
-
-// Argument is out (pointer/reference)
-#define SX_OUT
-// Argument is in/out (pointer/reference)
-#define SX_INOUT
-// Function returns new pointer (pointer), ptr must be freed by user
-#define SX_NEW_PTR
 
 ///
 #define sx_align_mask(_value, _mask) (((_value) + (_mask)) & ((~0) & (~(_mask))))
-#define sx_align_16(_value) SX_ALIGN_MASK(_value, 0xf)
-#define sx_align_256(_value) SX_ALIGN_MASK(_value, 0xff)
-#define sx_align_4096(_value) SX_ALIGN_MASK(_value, 0xfff)
+#define sx_align_16(_value) sx_align_mask(_value, 0xf)
+#define sx_align_256(_value) sx_align_mask(_value, 0xff)
+#define sx_align_4096(_value) sx_align_mask(_value, 0xfff)
 
 #if defined(__has_feature)
 #    define sx_clang_has_feature(_x) __has_feature(_x)
@@ -61,16 +54,6 @@
 #    define SX_NO_INLINE __attribute__((noinline))
 #    define SX_NO_RETURN __attribute__((noreturn))
 #    define SX_CONSTFN __attribute__((const))
-#    if SX_COMPILER_GCC >= 70000
-#        define SX_FALLTHROUGH __attribute__((fallthrough))
-#    else
-#        define SX_FALLTHROUGH SX_NOOP()
-#    endif    // SX_COMPILER_GCC >= 70000
-
-#    define SX_PRINTF_ARGS(_format, _args) __attribute__((format(__printf__, _format, _args)))
-
-#    define SX_ATTRIBUTE(_x) __attribute__((_x))
-
 #    if SX_CRT_MSVC
 #        define __stdcall
 #    endif    // SX_CRT_MSVC

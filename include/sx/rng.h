@@ -13,7 +13,7 @@
 //
 #pragma once
 
-#include "sx.h"
+#include <stdint.h>
 
 typedef struct sx_rng {
     uint64_t state[2];

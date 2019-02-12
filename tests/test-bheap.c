@@ -1,5 +1,6 @@
 #include "sx/bheap.h"
 #include "sx/rng.h"
+#include "sx/allocator.h"
 
 #include <stdio.h>
 #include <time.h>

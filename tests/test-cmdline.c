@@ -1,4 +1,5 @@
 #include "sx/cmdline.h"
+#include "sx/allocator.h"
 #include <stdio.h>
 
 static void print_help(sx_cmdline_context* ctx) {

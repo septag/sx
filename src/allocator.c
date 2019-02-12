@@ -3,15 +3,16 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/allocator.h"
+
+#include <malloc.h>
+
 #include "sx/atomic.h"
 #include "sx/os.h"
 #include "sx/string.h"
 
-#include <malloc.h>
-
-static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, const char* func,
-                           uint32_t line, void* user_data);
-static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file,
+static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
+                           const char* func, uint32_t line, void* user_data);
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                  const char* func, uint32_t line, void* user_data);
 
 static const sx_alloc g_alloc_malloc = { sx__malloc_cb, NULL };
@@ -20,8 +21,8 @@ static const sx_alloc g_alloc_malloc_leakd = { sx__malloc_leakd_cb, NULL };
 const sx_alloc* sx_alloc_malloc = &g_alloc_malloc;
 const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
 
-static void* sx__malloc_cb(void* ptr, size_t size, size_t align, const char* file, const char* func,
-                           uint32_t line, void* user_data) {
+static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
+                           const char* func, uint32_t line, void* user_data) {
     if (size == 0) {
         if (ptr) {
             if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT) {
@@ -160,8 +161,8 @@ static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char* rea
     sx_strcpy(_func, sizeof(_func), func);
 
     char text[512];
-    sx_snprintf(text, sizeof(text), "%-6s: %s@%4d - %s: %$.2d at 0x%p", reason, filename, line,
-                func, size, ptr);
+    sx_snprintf(text, sizeof(text), "%-6s: %s@%d: %s: %$.2d at 0x%p", reason, filename, line, func,
+                size, ptr);
     if (dump_leak_fn)
         dump_leak_fn(text, filename, func, line, size, ptr);
     else
@@ -171,21 +172,12 @@ static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char* rea
 void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn) {
     stb__leakcheck_malloc_info* mi = mi_head;
     while (mi) {
-        if ((ptrdiff_t)mi->size >= 0)
+        if ((ptrdiff_t)mi->size >= 0) {
             stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->func, mi->line, mi->size,
                                    mi + 1);
+        }
         mi = mi->next;
     }
-#ifdef STB_LEAKCHECK_SHOWALL
-    mi = mi_head;
-    while (mi) {
-        if ((ptrdiff_t)mi->size < 0)
-            stblkck_internal_print("FREED", mi->file, mi->line, ~mi->size, mi + 1);
-        printf("FREED : %s@%4d - %s: %$.2d at 0x%p\n", mi->file, mi->line, mi->func, (int)~mi->size,
-               mi + 1);
-        mi = mi->next;
-    }
-#endif
 }
 
 /*
@@ -230,7 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
 
-static void* sx__malloc_leakd_cb(void* ptr, size_t size, size_t align, const char* file,
+static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                  const char* func, uint32_t line, void* user_data) {
     if (size == 0) {
         if (ptr) {

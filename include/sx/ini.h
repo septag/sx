@@ -8,8 +8,7 @@
 //
 #pragma once
 
-#include "allocator.h"
-
+typedef struct sx_alloc sx_alloc;
 typedef struct ini_t sx_ini;
 
 #ifdef __cplusplus

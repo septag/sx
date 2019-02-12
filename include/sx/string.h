@@ -6,6 +6,7 @@
 //
 #pragma once
 
+#include <stdarg.h>     // va_list
 #include "allocator.h"
 
 typedef struct sx_str_block {
@@ -20,8 +21,8 @@ extern "C" {
 int sx_snprintf(char* str, int size, const char* fmt, ...);
 int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 
-SX_NEW_PTR char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
-SX_NEW_PTR char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
+char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
+char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
 char* sx_strcpy(char* dst, int dst_sz, const char* src);
 char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
@@ -90,7 +91,7 @@ typedef struct sx_strpool_collate_data {
 typedef struct strpool_t sx_strpool;
 typedef uint32_t         sx_str_t;
 
-sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf SX_DFLT(NULL));
+sx_strpool* sx_strpool_create(const sx_alloc* alloc, const sx_strpool_config* conf sx_default(NULL));
 void        sx_strpool_destroy(sx_strpool* sp, const sx_alloc* alloc);
 
 void        sx_strpool_defrag(sx_strpool* sp);

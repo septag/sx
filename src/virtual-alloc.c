@@ -72,7 +72,7 @@ typedef struct sx__virtualalloc_hdr {
     uint32_t padding;
 } sx__virtualalloc_hdr;
 
-static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_t align) {
+static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, uint32_t align) {
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     const size_t total = sx_os_align_pagesz(size + sizeof(size_t) + align);
     if (valloc->offset + size <= valloc->reserved_sz) {
@@ -96,7 +96,7 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, size_
     }
 }
 
-static void* sx__virtualalloc_cb(void* ptr, size_t size, size_t align, const char* file,
+static void* sx__virtualalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                  const char* func, uint32_t line, void* user_data) {
     sx_virtualalloc* valloc = (sx_virtualalloc*)user_data;
     if (size == 0) {

@@ -20,8 +20,9 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx/allocator.h"
 
+typedef struct sx_alloc sx_alloc;
 typedef void* sx_tlsf_pool_t;
 
 #ifdef __cplusplus

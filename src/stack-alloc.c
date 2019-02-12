@@ -11,7 +11,7 @@ typedef struct stackalloc_hdr_s {
     int prev_offset;
 } sx__stackalloc_hdr;
 
-static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, size_t align) {
+static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, uint32_t align) {
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     size_t total = size + sizeof(sx__stackalloc_hdr) + align;
     if (alloc->offset + total > alloc->size) {
@@ -35,7 +35,7 @@ static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, size_t ali
     return aligned;
 }
 
-static void* sx__stackalloc_cb(void* ptr, size_t size, size_t align, const char* file,
+static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                const char* func, uint32_t line, void* user_data) {
     sx_stackalloc* stackalloc = (sx_stackalloc*)user_data;
     void*          last_ptr = stackalloc->ptr + stackalloc->last_ptr_offset;

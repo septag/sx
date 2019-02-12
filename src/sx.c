@@ -3,7 +3,6 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/sx.h"
-#include "sx/platform.h"
 
 #if SX_PLATFORM_ANDROID
 #    include <android/log.h>

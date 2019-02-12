@@ -46,7 +46,7 @@
 //
 #pragma once
 
-#include "sx.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

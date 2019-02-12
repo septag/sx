@@ -37,6 +37,7 @@
 //         sx_array_reserve(sx_alloc* alloc, TYPE* a, int n)
 //             reserves N elements in array without incrementing the count
 // Usage:
+//       NOTE: include "allocator.h" before array.h to prevent warnings and errors
 //       SomeStruct *arr = NULL;
 //       while (something)
 //       {
@@ -57,7 +58,7 @@
 
 #pragma once
 
-#include "allocator.h"
+typedef struct sx_alloc sx_alloc;
 
 #define sx_array_free(_alloc, a) ((a) ? sx_free(_alloc, _sx_sbraw(a)), 0 : 0)
 #define sx_array_push(_alloc, a, v) (_sx_sbmaybegrow(_alloc, a, 1), (a)[_sx_sbn(a)++] = (v))
@@ -107,6 +108,6 @@ static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx
         return p + 2;
     } else {
         sx_out_of_memory();
-        return NULL;
+        return 0x0; // NULL
     }
 }

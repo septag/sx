@@ -18,7 +18,9 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx.h"
+
+typedef struct sx_alloc sx_alloc;
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,8 +33,8 @@ typedef struct sx__thread_s sx_thread;
 typedef int(sx_thread_cb)(void* user_data1, void* user_data2);
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback,
-                            void* user_data1 SX_DFLT(NULL), int stack_sz SX_DFLT(0),
-                            const char* name SX_DFLT(NULL), void* user_data2 SX_DFLT(NULL));
+                            void* user_data1 sx_default(NULL), int stack_sz sx_default(0),
+                            const char* name sx_default(NULL), void* user_data2 sx_default(NULL));
 int        sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc);
 bool       sx_thread_running(sx_thread* thrd);
 void       sx_thread_setname(sx_thread* thrd, const char* name);
@@ -65,8 +67,8 @@ typedef struct sx_sem_s {
 
 void sx_semaphore_init(sx_sem* sem);
 void sx_semaphore_release(sx_sem* sem);
-void sx_semaphore_post(sx_sem* sem, int count SX_DFLT(1));
-bool sx_semaphore_wait(sx_sem* sem, int msecs SX_DFLT(-1));
+void sx_semaphore_post(sx_sem* sem, int count sx_default(1));
+bool sx_semaphore_wait(sx_sem* sem, int msecs sx_default(-1));
 
 // Signal
 typedef struct sx_signal_s {
@@ -76,7 +78,7 @@ typedef struct sx_signal_s {
 void sx_signal_init(sx_signal* sig);
 void sx_signal_release(sx_signal* sig);
 void sx_signal_raise(sx_signal* sig);
-bool sx_signal_wait(sx_signal* sig, int msecs SX_DFLT(-1));
+bool sx_signal_wait(sx_signal* sig, int msecs sx_default(-1));
 
 // Lock-Free single-producer/single-consumer self-contained-data queue
 typedef struct sx_queue_spsc sx_queue_spsc;

@@ -23,7 +23,9 @@
 //
 #pragma once
 
-#include "sx/allocator.h"
+#include <stdbool.h>
+
+typedef struct sx_alloc sx_alloc;
 
 typedef struct sx_bheap_item {
     int   key;

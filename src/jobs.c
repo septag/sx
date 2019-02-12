@@ -1,5 +1,6 @@
 #include "sx/jobs.h"
 
+#include "sx/allocator.h"
 #include "sx/array.h"
 #include "sx/atomic.h"    // yield, sx_lock_t
 #include "sx/fiber.h"

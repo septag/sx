@@ -3,7 +3,23 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/hash.h"
-#include "sx/math.h"
+#include "sx/allocator.h"
+
+// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+static inline SX_CONSTFN int sx__nearest_pow2(int n) {
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    n++;
+    return n;
+}
+
+static inline SX_CONSTFN bool sx__ispow2(int n) {
+    return (n & (n - 1)) == 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 uint32_t sx_hash_u32(uint32_t key) {
@@ -238,7 +254,7 @@ static inline int sx__calc_bitshift(int n) {
 sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity) {
     sx_assert(capacity > 0);
 
-    capacity = sx_nearest_pow2(capacity);
+    capacity = sx__nearest_pow2(capacity);
     sx_hashtbl* tbl = (sx_hashtbl*)sx_malloc(
         alloc, sizeof(sx_hashtbl) + capacity * (sizeof(uint32_t) + sizeof(int)) +
                    SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
@@ -287,7 +303,7 @@ bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc) {
 }
 
 void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr) {
-    sx_assert(sx_ispow2(capacity) &&
+    sx_assert(sx__ispow2(capacity) &&
               "Table size must be power of 2, get it from sx_hashtbl_valid_capacity");
 
     sx_memset(keys_ptr, 0x0, capacity * sizeof(uint32_t));
@@ -305,7 +321,7 @@ void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* val
 }
 
 int sx_hashtbl_valid_capacity(int capacity) {
-    return sx_nearest_pow2(capacity);
+    return sx__nearest_pow2(capacity);
 }
 
 int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value) {

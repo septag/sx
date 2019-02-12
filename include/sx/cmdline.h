@@ -9,7 +9,7 @@
 //
 #pragma once
 
-#include "allocator.h"
+typedef struct sx_alloc sx_alloc;
 
 /*
     Enum: sx_cmdline_optype
@@ -68,9 +68,9 @@ extern "C" {
 sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, const char** argv,
                                               const sx_cmdline_opt* opts);
 void                sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc);
-int         sx_cmdline_next(sx_cmdline_context* ctx, SX_OUT int* index, SX_OUT const char** arg);
+int         sx_cmdline_next(sx_cmdline_context* ctx, int* index, const char** arg);
 const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer,
-                                          size_t buffer_size);
+                                          unsigned int buffer_size);
 
 #ifdef __cplusplus
 }

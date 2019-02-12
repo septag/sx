@@ -8,16 +8,12 @@
 #pragma once
 
 #include "config.h"
+#include "macros.h"
 
 #include <assert.h>     // assert
-#include <stdarg.h>     // va_list
 #include <stdbool.h>    // bool
-#include <stddef.h>     // ptrdiff_t
-#include <stdint.h>     // uint32_t
-#include <stdlib.h>     // size_t
-
-#include "macros.h"
-#include "platform.h"
+#include <stddef.h>     // NULL, size_t
+#include <stdint.h>     // uint32_t, int64_t, etc.
 
 #ifndef __cplusplus
 // static_assert doesn't do anything in MSVC + C compiler, because we just don't have it !
@@ -107,8 +103,8 @@ SX_API void sx__break_program(const char* text);
             })
 #    elif SX_COMPILER_MSVC
 // NOTE: Because we have some features lacking in MSVC+C compiler, the max,min,clamp macros does not
-// pre-evaluate the expressions So in performance critical code, make sure you re-evaluate the
-// sx_max, sx_min, sx_clamp paramters before passing them to the macros
+// pre-evaluate the expressions So in performance critical code, make sure you pre-evaluate the
+// sx_max, sx_min, sx_clamp paramters before passing them to the macros in critical code
 #        define sx_max(a, b) ((a) > (b) ? (a) : (b))
 #        define sx_min(a, b) ((a) < (b) ? (a) : (b))
 #        define sx_clamp(v, min_, max_) sx_max(sx_min((v), (max_)), (min_))

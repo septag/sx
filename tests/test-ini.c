@@ -1,4 +1,5 @@
 #include "sx/ini.h"
+#include "sx/allocator.h"
 #include <stdio.h>
 
 static const char* ini_data =

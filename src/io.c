@@ -3,6 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/io.h"
+#include "sx/allocator.h"
 
 #include <limits.h>
 #include <stdio.h>

@@ -1,4 +1,5 @@
 #include "sx/bheap.h"
+#include "sx/allocator.h"
 
 static void sx__bheap_heapify_min(sx_bheap* bh, int index) {
     int           _2i = 2 * index;

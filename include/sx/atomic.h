@@ -30,16 +30,12 @@
 //
 #pragma once
 
-#include "platform.h"
-#include "sx.h"
+#include <stdint.h>
+#include "macros.h"
 
 #if SX_PLATFORM_WINDOWS
 // FIXME: I got wierd compiler error on MSVC+Clang_c2, so I had to comment this out
 //        Every source must include <windows.h> before including atomic.h
-#    ifndef _WINDOWS_
-#        define WIN32_LEAN_AND_MEAN
-#        include <Windows.h>
-#    endif
 #    include <intrin.h>
 #    if SX_COMPILER_MSVC
 #        pragma intrinsic(_mm_pause)
@@ -127,7 +123,7 @@ SX_FORCE_INLINE void sx_compiler_write_barrier() {
 // int atomic
 SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd((LONG volatile*)a, b);
+    return _InterlockedExchangeAdd((long volatile*)a, b);
 #else
     return __sync_fetch_and_add(a, b);
 #endif
@@ -135,7 +131,7 @@ SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b) {
 
 SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd((LONG volatile*)a, b) + b;
+    return _InterlockedExchangeAdd((long volatile*)a, b) + b;
 #else
     return __sync_add_and_fetch(a, b);
 #endif
@@ -143,7 +139,7 @@ SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b) {
 
 SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedIncrement((LONG volatile*)a);
+    return _InterlockedIncrement((long volatile*)a);
 #else
     return __sync_add_and_fetch(a, 1);
 #endif
@@ -151,7 +147,7 @@ SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a) {
 
 SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedDecrement((LONG volatile*)a);
+    return _InterlockedDecrement((long volatile*)a);
 #else
     return __sync_sub_and_fetch(a, 1);
 #endif
@@ -159,7 +155,7 @@ SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a) {
 
 SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedExchange((LONG volatile*)a, b);
+    return _InterlockedExchange((long volatile*)a, b);
 #else
     return __sync_lock_test_and_set(a, b);
 #endif
@@ -167,7 +163,7 @@ SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b) {
 
 SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedCompareExchange((LONG volatile*)a, xchg, comparand);
+    return _InterlockedCompareExchange((long volatile*)a, xchg, comparand);
 #else
     return __sync_val_compare_and_swap(a, comparand, xchg);
 #endif
@@ -176,7 +172,7 @@ SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand) {
 // pointer
 SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangePointer((PVOID volatile*)a, b);
+    return _InterlockedExchangePointer((void* volatile*)a, b);
 #else
     return __sync_lock_test_and_set(a, b);
 #endif
@@ -184,7 +180,7 @@ SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b) {
 
 SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand) {
 #if SX_PLATFORM_WINDOWS
-    return _InterlockedCompareExchangePointer((PVOID volatile*)a, xchg, comparand);
+    return _InterlockedCompareExchangePointer((void* volatile*)a, xchg, comparand);
 #else
     return __sync_val_compare_and_swap(a, comparand, xchg);
 #endif

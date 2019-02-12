@@ -61,7 +61,7 @@ char* sx_os_path_ext(char* dst, int size, const char* path);
 char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b);
 char* sx_os_path_normcase(char* dst, int size, const char* path);
 char* sx_os_path_normpath(char* dst, int size, const char* path);
-char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start SX_DFLT(NULL));
+char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start sx_default(NULL));
 bool  sx_os_path_exists(const char* path);
 bool  sx_os_path_isfile(const char* path);
 bool  sx_os_path_isdir(const char* path);

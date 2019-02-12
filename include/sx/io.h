@@ -54,7 +54,13 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx.h"
+
+typedef struct sx_alloc sx_alloc;
+
+#ifndef sx_data_truncate
+#    define sx_data_truncate() sx_assert_rel(0 && "Data truncated !")
+#endif
 
 typedef enum sx_whence { SX_WHENCE_BEGIN = 0, SX_WHENCE_CURRENT, SX_WHENCE_END } sx_whence;
 
@@ -74,8 +80,8 @@ typedef struct sx_mem_block {
 extern "C" {
 #endif
 
-sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* data SX_DFLT(NULL),
-                                  int align SX_DFLT(0));
+sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* data sx_default(NULL),
+                                  int align sx_default(0));
 sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data);
 void          sx_mem_destroy_block(sx_mem_block* mem);
 
@@ -99,7 +105,7 @@ typedef struct sx_mem_writer {
 void    sx_mem_init_writer(sx_mem_writer* writer, sx_mem_block* mem);
 int     sx_mem_write(sx_mem_writer* writer, const void* data, int size);
 int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset,
-                     sx_whence whence SX_DFLT(SX_WHENCE_CURRENT));
+                     sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
 #define sx_mem_write_var(w, v) sx_mem_write((w), &(v), sizeof(v))
 
@@ -113,7 +119,7 @@ typedef struct sx_mem_reader {
 void    sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size);
 int     sx_mem_read(sx_mem_reader* reader, void* data, int size);
 int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset,
-                     sx_whence whence SX_DFLT(SX_WHENCE_CURRENT));
+                     sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
 #define sx_mem_read_var(w, v) sx_mem_read((w), &(v), sizeof(v))
 
@@ -122,11 +128,11 @@ typedef struct sx_file_writer {
     sx_align_decl(16, uint8_t) data[16];
 } sx_file_writer;
 
-bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t flags SX_DFLT(0));
+bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t flags sx_default(0));
 void sx_file_close_writer(sx_file_writer* writer);
 int  sx_file_write(sx_file_writer* writer, const void* data, int size);
 int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset,
-                      sx_whence whence SX_DFLT(SX_WHENCE_CURRENT));
+                      sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
 #define sx_file_write_var(w, v) sx_file_write((w), &(v), sizeof(v))
 #define sx_file_write_text(w, s) sx_file_write((w), (s), sx_strlen(s))
@@ -140,7 +146,7 @@ bool    sx_file_open_reader(sx_file_reader* reader, const char* filepath);
 void    sx_file_close_reader(sx_file_reader* reader);
 int     sx_file_read(sx_file_reader* reader, void* data, int size);
 int64_t sx_file_seekr(sx_file_reader* reader, int64_t offset,
-                      sx_whence whence SX_DFLT(SX_WHENCE_CURRENT));
+                      sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
 sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath);
 sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath);

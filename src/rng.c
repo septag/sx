@@ -3,6 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/rng.h"
+#include "sx/sx.h"
 
 // This implementation is taken from: https://github.com/mattiasgustavsson/libs/blob/master/rnd.h
 // With a minor optimization in sx_rng_gen_irange

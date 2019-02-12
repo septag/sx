@@ -7,7 +7,7 @@ SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunknown-pragmas")
 #include "../3rdparty/tlsf/tlsf.h"
 SX_PRAGMA_DIAGNOSTIC_POP();
 
-static void* sx__tlsfalloc_cb(void* ptr, size_t size, size_t align, const char* file,
+static void* sx__tlsfalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                               const char* func, uint32_t line, void* user_data) {
     tlsf_t tlsf = (tlsf_t)user_data;
     if (size == 0) {

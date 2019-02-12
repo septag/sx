@@ -5,6 +5,7 @@
 #endif
 #include <stdio.h>
 
+#include "sx/allocator.h"
 #include "sx/atomic.h"
 #include "sx/os.h"
 #include "sx/threads.h"

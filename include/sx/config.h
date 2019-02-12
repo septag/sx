@@ -52,20 +52,6 @@
 #    define SX_CONFIG_STDMATH 1
 #endif
 
-// Define anything here, for out of memory exceptions (exit/assert/...)
-#ifndef sx_out_of_memory
-#    define sx_out_of_memory()                    \
-        do {                                      \
-            sx_assert_rel(0 && "Out of memory!"); \
-            exit(-1);                             \
-        } while (0)
-#endif
-
-#ifndef sx_data_truncate
-#    define sx_data_truncate() sx_assert_rel(0 && "Data truncated !")
-#endif
-
-
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor,

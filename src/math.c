@@ -345,13 +345,16 @@ SX_CONSTFN float sx_rsqrt(float _a) {
 #endif
 
 sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
-    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(eye, target));
-    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis));
-    sx_vec3 yaxis = sx_vec3_cross(zaxis, xaxis);
+    sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(target, eye));
+    sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(zaxis, up));
+    sx_vec3 yaxis = sx_vec3_cross(xaxis, zaxis);
 
-    return sx_mat4f(xaxis.x, xaxis.y, xaxis.z, -sx_vec3_dot(xaxis, eye), yaxis.x, yaxis.y, yaxis.z,
-                    -sx_vec3_dot(yaxis, eye), zaxis.x, zaxis.y, zaxis.z, -sx_vec3_dot(zaxis, eye),
-                    0, 0, 0, 1.0f);
+    // clang-format off
+    return sx_mat4f(xaxis.x,    xaxis.y,    xaxis.z,    -sx_vec3_dot(xaxis, eye), 
+                    yaxis.x,    yaxis.y,    yaxis.z,    -sx_vec3_dot(yaxis, eye), 
+                    -zaxis.x,   -zaxis.y,   -zaxis.z,    sx_vec3_dot(zaxis, eye),
+                    0,          0,          0,           1.0f);
+    // clang-format on
 }
 
 sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
@@ -359,9 +362,12 @@ sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_
     sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis));
     sx_vec3 yaxis = sx_vec3_cross(zaxis, xaxis);
 
-    return sx_mat4f(xaxis.x, xaxis.y, xaxis.z, -sx_vec3_dot(xaxis, eye), yaxis.x, yaxis.y, yaxis.z,
-                    -sx_vec3_dot(yaxis, eye), zaxis.x, zaxis.y, zaxis.z, -sx_vec3_dot(zaxis, eye),
-                    0, 0, 0, 1.0f);
+    // clang-format off
+    return sx_mat4f(xaxis.x, xaxis.y, xaxis.z, -sx_vec3_dot(xaxis, eye), 
+                    yaxis.x, yaxis.y, yaxis.z, -sx_vec3_dot(yaxis, eye), 
+                    zaxis.x, zaxis.y, zaxis.z, -sx_vec3_dot(zaxis, eye),
+                    0,       0,       0,        1.0f);
+    // clang-format on
 }
 
 sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw) {
@@ -702,28 +708,46 @@ sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b) {
                      sx_mat3_mul_vec3(_a, _b->col3).f);
 }
 
-// Reference: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
-sx_quat sx_mat4_calc_quat(const sx_mat4* _mat) {
-    float trace = _mat->f[0] + _mat->f[5] + _mat->f[10];
-    if (trace > 0.00001f) {
-        float s = sx_rsqrt(trace + 1.0f) * 0.5f;
-        return sx_quat4f((_mat->f[9] - _mat->f[6]) * s, (_mat->f[2] - _mat->f[8]) * s,
-                         (_mat->f[4] - _mat->f[1]) * s, 0.25f / s);
+sx_quat sx_mat4_quat(const sx_mat4* m) {
+    float trace, r, rinv;
+    sx_quat q;
+
+    trace = m->m11 + m->m22 + m->m33;
+    if (trace >= 0.0f) {
+        r = sx_sqrt(1.0f + trace);
+        rinv = 0.5f / r;
+
+        q.x = rinv * (m->m32 - m->m23);
+        q.y = rinv * (m->m13 - m->m31);
+        q.z = rinv * (m->m21 - m->m12);
+        q.w = r * 0.5f;
+    } else if (m->m11 >= m->m22 && m->m11 >= m->m33) {
+        r = sx_sqrt(1.0f - m->m22 - m->m33 + m->m11);
+        rinv = 0.5f / r;
+
+        q.x = r * 0.5f;
+        q.y = rinv * (m->m21 + m->m12);
+        q.z = rinv * (m->m31 + m->m13);
+        q.w = rinv * (m->m32 - m->m23);
+    } else if (m->m22 >= m->m33) {
+        r = sx_sqrt(1.0f - m->m11 - m->m33 + m->m22);
+        rinv = 0.5f / r;
+
+        q.x = rinv * (m->m21 + m->m12);
+        q.y = r * 0.5f;
+        q.z = rinv * (m->m32 + m->m23);
+        q.w = rinv * (m->m13 - m->m31);
     } else {
-        if (_mat->f[0] > _mat->f[5] && _mat->f[0] > _mat->f[10]) {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->f[0] - _mat->f[5] - _mat->f[10]);
-            return sx_quat4f(0.25f * s, (_mat->f[1] + _mat->f[4]) / s,
-                             (_mat->f[2] + _mat->f[8]) / s, (_mat->f[9] - _mat->f[6]) / s);
-        } else if (_mat->f[5] > _mat->f[10]) {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->f[5] - _mat->f[0] - _mat->f[10]);
-            return sx_quat4f((_mat->f[1] + _mat->f[4]) / s, 0.25f * s,
-                             (_mat->f[6] + _mat->f[9]) / s, (_mat->f[2] - _mat->f[8]) / s);
-        } else {
-            float s = 2.0f * sx_sqrt(1.0f + _mat->f[10] - _mat->f[0] - _mat->f[5]);
-            return sx_quat4f((_mat->f[2] + _mat->f[8]) / s, (_mat->f[6] + _mat->f[9]) / s,
-                             0.25f * s, (_mat->f[4] - _mat->f[1]) / s);
-        }
+        r = sx_sqrt(1.0f - m->m11 - m->m22 + m->m33);
+        rinv = 0.5f / r;
+
+        q.x = rinv * (m->m31 + m->m13);
+        q.y = rinv * (m->m32 + m->m23);
+        q.z = r * 0.5f;
+        q.w = rinv * (m->m21 - m->m12);
     }
+
+    return q;
 }
 
 sx_mat4 sx_mat4x_inv(const sx_mat4* _mat) {
@@ -778,26 +802,41 @@ sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_
     return sx_mat4fv(row1.f, row2.f, row3.f, sx_vec4v3(_pos, 1.0f).f);
 }
 
+sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal) {
+    float xx = plane_normal.x * plane_normal.x;
+    float yy = plane_normal.y * plane_normal.y;
+    float zz = plane_normal.z * plane_normal.z;
+    float xy = plane_normal.x * plane_normal.y;
+    float xz = plane_normal.x * plane_normal.z;
+    float yz = plane_normal.y * plane_normal.z;
+
+    // clang-format off
+    return sx_mat4f(1.0f - xx,      -xy,        -xz,        0.0f,
+                    -xy,            1.0f - yy,  -yz,        0.0f,
+                    -xz,            -yz,        1.0f - zz,  0.0f,
+                    0.0f,           0.0f,       0.0f,       1.0f);
+    // clang-format on
+}
+
+
 sx_mat4 sx_quat_mat4(const sx_quat quat) {
-    float w, x, y, z, xx, yy, zz, xy, yz, xz, wx, wy, wz, norm, s;
+    float norm = sx_sqrt(sx_quat_dot(quat, quat));
+    float s = norm > 0.0f ? (2.0f / norm) : 0.0f;
 
-    sx_quat q = sx_quat_norm_get(quat, &norm);
-    s = norm > 0.0f ? (2.0f / norm) : 0.0f;
+    float x = quat.x;
+    float y = quat.y;
+    float z = quat.z;
+    float w = quat.w;
 
-    x = q.x;
-    y = q.y;
-    z = q.z;
-    w = q.w;
-
-    xx = s * x * x;
-    xy = s * x * y;
-    wx = s * w * x;
-    yy = s * y * y;
-    yz = s * y * z;
-    wy = s * w * y;
-    zz = s * z * z;
-    xz = s * x * z;
-    wz = s * w * z;
+    float xx = s * x * x;
+    float xy = s * x * y;
+    float wx = s * w * x;
+    float yy = s * y * y;
+    float yz = s * y * z;
+    float wy = s * w * y;
+    float zz = s * z * z;
+    float xz = s * x * z;
+    float wz = s * w * z;
 
     // clang-format off
     return sx_mat4f(1.0f - yy - zz,     xy - wz,            xz + wy,        0.0f,

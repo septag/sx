@@ -26,7 +26,9 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx.h"
+
+typedef struct sx_alloc sx_alloc;
 
 typedef sx_align_decl(16, struct) sx__pool_page {
     void**                ptrs;

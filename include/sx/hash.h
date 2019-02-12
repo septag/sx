@@ -66,7 +66,9 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx.h"
+
+typedef struct sx_alloc sx_alloc;
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,7 +127,7 @@ typedef struct sx_hashtbl {
 
 sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity);
 void        sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc);
-bool        sx_hashtbl_grow(SX_INOUT sx_hashtbl** ptbl, const sx_alloc* alloc);
+bool        sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc);
 
 void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr);
 int  sx_hashtbl_valid_capacity(int capacity);

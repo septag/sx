@@ -3,6 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/cmdline.h"
+#include "sx/allocator.h"
 
 #define GETOPT_PRIVATE_API
 #include "../3rdparty/getopt/include/getopt/getopt.h"
@@ -27,7 +28,7 @@ void sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc) 
     sx_free(alloc, ctx);
 }
 
-int sx_cmdline_next(sx_cmdline_context* ctx, SX_OUT int* index, SX_OUT const char** arg) {
+int sx_cmdline_next(sx_cmdline_context* ctx, int* index, const char** arg) {
     int r = getopt_next(ctx);
     if (r != -1) {
         if (index)
@@ -39,6 +40,6 @@ int sx_cmdline_next(sx_cmdline_context* ctx, SX_OUT int* index, SX_OUT const cha
 }
 
 const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer,
-                                          size_t buffer_size) {
+                                          unsigned int buffer_size) {
     return getopt_create_help_string(ctx, buffer, buffer_size);
 }

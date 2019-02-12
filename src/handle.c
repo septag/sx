@@ -3,6 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/handle.h"
+#include "sx/allocator.h"
 
 sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity) {
     sx_assert(capacity < UINT16_MAX && "capacity is too high");

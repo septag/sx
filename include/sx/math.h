@@ -73,13 +73,13 @@ typedef union sx_vec3 {
 
 typedef union sx_color {
     struct {
-        uint8_t r;
-        uint8_t g;
-        uint8_t b;
-        uint8_t a;
+        unsigned char r;
+        unsigned char g;
+        unsigned char b;
+        unsigned char a;
     };
 
-    uint32_t n;
+    unsigned int n;
 } sx_color;
 
 
@@ -178,6 +178,20 @@ typedef union sx_irect {
     int f[4];
 } sx_irect;
 
+typedef union sx_aabb {
+    struct {
+        float xmin, ymin, zmin;
+        float xmax, ymax, zmax;
+    };
+
+    struct {
+        sx_vec3 vmin;
+        sx_vec3 vmax;
+    };
+
+    float f[6];
+} sx_aabb;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -227,7 +241,8 @@ sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b);
 sx_mat4 sx_mat4_inv(const sx_mat4* _a);
 /// Inverse for transform-only matrices (column4=0) (mat4x)
 sx_mat4 sx_mat4x_inv(const sx_mat4* _a);
-sx_quat sx_mat4_calc_quat(const sx_mat4* _mat);
+sx_quat sx_mat4_quat(const sx_mat4* _mat);
+sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal);
 
 sx_mat3 sx_mat3_inv(const sx_mat3* _a);
 sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
@@ -265,20 +280,20 @@ static inline SX_CONSTFN float sx_todeg(float _rad) {
     return _rad * 180.0f / SX_PI;
 }
 
-// Packs float to uint32_t
-static inline SX_CONSTFN uint32_t sx_ftob(float _a) {
+// Packs float to unsigned int
+static inline SX_CONSTFN unsigned int sx_ftob(float _a) {
     union {
-        float    f;
-        uint32_t ui;
+        float        f;
+        unsigned int ui;
     } u = { _a };
     return u.ui;
 }
 
-// Unpacks float from uint32_t
-static inline SX_CONSTFN float sx_btof(uint32_t _a) {
+// Unpacks float from unsigned int
+static inline SX_CONSTFN float sx_btof(unsigned int _a) {
     union {
-        uint32_t ui;
-        float    f;
+        unsigned int ui;
+        float        f;
     } u = { _a };
     return u.f;
 }
@@ -303,13 +318,13 @@ static inline SX_CONSTFN double sx_btod(uint64_t _a) {
 
 // Returns sortable bit packed float value
 // http://archive.fo/2012.12.08-212402/http://stereopsis.com/radix.html
-static inline SX_CONSTFN uint32_t sx_fflip(uint32_t _value) {
-    uint32_t mask = -((int32_t)(_value >> 31)) | 0x80000000;
+static inline SX_CONSTFN unsigned int sx_fflip(unsigned int _value) {
+    unsigned int mask = -((int32_t)(_value >> 31)) | 0x80000000;
     return _value ^ mask;
 }
 
 static inline SX_CONSTFN bool sx_isnan(float _f) {
-    const uint32_t tmp = sx_ftob(_f) & INT32_MAX;
+    const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp > UINT32_C(0x7f800000);
 }
 
@@ -319,7 +334,7 @@ static inline SX_CONSTFN bool sx_isnand(double _f) {
 }
 
 static inline SX_CONSTFN bool sx_isfin(float _f) {
-    const uint32_t tmp = sx_ftob(_f) & INT32_MAX;
+    const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp < UINT32_C(0x7f800000);
 }
 
@@ -329,7 +344,7 @@ static inline SX_CONSTFN bool sx_isfind(double _f) {
 }
 
 static inline SX_CONSTFN bool sx_isinf(float _f) {
-    const uint32_t tmp = sx_ftob(_f) & INT32_MAX;
+    const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp == UINT32_C(0x7f800000);
 }
 
@@ -356,8 +371,8 @@ static inline SX_CONSTFN float sx_sign(float _a) {
 
 static inline SX_CONSTFN float sx_abs(float _a) {
     union {
-        float    f;
-        uint32_t ui;
+        float        f;
+        unsigned int ui;
     } u = { _a };
     u.ui &= 0x7FFFFFFF;
     return u.f;
@@ -592,7 +607,8 @@ static inline sx_ivec2 sx_ivec2splat(int _f) {
 }
 
 //
-static inline sx_color sx_color4u(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a SX_DFLT(255)) {
+static inline sx_color sx_color4u(unsigned char _r, unsigned char _g, unsigned char _b,
+                                  unsigned char _a sx_default(255)) {
 #ifdef __cplusplus
     return { { _r, _g, _b, _a } };
 #else
@@ -600,12 +616,12 @@ static inline sx_color sx_color4u(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a
 #endif
 }
 
-static inline sx_color sx_color4f(float _r, float _g, float _b, float _a SX_DFLT(1.0f)) {
-    return sx_color4u((uint8_t)(_r * 255.0f), (uint8_t)(_g * 255.0f), (uint8_t)(_b * 255.0f),
-                      (uint8_t)(_a * 255.0f));
+static inline sx_color sx_color4f(float _r, float _g, float _b, float _a sx_default(1.0f)) {
+    return sx_color4u((unsigned char)(_r * 255.0f), (unsigned char)(_g * 255.0f),
+                      (unsigned char)(_b * 255.0f), (unsigned char)(_a * 255.0f));
 }
 
-static inline sx_color sx_colorn(uint32_t _n) {
+static inline sx_color sx_colorn(unsigned int _n) {
 #ifdef __cplusplus
     sx_color c;
     c.n = _n;
@@ -652,7 +668,7 @@ static inline sx_vec3 sx_quat_mulXYZ(const sx_quat _qa, const sx_quat _qb) {
                     aw * bz + ax * by - ay * bx + az * bw);
 }
 
-// The product of two rotation quaternions will be equivalent to the rotation q followed by 
+// The product of two rotation quaternions will be equivalent to the rotation q followed by
 // the rotation p
 static inline sx_quat sx_quat_mul(const sx_quat p, const sx_quat q) {
     // clang-format off
@@ -685,20 +701,6 @@ static inline sx_quat sx_quat_norm(const sx_quat _quat) {
     }
 }
 
-static inline sx_quat sx_quat_norm_get(const sx_quat _quat, float* out_norm) {
-    sx_assert(out_norm);
-    const float norm = sx_quat_dot(_quat, _quat);
-    if (0.0f < norm) {
-        *out_norm = norm;
-        const float inv_norm = sx_rsqrt(norm);
-        return sx_quat4f(_quat.x * inv_norm, _quat.y * inv_norm, _quat.z * inv_norm,
-                         _quat.w * inv_norm);
-    } else {
-        sx_assert(0 && "divide by zero");
-        return sx_quat_ident();
-    }
-}
-
 static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat) {
     const float x = _quat.x;
     const float y = _quat.y;
@@ -707,11 +709,11 @@ static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat) {
 
     const float yy = y * y;
     const float zz = z * z;
-
     const float xx = x * x;
-    return sx_vec3f(-sx_atan2(2.0f * (x * w - y * z), 1.0f - 2.0f * (xx + zz)),
-                    -sx_atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (yy + zz)),
-                    -sx_asin(2.0f * (x * y + z * w)));
+
+    return sx_vec3f(sx_atan2(2.0f * (x * w - y * z), 1.0f - 2.0f * (xx + zz)),
+                    sx_atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (yy + zz)),
+                    sx_asin(2.0f * (x * y + z * w)));
 }
 
 static inline sx_quat sx_quat_rotateaxis(const sx_vec3 _axis, float _angle) {
@@ -795,7 +797,7 @@ static inline sx_vec3 sx_vec3_lerp(const sx_vec3 _a, const sx_vec3 _b, float _t)
 
 static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a) {
     const float len = sx_vec3_len(_a);
-    if (len != 0.0f) {
+    if (len > 0.0f) {
         const float invlen = 1.0f / len;
         return sx_vec3f(_a.x * invlen, _a.y * invlen, _a.z * invlen);
     } else {
@@ -807,7 +809,7 @@ static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a) {
 static inline sx_vec3 sx_vec3_norm_len(const sx_vec3 _a, float* _outlen) {
     sx_assert(_outlen);
     const float len = sx_vec3_len(_a);
-    if (len != 0.0f) {
+    if (len > 0.0f) {
         const float invlen = 1.0f / len;
         *_outlen = len;
         return sx_vec3f(_a.x * invlen, _a.y * invlen, _a.z * invlen);
@@ -1231,16 +1233,24 @@ static inline float sx_vec2_len(const sx_vec2 _a) {
     return sx_sqrt(sx_vec2_dot(_a, _a));
 }
 
-static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a, float* outlen SX_DFLT(NULL)) {
+static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a) {
     const float len = sx_vec2_len(_a);
-    if (len != 0.0f) {
-        const float invlen = 1.0f / len;
-        if (outlen)
-            *outlen = len;
-        return sx_vec2f(_a.x * invlen, _a.y * invlen);
+    if (len > 0.0f) {
+        return sx_vec2f(_a.x / len, _a.y / len);
     } else {
         sx_assert(0 && "Divide by zero");
-        return sx_vec2f(0.0f, 0.0f);
+        return _a;
+    }
+}
+
+static inline sx_vec2 sx_vec2_norm_len(const sx_vec2 _a, float* outlen) {
+    const float len = sx_vec2_len(_a);
+    if (len > 0.0f) {
+        *outlen = len;
+        return sx_vec2f(_a.x / len, _a.y / len);
+    } else {
+        sx_assert(0 && "Divide by zero");
+        return _a;
     }
 }
 
@@ -1371,6 +1381,84 @@ static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2) {
     if (rc1.ymax < rc2.ymin || rc1.ymin > rc2.ymax)
         return false;
     return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// AABB
+static inline sx_aabb sx_aabbf(float xmin, float ymin, float zmin, float xmax, float ymax,
+                               float zmax) {
+#ifdef __cplusplus
+    return { { xmin, ymin, zmin, xmax, ymax, zmax } };
+#else
+    return (sx_aabb){
+        .xmin = xmin, .ymin = ymin, .zmin = zmin, .xmax = xmax, .ymax = ymax, .zmax = zmax
+    };
+#endif
+}
+
+static inline sx_aabb sx_aabbv(const sx_vec3 vmin, const sx_vec3 vmax) {
+#ifdef __cplusplus
+    return { { vmin.x, vmin.y, vmin.z, vmax.x, vmax.y, vmax.z } };
+#else
+    return (sx_aabb){ .vmin = vmin, .vmax = vmax };
+#endif
+}
+
+static inline sx_aabb sx_aabbwhd(float w, float h, float d) {
+    float hw = w * 0.5f;
+    float hh = h * 0.5f;
+    float hd = d * 0.5f;
+    return sx_aabbf(-hw, -hh, -hd, hw, hh, hd);
+}
+
+static inline sx_aabb sx_aabb_empty() {
+    return sx_aabbf(SX_FLOAT_MAX, SX_FLOAT_MAX, SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX,
+                    -SX_FLOAT_MAX);
+}
+
+static inline void sx_aabb_add_point(sx_aabb* box, const sx_vec3 pt) {
+    box->vmin = sx_vec3_min(box->vmin, pt);
+    box->vmax = sx_vec3_max(box->vmax, pt);
+}
+
+static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt) {
+    if (box->xmax < pt.x || box->xmin > pt.x)
+        return false;
+    if (box->ymax < pt.y || box->ymin > pt.y)
+        return false;
+    if (box->zmax < pt.z || box->zmin > pt.z)
+        return false;
+    return true;
+}
+
+/*
+ *        6                 7
+ *        ------------------
+ *       /|               /|
+ *      / |              / |
+ *     /  |             /  |
+ *  2 /   |          3 /   |
+ *   /----------------/    |
+ *   |    |           |    |
+ *   |    |           |    |      +Y
+ *   |    |           |    |
+ *   |    |-----------|----|     |
+ *   |   / 4          |   / 5    |  / +Z
+ *   |  /             |  /       | /
+ *   | /              | /        |/
+ *   |/               |/         --------- +X
+ *   ------------------
+ *  0                 1
+ */
+static inline sx_vec3 sx_aabb_corner(const sx_aabb* box, int index) {
+    sx_assert(index < 8);
+    return sx_vec3f((index & 1) ? box->vmax.x : box->vmin.x,
+                    (index & 2) ? box->vmax.y : box->vmin.y,
+                    (index & 4) ? box->vmax.z : box->vmin.z);
+}
+
+static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* box) {
+    for (int i = 0; i < 8; i++) corners[i] = sx_aabb_corner(box, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
