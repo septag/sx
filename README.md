@@ -5,7 +5,7 @@
 
 SX is a minimal and performant base C library, designed to run on different platforms and OSes. Designed to help C developers (and C++ programmers who hate stl) with their multiplatform programs and games.
 
-Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
+Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut) and of course [the machinery](https://www.ourmachinery.com), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
 
 - The API is simple and portable across many other languages
 - Heap memory is under control: Almost every entity that allocates from heap accepts `allocator` object and native `malloc` and `free` are not used anywhere else.
