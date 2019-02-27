@@ -8,21 +8,6 @@
 #    include <math.h>
 #endif
 
-const float SX_PI = 3.1415926535897932384626433832795f;
-const float SX_PI2 = 6.2831853071795864769252867665590f;
-const float SX_INVPI = 1.0f / 3.1415926535897932384626433832795f;
-const float SX_PIHALF = 1.5707963267948966192313216916398f;
-const float SX_PIQUARTER = 0.7853981633974483096156608458199f;
-const float SX_SQRT2 = 1.4142135623730950488016887242097f;
-const float SX_LOG_NAT10 = 2.3025850929940456840179914546844f;
-const float SX_INVLOG_NAT2 = 1.4426950408889634073599246810019f;
-const float SX_LOG_NAT2H = 0.6931471805599453094172321214582f;
-const float SX_LOG_NAT2L = 1.90821492927058770002e-10f;
-const float SX_E = 2.7182818284590452353602874713527f;
-const float SX_NEAR_ZERO = 1.0f / (float)(1 << 28);
-const float SX_FLOAT_MIN = 1.175494e-38f;
-const float SX_FLOAT_MAX = 3.402823e+38f;
-
 #ifndef __cplusplus
 sx_vec2 SX_VEC2_ZERO = { .x = 0.0f, .y = 0.0f };
 sx_vec2 SX_VEC2_UNITX = { .x = 1.0f, .y = 0.0f };
@@ -220,8 +205,9 @@ SX_CONSTFN float sx_exp(float _a) {
     static const float kExpC2 = 6.61375632143793436117e-05f;
     static const float kExpC3 = -1.65339022054652515390e-06f;
     static const float kExpC4 = 4.13813679705723846039e-08f;
+    static const float kNearZero = SX_NEAR_ZERO;
 
-    if (sx_abs(_a) <= SX_NEAR_ZERO) {
+    if (sx_abs(_a) <= kNearZero) {
         return _a + 1.0f;
     }
 

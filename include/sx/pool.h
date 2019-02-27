@@ -63,7 +63,9 @@ static inline sx__pool_page* sx__pool_create_page(sx_pool* pool, const sx_alloc*
     buff += sizeof(void*) * capacity;
     page->buff = buff;
     page->next = NULL;
-    for (int i = 0; i < capacity; i++) page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+    for (int i = 0; i < capacity; i++) {
+        page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+    }
 
     return page;
 }
@@ -92,7 +94,9 @@ static inline sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int ca
     buff += sizeof(void*) * capacity;
     page->buff = buff;
     page->next = NULL;
-    for (int i = 0; i < capacity; i++) page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+    for (int i = 0; i < capacity; i++) {
+        page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+    }
 
     return pool;
 }

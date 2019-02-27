@@ -24,19 +24,19 @@ int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
 char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
-char* sx_strcpy(char* dst, int dst_sz, const char* src);
-char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num);
-char* sx_strcat(char* dst, int dst_sz, const char* src);
-char* sx_strncat(char* dst, int dst_sz, const char* src, int _num);
+char* sx_strcpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src);
+char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num);
+char* sx_strcat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src);
+char* sx_strncat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num);
 int   sx_strlen(const char* str);
-bool  sx_strequal(const char* a, const char* b);
-bool  sx_strequalnocase(const char* a, const char* b);
-bool  sx_strnequal(const char* a, const char* b, int num);
-bool  sx_strnequalnocase(const char* a, const char* b, int num);
+bool  sx_strequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b);
+bool  sx_strequalnocase(const char* SX_RESTRICT a, const char* SX_RESTRICT b);
+bool  sx_strnequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b, int num);
+bool  sx_strnequalnocase(const char* SX_RESTRICT a, const char* SX_RESTRICT b, int num);
 
 const char* sx_strrchar(const char* str, char ch);
 const char* sx_strchar(const char* str, char ch);
-const char* sx_strstr(const char* str, const char* find);
+const char* sx_strstr(const char* SX_RESTRICT str, const char* SX_RESTRICT find);
 bool        sx_strstr_wildcard(const char* str, const char* pattern);
 
 const char* sx_skip_whitespace(const char* str);

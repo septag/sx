@@ -69,7 +69,7 @@ char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args) {
     return ctx.buff;
 }
 
-char* sx_strcpy(char* dst, int dst_sz, const char* src) {
+char* sx_strcpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src) {
     sx_assert(dst);
     sx_assert(src);
 
@@ -189,7 +189,7 @@ static inline int sx__strnlen(const char* str, int _max) {
     return -1;
 }
 
-char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num) {
+char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num) {
     sx_assert(dst);
     sx_assert(src);
 
@@ -202,7 +202,7 @@ char* sx_strncpy(char* dst, int dst_sz, const char* src, int _num) {
     return dst;
 }
 
-char* sx_strcat(char* dst, int dst_sz, const char* src) {
+char* sx_strcat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src) {
     sx_assert(dst);
     sx_assert(src);
     sx_assert(dst_sz > 0);
@@ -211,7 +211,7 @@ char* sx_strcat(char* dst, int dst_sz, const char* src) {
     return sx_strcpy(dst + len, dst_sz - len, src);
 }
 
-char* sx_strncat(char* dst, int dst_sz, const char* src, int _num) {
+char* sx_strncat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num) {
     sx_assert(dst);
     sx_assert(src);
     sx_assert(dst_sz > 0);
@@ -314,7 +314,7 @@ const char* sx_strchar(const char* str, char ch) {
     return NULL;
 }
 
-const char* sx_strstr(const char* str, const char* find) {
+const char* sx_strstr(const char* SX_RESTRICT str, const char* SX_RESTRICT find) {
     sx_assert(str);
     sx_assert(find);
 
@@ -382,7 +382,7 @@ bool sx_strstr_wildcard(const char* str, const char* pattern) {
     return true;
 }
 
-bool sx_strequal(const char* a, const char* b) {
+bool sx_strequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b) {
     int alen = sx_strlen(a);
     int blen = sx_strlen(b);
     if (alen != blen)
@@ -395,7 +395,7 @@ bool sx_strequal(const char* a, const char* b) {
     return true;
 }
 
-bool sx_strequalnocase(const char* a, const char* b) {
+bool sx_strequalnocase(const char*SX_RESTRICT  a, const char* SX_RESTRICT b) {
     int alen = sx_strlen(a);
     int blen = sx_strlen(b);
     if (alen != blen)
@@ -408,7 +408,7 @@ bool sx_strequalnocase(const char* a, const char* b) {
     return true;
 }
 
-bool sx_strnequal(const char* a, const char* b, int num) {
+bool sx_strnequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b, int num) {
     int _alen = sx_strlen(a);
     int _blen = sx_strlen(b);
     int alen = sx_min(num, _alen);
@@ -423,7 +423,7 @@ bool sx_strnequal(const char* a, const char* b, int num) {
     return true;
 }
 
-bool sx_strnequalnocase(const char* a, const char* b, int num) {
+bool sx_strnequalnocase(const char* SX_RESTRICT a, const char* SX_RESTRICT b, int num) {
     int _alen = sx_strlen(a);
     int _blen = sx_strlen(b);
     int alen = sx_min(num, _alen);

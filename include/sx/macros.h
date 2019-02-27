@@ -54,6 +54,7 @@
 #    define SX_NO_INLINE __attribute__((noinline))
 #    define SX_NO_RETURN __attribute__((noreturn))
 #    define SX_CONSTFN __attribute__((const))
+#    define SX_RESTRICT __restrict__
 #    if SX_CRT_MSVC
 #        define __stdcall
 #    endif    // SX_CRT_MSVC
@@ -65,6 +66,7 @@
 #    define SX_NO_INLINE __declspec(noinline)
 #    define SX_NO_RETURN
 #    define SX_CONSTFN __declspec(noalias)
+#    define SX_RESTRICT __restrict
 #else
 #    error "Unknown SX_COMPILER_?"
 #endif

@@ -52,6 +52,10 @@
 #    define SX_CONFIG_STDMATH 1
 #endif
 
+#ifndef SX_CONFIG_HANDLE_GEN_BITS
+#   define SX_CONFIG_HANDLE_GEN_BITS 16
+#endif
+
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor,
