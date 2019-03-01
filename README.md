@@ -3,14 +3,14 @@
 # SX: Portable base library for C/C++ programs and games
 [@septag](https://twitter.com/septagh)
 
-SX is a minimal and performant base C library, designed to run on different platforms and OSes. Designed to help C developers (and C++ programmers who hate stl) with their multiplatform programs and games.
+SX is a minimal and performant base C library, runs on different platforms and OSes. Designed to help C developers (and C++ programmers who hate stl and boost) with their multiplatform programs and games.
 
-Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut) and of course [the machinery](https://www.ourmachinery.com), I decided to make my own C base library for future projects. I also used and borrowed many of their code inside SX.
+Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut) and of course [the machinery](https://www.ourmachinery.com), I decided to make my own C base library for future projects. I also used and borrowed many of their code for SX.
 
 - The API is simple and portable across many other languages
-- Heap memory is under control: Almost every entity that allocates from heap accepts `allocator` object and native `malloc` and `free` are not used anywhere else.
+- Heap memory is under control: Almost every entity that allocates from heap requires `allocator` object and stdc's `malloc` and `free` are not used anywhere else.
 - Runs on multiple platforms
-- Performant. Uses fast algorithms and C-implementations (some assembly) with plain C-structs and functions. And unlike `stl`, performance is not much different in debug builds. 
+- Performant. Uses fast algorithms and implementations (some assembly) with plain C-structs and functions. And unlike libraries like `stl`, performance is not much different in debug builds. 
 - Fast compile time: It takes about 1 sec to build the lib (it's about 15kloc with 3rdparty sources) on my windows machine and vc14 (cl.exe) compiler. (i7-2nd gen CPU + ninja build). Also headers include minimal headers and system libs for faster compile times in programs that use them.
 
 This library currently contains these functionalities (listed by header files):
@@ -26,10 +26,10 @@ This library currently contains these functionalities (listed by header files):
 	- Very fast low-level (assembly cpu state switch) fibers
 	- Wait on job dependencies without task chains or context switches
 	- Fixed thread pool
-	- Job execution priority support
-	- Overriadable thread init and shutdown. to create your own stuff on each thread and safe them in TLS vars
+	- Job priority support
+	- Overriadable thread init and shutdown. To initialize your own stuff on each thread
 	- Support for tags: each worker thread can be tagged to handle specific class of jobs
-- [handle.h](https://github.com/septag/sx/blob/master/include/sx/handle.h): Handle pool. sparse/dense handle allocator to address array items with handles instead of pointers.
+- [handle.h](https://github.com/septag/sx/blob/master/include/sx/handle.h): Handle pool. sparse/dense handle allocator to address array items with handles instead of pointers. With generation counters for validating dead handles.
 - [hash.h](https://github.com/septag/sx/blob/master/include/sx/hash.h):  Some nice hash functions (xxhash/crc32/fnv1a) and a fast fibonacci multiplicative hash-table
 - [ini.h](https://github.com/septag/sx/blob/master/include/sx/ini.h): INI file encoder/decoder. wrapper over [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h)
 - [io.h](https://github.com/septag/sx/blob/master/include/sx/io.h): Read and write to/from memory and file streams
