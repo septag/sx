@@ -123,7 +123,7 @@
 #endif
 
 #define sx_enabled(_f) ((_f) != 0)
-#define sx_unused(_a) (void)(true ? (void)0 : ((void)(_a)))
+#define sx_unused(_a) (void)(_a)
 
 #ifdef __cplusplus
 #    define sx_cppbool(_b) (_b) ? true : false;

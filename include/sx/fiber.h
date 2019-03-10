@@ -57,7 +57,7 @@
 // High-level coroutine API:
 // This is a more practical API for gameplay programmers, it emulates somewhat unity's coroutines
 // Facilitates iterative algorithms and wait timers, ...
-// You create a coroutine context, which is actually a fiber pool. On each frame of the game you 
+// You create a coroutine context, which is actually a fiber pool. On each frame of the game you
 // update the context. So when you invoke a coroutine, it will run it like a normal function,
 // but you can return in the middle of the it and continue on some other time.
 // NOTE that the context API is not thread-safe, so the context-related functions must be called
@@ -141,6 +141,8 @@ extern "C" {
 sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
 void             sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
 void             sx_coro_update(sx_coro_context* ctx, float dt);
+bool             sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
+                                          sx_fiber_cb* new_callback);
 
 void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user);
 void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom);

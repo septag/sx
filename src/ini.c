@@ -12,7 +12,10 @@
 #define INI_MEMCPY(dst, src, cnt) (sx_memcpy(dst, src, cnt))
 #define INI_STRLEN(s) (sx_strlen(s))
 // TODO: #define INI_STRNICMP( s1, s2, cnt ) ( my_strnicmp_func( s1, s2, cnt ) )
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wsign-compare")
 #include "../3rdparty/mattias/ini.h"
+SX_PRAGMA_DIAGNOSTIC_POP()
 
 sx_ini* sx_ini_create(const sx_alloc* alloc) {
     return (sx_ini*)ini_create((void*)alloc);

@@ -23,6 +23,8 @@ const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
 
 static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                            const char* func, uint32_t line, void* user_data) {
+    sx_unused(user_data);
+
     if (size == 0) {
         if (ptr) {
             if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT) {
@@ -33,7 +35,7 @@ static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* f
 #if SX_COMPILER_MSVC
             _aligned_free(ptr);
 #else
-            sx__aligned_free(&g_alloc_malloc, ptr, align, file, func, line);
+            sx__aligned_free(&g_alloc_malloc, ptr, file, func, line);
 #endif
         }
         return NULL;
@@ -224,6 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                  const char* func, uint32_t line, void* user_data) {
+    sx_unused(user_data);
     if (size == 0) {
         if (ptr) {
             if (align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT) {
@@ -231,7 +234,7 @@ static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const c
                 return NULL;
             }
 
-            sx__aligned_free(&g_alloc_malloc_leakd, ptr, align, file, func, line);
+            sx__aligned_free(&g_alloc_malloc_leakd, ptr, file, func, line);
         }
         return NULL;
     } else if (ptr == NULL) {

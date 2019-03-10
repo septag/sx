@@ -24,9 +24,6 @@ void NSLog(CFStringRef _format, ...);
 extern "C" {
 #endif
 int _fltused = 0;
-#ifdef __cplusplus
-}
-#endif
 
 void sx__break_program(const char* text) {
     // print
@@ -57,3 +54,7 @@ void sx__break_program(const char* text) {
     *int3 = 3;
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif

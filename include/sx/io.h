@@ -30,6 +30,11 @@
 //              sx_mem_read                 reads a piece of data to memory
 //              sx_mem_seekr                seeks inside the buffer
 //              sx_mem_read_var             helper macro to read a single variable
+//              sx_mem_get_iff_chunk        helper for reading IFF chunks
+//                                          searches `size` bytes from the current location for 
+//                                          FOURCC chunk type. if `size` <= 0, searches till the end
+//                                          if chunk is not found, returning `pos` variable will be 
+//                                          -1
 //
 //      sx_file_writer: Opens a file and writes to it just like stdc file IO
 //              sx_file_open_writer         opens a file for writing, can provide optional optional
@@ -86,7 +91,7 @@ sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data);
 void          sx_mem_destroy_block(sx_mem_block* mem);
 
 void  sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size);
-void* sx_mem_grow(sx_mem_block* mem, int size);
+bool  sx_mem_grow(sx_mem_block** pmem, int size);
 
 #define sx_define_mem_block_onstack(_name, _size) \
     uint8_t      _name##_buff_[(_size)];          \
@@ -121,7 +126,14 @@ int     sx_mem_read(sx_mem_reader* reader, void* data, int size);
 int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset,
                      sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
-#define sx_mem_read_var(w, v) sx_mem_read((w), &(v), sizeof(v))
+typedef struct sx_iff_chunk {
+    int64_t pos;
+    uint32_t size;
+} sx_iff_chunk;
+
+sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc);
+
+#define sx_mem_read_var(r, v) sx_mem_read((r), &(v), sizeof(v))
 
 // sx_file_writer
 typedef struct sx_file_writer {

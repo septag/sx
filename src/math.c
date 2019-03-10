@@ -478,7 +478,6 @@ sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax
 
 sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx,
                     float _ty, float _tz) {
-    // TODO: maybe wrong
     float sx, cx, sy, cy, sz, cz;
 
     if (_ax != 0) {

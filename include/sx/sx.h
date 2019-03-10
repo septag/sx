@@ -92,14 +92,14 @@ SX_API void sx__break_program(const char* text);
                 __a < b ? __a : __b;  \
             })
 
-#        define sx_clamp(v_, min_, max_)    \
-            ({                              \
-                typeof(v_) _v = (v_);       \
-                typeof(min_) _min = (min_); \
-                typeof(max_) _max = (max_); \
-                (void)(&_min == &_max);     \
-                _v = _v < _max ? _v : _max; \
-                _v > _min ? _v : _min;      \
+#        define sx_clamp(v_, min_, max_)      \
+            ({                                \
+                typeof(v_) _v = (v_);         \
+                typeof(min_) __min = (min_);  \
+                typeof(max_) __max = (max_);  \
+                (void)(&__min == &__max);     \
+                _v = _v < __max ? _v : __max; \
+                _v > __min ? _v : __min;      \
             })
 #    elif SX_COMPILER_MSVC
 // NOTE: Because we have some features lacking in MSVC+C compiler, the max,min,clamp macros does not

@@ -91,7 +91,8 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/math.h
                   include/sx/jobs.h
                   include/sx/bheap.h
-                  include/sx/tlsf-alloc.h)
+                  include/sx/tlsf-alloc.h
+                  include/sx/simd.h)
 
 # Remove fiber functions for now on emscripten
 if (EMSCRIPTEN)

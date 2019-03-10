@@ -14,7 +14,7 @@ typedef struct stackalloc_hdr_s {
 static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, uint32_t align) {
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     size_t total = size + sizeof(sx__stackalloc_hdr) + align;
-    if (alloc->offset + total > alloc->size) {
+    if (alloc->offset + total > (size_t)alloc->size) {
         sx_out_of_memory();
         return NULL;
     }
@@ -37,6 +37,10 @@ static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, uint32_t a
 
 static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                const char* func, uint32_t line, void* user_data) {
+    sx_unused(file);
+    sx_unused(func);
+    sx_unused(line);
+
     sx_stackalloc* stackalloc = (sx_stackalloc*)user_data;
     void*          last_ptr = stackalloc->ptr + stackalloc->last_ptr_offset;
     if (size > 0) {
@@ -50,7 +54,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
             // any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant
             //          between reallocs
-            if (stackalloc->offset + size > stackalloc->size) {
+            if (stackalloc->offset + size > (size_t)stackalloc->size) {
                 sx_out_of_memory();
                 return NULL;
             }

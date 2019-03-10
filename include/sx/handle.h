@@ -3,7 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 // handle.h - v1.0 - Handle opaque type (uint32_t) and handle pool
-//                   useful for exposing internal objects instead of pointers, 
+//                   useful for exposing internal objects instead of pointers,
 //                   with the ability to add/remove and iterate
 //                   If remove is not needed, it is recommended to just use plain arrays
 //                   handle-pool uses generation counters to validate dead handles
@@ -20,7 +20,7 @@
 //                                      (must be less than UIN16_MAX)
 //          sx_handle_destroy_pool      destroy handle pool
 //          sx_handle_new               returns a new handle
-//                                      returns 0 with (sx_assert in debug), if pool is full                                      is full
+//                                      returns 0 with (sx_assert in debug), if pool is full is full
 //          sx_handle_del               deletes the handle and puts it back to the pool
 //          sx_handle_at                converts pool index to a valid handle
 //          sx_handle_valid             checks if handle is valid by comparing generation
@@ -29,9 +29,9 @@
 //                                      what this function does is destroying the previous pool and
 //                                      create a new one it also copies previous pool's data to the
 //                                      new one
-//          sx_handle_index             use this macro to fetch index to the actual array from the 
+//          sx_handle_index             use this macro to fetch index to the actual array from the
 //                                      handle
-//          sx_handle_gen               use this macro to fetch generation from the handle. Mainly 
+//          sx_handle_gen               use this macro to fetch generation from the handle. Mainly
 //                                      for debugging purposes
 //
 //  CAUTION: In case you have to grow the handle-pool, make sure NOT to have multiple pointers
@@ -133,9 +133,8 @@ static inline void sx_handle_reset_pool(sx_handle_pool* pool) {
 
 static inline bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle) {
     sx_assert(handle);
-
     int index = pool->sparse[sx_handle_index(handle)];
-    return index < pool->count && sx_handle_gen(pool->dense[index]) == sx_handle_gen(handle);
+    return index < pool->count && pool->dense[index] == handle;
 }
 
 static inline sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index) {

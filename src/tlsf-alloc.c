@@ -9,6 +9,10 @@ SX_PRAGMA_DIAGNOSTIC_POP();
 
 static void* sx__tlsfalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                               const char* func, uint32_t line, void* user_data) {
+    sx_unused(file);
+    sx_unused(func);
+    sx_unused(line);
+
     tlsf_t tlsf = (tlsf_t)user_data;
     if (size == 0) {
         tlsf_free(tlsf, ptr);

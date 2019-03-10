@@ -36,6 +36,6 @@ int main(int argc, char* argv[]) {
     printf("Process memory: %d mb", (int)(sx_os_processmem() / _1mb));
     sx_os_getch();
 
-    sx_virtual_release(mem);
+    sx_virtual_release(mem, total_sz);
     return 0;
 }

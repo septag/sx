@@ -66,13 +66,24 @@ void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size) {
     mem->align = 0;
 }
 
-void* sx_mem_grow(sx_mem_block* mem, int size) {
-    sx_assert(mem->alloc && "Growable memory must be created with an allocator!");
+bool sx_mem_grow(sx_mem_block** pmem, int size) {
+    sx_mem_block* mem = *pmem;
+    sx_assert(mem->alloc &&
+              "Growable memory must be created with an allocator - sx_mem_create_block");
     sx_assert(size > mem->size && "New size must be greater than the previous one");
 
-    mem->data = sx_aligned_realloc(mem->alloc, mem->data, size, mem->align);
-    mem->size = size;
-    return mem->data;
+    int align = mem->align;
+    const sx_alloc* alloc = mem->alloc;
+    mem = (sx_mem_block*)sx_realloc(alloc, mem, size + sizeof(sx_mem_block) + align);
+    if (mem) {
+        mem->data = sx_align_ptr(mem + 1, 0, align);
+        mem->size = size;
+        *pmem = mem;
+        return true;
+    } else {
+        sx_out_of_memory();
+        return false;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +106,11 @@ int sx_mem_write(sx_mem_writer* writer, const void* data, int size) {
         if (mem->alloc) {
             int more = size - (int)remain;
             more = sx_align_mask(more, 0xfff);    // align to 4096 bytes
-            writer->data = (uint8_t*)sx_mem_grow(mem, more + mem->size);
+            bool _r = sx_mem_grow(&mem, more + mem->size);
+            sx_unused(_r);
+            sx_assert(_r);
+            writer->mem = mem;
+            writer->data = (uint8_t*)mem->data;
             writer->size = mem->size;
         } else {
             size = (int)remain;
@@ -161,6 +176,37 @@ int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence) {
     }
     return reader->pos;
 }
+
+sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc) {
+    int64_t end = (size > 0) ? sx_min(reader->pos + size, reader->top) : reader->top;
+    end -= 8;
+    if (reader->pos >= end) {
+        return (sx_iff_chunk){ .pos = -1 };
+    }
+
+    uint32_t ch = *((uint32_t*)(reader->data + reader->pos));
+    if (ch == fourcc) {
+        reader->pos += sizeof(uint32_t);
+        uint32_t chunk_size;
+        sx_mem_read_var(reader, chunk_size);
+        return (sx_iff_chunk){ .pos = reader->pos, .size = chunk_size };
+    }
+
+    // chunk not found at start position, try to find it in the remaining data by brute-force
+    const uint8_t* buff = reader->data;
+    for (int64_t offset = reader->pos; offset < end; offset++) {
+        ch = *((uint32_t*)(buff + offset));
+        if (ch == fourcc) {
+            reader->pos = offset + sizeof(uint32_t);
+            uint32_t chunk_size;
+            sx_mem_read_var(reader, chunk_size);
+            return (sx_iff_chunk){ .pos = reader->pos, .size = chunk_size };
+        }
+    }
+
+    return (sx_iff_chunk){ .pos = -1 };
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //

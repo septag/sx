@@ -108,13 +108,13 @@ static inline void sx_pool_destroy(sx_pool* pool, const sx_alloc* alloc) {
     sx__pool_page* page = pool->pages->next;
     while (page) {
         sx__pool_page* next = page->next;
-        sx_aligned_free(alloc, page, 16);
+        sx_aligned_free(alloc, page);
         page = next;
     }
     pool->capacity = 0;
     pool->pages->iter = 0;
     pool->pages->next = NULL;
-    sx_aligned_free(alloc, pool, 16);
+    sx_aligned_free(alloc, pool);
 }
 
 static inline void* sx_pool_new(sx_pool* pool) {

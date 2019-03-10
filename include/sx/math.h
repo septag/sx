@@ -431,6 +431,8 @@ static inline SX_CONSTFN float sx_mod(float _a, float _b) {
 }
 
 // http://realtimecollisiondetection.net/blog/?t=89
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wshadow")
 static inline SX_CONSTFN bool sx_equal(float _a, float _b, float _epsilon) {
     const float lhs = sx_abs(_a - _b);
     float       aa = sx_abs(_a);
@@ -438,6 +440,7 @@ static inline SX_CONSTFN bool sx_equal(float _a, float _b, float _epsilon) {
     const float rhs = _epsilon * sx_max(1.0f, sx_max(aa, ab));
     return lhs <= rhs;
 }
+SX_PRAGMA_DIAGNOSTIC_POP()
 
 static inline SX_CONSTFN bool sx_equal_arr(const float* _a, const float* _b, int _num,
                                            float _epsilon) {
@@ -643,7 +646,7 @@ static inline sx_quat sx_quat4f(float _x, float _y, float _z, float _w) {
 
 static inline sx_quat sx_quatfv(const float* _f) {
 #ifdef __cplusplus
-    return { { _f[0], _f[1], _f[2] } };
+    return { { _f[0], _f[1], _f[2], _f[3] } };
 #else
     return (sx_quat){ .x = _f[0], .y = _f[1], .z = _f[2], .w = _f[3] };
 #endif
@@ -995,7 +998,6 @@ static inline sx_mat4 sx_mat4_rotateZ(float _az) {
 }
 
 static inline sx_mat4 sx_mat4_rotateXY(float _ax, float _ay) {
-    // TODO: maybe wrong
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1006,7 +1008,6 @@ static inline sx_mat4 sx_mat4_rotateXY(float _ax, float _ay) {
 }
 
 static inline sx_mat4 sx_mat4_rotateXYZ(float _ax, float _ay, float _az) {
-    // TODO: maybe wrong
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1020,7 +1021,6 @@ static inline sx_mat4 sx_mat4_rotateXYZ(float _ax, float _ay, float _az) {
 }
 
 static inline sx_mat4 sx_mat4_rotateZYX(float _ax, float _ay, float _az) {
-    // TODO: maybe wrong
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1206,17 +1206,17 @@ static inline sx_vec2 sx_mat3_mul_vec2(const sx_mat3* _mat, const sx_vec2 _vec) 
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _mat->m23);
 }
 
-static inline sx_mat3 sx_mat3_translate(float* result, float x, float y) {
+static inline sx_mat3 sx_mat3_translate(float x, float y) {
     return sx_mat3f(1.0f, 0.0f, x, 0.0f, 1.0f, y, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_rotate(float* result, float theta) {
+static inline sx_mat3 sx_mat3_rotate(float theta) {
     float c = sx_cos(theta);
     float s = sx_sin(theta);
     return sx_mat3f(c, -s, 0.0f, s, c, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_scale(float* result, float sx, float sy) {
+static inline sx_mat3 sx_mat3_scale(float sx, float sy) {
     return sx_mat3f(sx, 0.0f, 0.0f, 0.0f, sy, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 

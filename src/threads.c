@@ -238,6 +238,7 @@ bool sx_thread_running(sx_thread* thrd) {
 
 void sx_thread_setname(sx_thread* thrd, const char* name) {
 #    if SX_PLATFORM_APPLE
+    sx_unused(thrd);
     pthread_setname_np(name);
 #    elif SX_PLATFORM_BSD
 #        if defined(__NetBSD__)
@@ -248,8 +249,10 @@ void sx_thread_setname(sx_thread* thrd, const char* name) {
 #    elif (SX_CRT_GLIBC >= 21200) && !SX_PLATFORM_HURD
     pthread_setname_np(thrd->handle, name);
 #    elif SX_PLATFORM_LINUX
+    sx_unused(thrd);
     prctl(PR_SET_NAME, name, 0, 0, 0);
 #    else
+    sx_unused(thrd);
     sx_unused(name);
 #    endif
 }

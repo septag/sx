@@ -28,15 +28,19 @@ void* sx_virtual_reserve(size_t reserve_sz) {
 #endif
 }
 
-void sx_virtual_release(void* ptr) {
+void sx_virtual_release(void* ptr, size_t sz) {
 #if SX_PLATFORM_WINDOWS
+    sx_unused(sz);
     VirtualFree(ptr, 0, MEM_RELEASE);
 #elif SX_PLATFORM_POSIX
-    munmap(ptr, 0);
+    munmap(ptr, sz);
 #endif
 }
 
 void sx_virtual_protect(void* ptr, size_t sz) {
+    sx_unused(ptr);
+    sx_unused(sz);
+
     // TODO
     sx_assert(0 && "not implemented");
 }
@@ -98,6 +102,10 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, uint3
 
 static void* sx__virtualalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                                  const char* func, uint32_t line, void* user_data) {
+    sx_unused(file);
+    sx_unused(line);
+    sx_unused(func);
+    
     sx_virtualalloc* valloc = (sx_virtualalloc*)user_data;
     if (size == 0) {
         // free
@@ -143,7 +151,7 @@ bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz) {
 
 void sx_virtualalloc_release(sx_virtualalloc* valloc) {
     if (valloc->ptr) {
-        sx_virtual_release(valloc->ptr);
+        sx_virtual_release(valloc->ptr, valloc->reserved_sz);
         valloc->ptr = NULL;
     }
 }

@@ -63,6 +63,7 @@ This library currently contains these functionalities (listed by header files):
 	- Path manipulation functions (c-string)
 - [bheap.h](https://github.com/septag/sx/blob/master/include/sx/bheap.h): Binary heap implementation
 - [tlsf-alloc.h](https://github.com/septag/sx/blob/master/include/sx/tlsf-alloc.h): Tlsf (Two-Level Segregated Fit memory) memory allocator. Wrapper over [Mathew Conte's implementation](http://tlsf.baisoku.org)
+- [simd.h](https://github.com/septag/sx/blob/master/include/sx/simd.h): portable 128bit simd math intrinsics. currently there are two implementations: reference and SSE. ARM Neon will be added soon.
 
 ## Build
 ### Current supported platforms

@@ -110,6 +110,7 @@ typedef union {
 typedef struct sx__coro_state {
     sx_fiber_t             fiber;
     sx_fiber_stack         stack_mem;
+    sx_fiber_cb*           callback;
     void*                  user;
     sx_coro_ret_type       ret_state;
     sx__coro_state_counter arg;
@@ -195,6 +196,7 @@ void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user) {
             }
         }
         fs->fiber = sx_fiber_create(fs->stack_mem, callback);
+        fs->callback = callback;
         fs->user = user;
         // Add to the end of the list
         sx__coro_add_list(&ctx->run_list, &ctx->run_list_last, fs);
@@ -205,38 +207,61 @@ void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user) {
 }
 
 void sx_coro_update(sx_coro_context* ctx, float dt) {
-    // Update and fetch fibers only if no fiber is currently running
-    if (ctx->cur_coro == NULL) {
-        sx__coro_state* fs = ctx->run_list;
-        while (fs) {
-            sx__coro_state* next = fs->next;
+    sx_assert(ctx->cur_coro == NULL);
 
-            // Check state and take action for pending fibers
-            switch (fs->ret_state) {
-            case CORO_RET_YIELD: {
-                ++fs->counter.n;
-                if (fs->counter.n >= fs->arg.n) {
-                    ctx->cur_coro = fs;
-                    fs->fiber = sx_fiber_switch(fs->fiber, fs->user).from;
-                }
-                break;
-            }
-            case CORO_RET_WAIT: {
-                fs->counter.tm += dt;
-                if (fs->counter.tm >= fs->arg.tm) {
-                    ctx->cur_coro = fs;
-                    fs->fiber = sx_fiber_switch(fs->fiber, fs->user).from;
-                }
-                break;
-            }
-            default:
-                sx_assert(0 && "Invalid ret type in update loop");
-                break;
-            }
+    sx__coro_state* fs = ctx->run_list;
+    while (fs) {
+        sx__coro_state* next = fs->next;
 
-            fs = next;
+        // Check state and take action for pending fibers
+        switch (fs->ret_state) {
+        case CORO_RET_YIELD: {
+            ++fs->counter.n;
+            if (fs->counter.n >= fs->arg.n) {
+                ctx->cur_coro = fs;
+                fs->fiber = sx_fiber_switch(fs->fiber, fs->user).from;
+            }
+            break;
         }
+        case CORO_RET_WAIT: {
+            fs->counter.tm += dt;
+            if (fs->counter.tm >= fs->arg.tm) {
+                ctx->cur_coro = fs;
+                fs->fiber = sx_fiber_switch(fs->fiber, fs->user).from;
+            }
+            break;
+        }
+        default:
+            sx_assert(0 && "Invalid ret type in update loop");
+            break;
+        }
+
+        fs = next;
     }
+}
+
+bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
+                              sx_fiber_cb* new_callback) {
+    sx_assert(callback);
+    bool r = false;
+
+    sx__coro_state* fs = ctx->run_list;
+    while (fs) {
+        sx__coro_state* next = fs->next;
+        if (fs->callback == callback) {
+            if (new_callback) {
+                fs->callback = new_callback;
+                fs->fiber = sx_fiber_create(fs->stack_mem, new_callback);
+                r = true;
+            } else {
+                sx__coro_remove_list(&ctx->run_list, &ctx->run_list_last, fs);
+                sx_pool_del(ctx->coro_pool, fs);
+            }
+        }
+        fs = next;
+    }
+
+    return r;
 }
 
 static inline void sx__coro_return(sx_coro_context* ctx, sx_fiber_t* pfrom, sx_coro_ret_type type,
