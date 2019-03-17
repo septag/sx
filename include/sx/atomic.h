@@ -30,8 +30,8 @@
 //
 #pragma once
 
-#include <stdint.h>
 #include "macros.h"
+#include <stdint.h>
 
 #if SX_PLATFORM_WINDOWS
 // FIXME: I got wierd compiler error on MSVC+Clang_c2, so I had to comment this out
@@ -69,7 +69,7 @@ SX_FORCE_INLINE void sx_yield_cpu() {
 #else
 #    if SX_CPU_X86
     __asm__ __volatile__("pause");
-#    elif SX_CPU_ARM
+#    elif SX_CPU_ARM && !SX_PLATFORM_RPI /* FIXME: didn't find a workaround for rpi */
     __asm__ __volatile__("yield");
 #    endif
 #endif
@@ -236,8 +236,9 @@ SX_FORCE_INLINE int64_t sx_atomic_cas64(sx_atomic_int64* a, int64_t xchg, int64_
 }
 
 
-#if (SX_COMPILER_GCC || SX_COMPILER_CLANG) && __STDC_VERSION__ >= 201112L && \
-    !defined(__STDC_NO_ATOMICS__) && (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
+#if !SX_PLATFORM_EMSCRIPTEN && (SX_COMPILER_GCC || SX_COMPILER_CLANG) && \
+    __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__) &&      \
+    (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
 #    include <stdatomic.h>
 typedef atomic_flag  sx_lock_t;
 SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {

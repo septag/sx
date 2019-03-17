@@ -30,7 +30,7 @@ Thumbs.db
 /.idea/workspace.xml
 /.idea/libraries
 /build
-/build-cpp
+/build-*
 /captures
 
 

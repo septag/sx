@@ -12,7 +12,7 @@
 #    define fseeko64 _fseeki64
 #    define ftello64 _ftelli64
 #elif 0 || SX_PLATFORM_ANDROID || SX_PLATFORM_BSD || SX_PLATFORM_IOS || SX_PLATFORM_OSX || \
-    SX_PLATFORM_LINUX || SX_PLATFORM_EMSCRIPTEN
+    SX_PLATFORM_LINUX || SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_RPI
 #    define fseeko64 fseeko
 #    define ftello64 ftello
 #elif SX_PLATFORM_PS4

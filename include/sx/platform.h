@@ -6,6 +6,7 @@
 //					   Contains processor/arch/compiler/os definitions for different platforms
 //
 // Stole from: https://github.com/bkaradzic/bx/blob/master/include/bx/platform.h
+// Another useful reference: https://sourceforge.net/p/predef/wiki/Home/
 //
 #pragma once
 
@@ -172,7 +173,7 @@
 // SteamLink compiler defines __linux__
 #    undef SX_PLATFORM_STEAMLINK
 #    define SX_PLATFORM_STEAMLINK 1
-#elif defined(__VCCOREVER__)
+#elif defined(__VCCOREVER__) || defined(__RPI__)
 // RaspberryPi compiler defines __linux__
 #    undef SX_PLATFORM_RPI
 #    define SX_PLATFORM_RPI 1

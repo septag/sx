@@ -23,7 +23,7 @@
 #    if defined(__FreeBSD__)
 #        include <pthread_np.h>
 #    endif
-#    if SX_PLATFORM_LINUX
+#    if SX_PLATFORM_LINUX || SX_PLATFORM_RPI
 #        include <sys/syscall.h>    // syscall
 #    endif
 #elif SX_PLATFORM_WINDOWS
