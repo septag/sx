@@ -86,6 +86,7 @@ These are also the macros that you can override in _config.h_ or add them to com
 - **SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT** (Default=8): All memory allocators aligns pointers to this value if 'align' parameter in alloc functions is less than natural alignment
 - **SX_CONFIG_HASHTBL_DEBUG** (Default=0): Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
 - **SX_CONFIG_STDMATH** (Default=1): Uses stdc's math library (libm) for basic math functions. Set this to 0 if you want the library use it's own base math functions and drop _libm_ dependency.
+- **SX_CONFIG_SIMD_DISABLE** (Default=0): Disables platform-specific simd functions and forces them to use fpu reference functions instead.
 - **sx_out_of_memory**: What should the program do if some internal memory allocations fail. see _allocator.h_ for default implementation
 - **sx_data_truncate**: What should the program do if IO operations get truncated and goes out of bound. see _io.h_ for default implementation
 - **sx_assert**: Assert replacement, default is clib's _assert_
