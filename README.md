@@ -68,10 +68,12 @@ This library currently contains these functionalities (listed by header files):
 ## Build
 ### Current supported platforms
 
-- *Windows*: Tested on vs2015-cl (cpp) and vs2015-clang_c2 (c11) - x86_64
-- *Linux*: Tested on ubuntu, gcc 4.8.4
-- *OSX*: Tested on x86_64 Darwin 17.4.0 - LLVM version 9.1.0 (clang-902.0.39.1)
-- *Emscripten*: Tested on v1.38.8 (build maybe out of date)
+- **Windows**: Tested on vs2015-cl (cpp) and vs2015-clang_c2 (c11) - x86_64
+- **Linux**: Tested on ubuntu, gcc 4.8.4
+- **OSX**: Tested on x86_64 Darwin 17.4.0 - LLVM version 9.1.0 (clang-902.0.39.1)
+- **Android**: Test with ndk v17.1.4828580
+- **Emscripten**: Tested on v1.38.8 - currently with some restrictions. see below
+- **Raspnerry-PI**: Tested on RaspberryPI (model B) - Ubuntu jessie
 
 ### CMake options
 
