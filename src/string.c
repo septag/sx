@@ -6,11 +6,12 @@
 #include "sx/string.h"
 #include "sx/array.h"
 
+#define STB_SPRINTF_IMPLEMENTATION
+#define STB_SPRINTF_STATIC
 SX_PRAGMA_DIAGNOSTIC_PUSH()
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-function")
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-parameter")
-#define STB_SPRINTF_IMPLEMENTATION
-#define STB_SPRINTF_STATIC
+SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wsign-compare")
 #include "../3rdparty/stb/stb_printf.h"
 SX_PRAGMA_DIAGNOSTIC_POP();
 

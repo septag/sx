@@ -46,7 +46,7 @@ void sx__break_program(const char* text) {
 #if SX_COMPILER_MSVC
     __debugbreak();
 #elif SX_CPU_ARM
-    __buildin_trap();
+    __builtin_trap();
 #elif SX_CPU_X86 && (SX_COMPILER_GCC || SX_COMPILER_CLANG)
     __asm__("int $3");
 #else

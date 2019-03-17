@@ -15,8 +15,8 @@
     (((uint32_t)(_a) | ((uint32_t)(_b) << 8) | ((uint32_t)(_c) << 16) | ((uint32_t)(_d) << 24)))
 
 ///
-#define sx_stringize(_x) sx_stringize_(_x)
-#define sx_stringize_(_x) #_x
+#define _sx_stringize(_x) #_x
+#define sx_stringize(_x) _sx_stringize(_x)
 
 ///
 // Function decleration code helpers

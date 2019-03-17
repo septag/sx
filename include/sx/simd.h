@@ -5,6 +5,7 @@
 #define SX_SIMD_NEON 0
 #define SX_SIMD_SSE 0
 
+#if !SX_CONFIG_SIMD_DISABLE
 #    if defined(__SSE2__) || (SX_COMPILER_MSVC && (SX_ARCH_64BIT || _M_IX86_FP >= 2))
 #        include <emmintrin.h>    // __m128i
 #        if defined(__SSE4_1__)
@@ -18,6 +19,7 @@
 #        undef SX_SIMD_NEON
 #        define SX_SIMD_NEON 1
 #    endif    //
+#endif // SX_CONFIG_SIMD_DISABLE
 
 #if SX_COMPILER_MSVC
 #    define SX_SIMD_INLINE __forceinline

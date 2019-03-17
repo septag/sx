@@ -550,5 +550,6 @@ int sx_job_num_worker_threads(sx_job_context* ctx) {
 
 void sx_job_set_current_thread_tags(sx_job_context* ctx, uint32_t tags) {
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
+    sx_assert(tdata);
     tdata->tags = tags;
 }

@@ -32,6 +32,7 @@
 #    if SX_PLATFORM_ANDROID
 #        include <cpu-features.h>    // android_getCpuCount
 #        include <malloc.h>          // mallinfo
+#        include <sys/sendfile.h>    // sendfile
 #    elif SX_PLATFORM_LINUX || SX_PLATFORM_RPI || SX_PLATFORM_STEAMLINK
 #        include <linux/limits.h>
 #        include <sys/sendfile.h>    // sendfile
