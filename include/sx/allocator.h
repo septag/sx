@@ -77,11 +77,11 @@ typedef struct sx_alloc {
 } sx_alloc;
 
 // Default allocator: allocate from heap
-SX_API const sx_alloc* sx_alloc_malloc;
+SX_API const sx_alloc* sx_alloc_malloc();
 
 // Leak checking allocator, useful for debug and SX_CONFIG_DEBUG_ALLOCATOR=1
 // sx_alloc* sx_alloc_malloc_leak_detect();
-SX_API const sx_alloc* sx_alloc_malloc_leak_detect;
+SX_API const sx_alloc* sx_alloc_malloc_leak_detect();
 
 typedef void (*sx_dump_leak_cb)(const char* formatted_msg, const char* file, const char* func,
                                 int line, size_t size, void* ptr);

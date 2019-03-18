@@ -6,7 +6,7 @@ AlignEscapedNewlines: Left
 AlignTrailingComments: 'true'
 AllowAllParametersOfDeclarationOnNextLine: 'true'
 AllowShortBlocksOnASingleLine: 'false'
-AllowShortCaseLabelsOnASingleLine: 'true'
+AllowShortCaseLabelsOnASingleLine: 'false'
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: 'false'
 AllowShortLoopsOnASingleLine: 'true'

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "platform.h"
+#include "config.h"
 
 ///
 #define sx_makefourcc(_a, _b, _c, _d) \
@@ -117,10 +118,26 @@
 #endif    // SX_COMPILER_
 
 #ifdef __cplusplus
-#    define SX_API extern "C"
+#    define _SX_EXTERN extern "C"
 #else
-#    define SX_API extern
+#    define _SX_EXTERN extern
 #endif
+
+#if SX_CONFIG_SHARED_LIB
+#    if SX_COMPILER_MSVC
+#        ifdef sx_EXPORTS
+#            define _SX_API_DECL __declspec(dllexport)
+#        else
+#            define _SX_API_DECL __declspec(dllimport)
+#        endif
+#    else
+#        define _SX_API_DECL __attribute__((visibility("default")))
+#    endif
+#else
+#    define _SX_API_DECL
+#endif
+
+#define SX_API _SX_EXTERN _SX_API_DECL
 
 #define sx_enabled(_f) ((_f) != 0)
 #define sx_unused(_a) (void)(_a)

@@ -4,6 +4,7 @@
 //
 
 #include "sx/string.h"
+#include "sx/allocator.h"
 #include "sx/array.h"
 
 #define STB_SPRINTF_IMPLEMENTATION
@@ -402,7 +403,7 @@ bool sx_strequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b) {
     return true;
 }
 
-bool sx_strequalnocase(const char*SX_RESTRICT  a, const char* SX_RESTRICT b) {
+bool sx_strequalnocase(const char* SX_RESTRICT a, const char* SX_RESTRICT b) {
     int alen = sx_strlen(a);
     int blen = sx_strlen(b);
     if (alen != blen)

@@ -46,26 +46,20 @@
 //
 #pragma once
 
+#include "macros.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API void sx_tm_init();
+SX_API uint64_t sx_tm_now();
+SX_API uint64_t sx_tm_diff(uint64_t new_ticks, uint64_t old_ticks);
+SX_API uint64_t sx_tm_since(uint64_t start_ticks);
+SX_API uint64_t sx_tm_laptime(uint64_t* last_ticks);
 
-void     sx_tm_init();
-uint64_t sx_tm_now();
-uint64_t sx_tm_diff(uint64_t new_ticks, uint64_t old_ticks);
-uint64_t sx_tm_since(uint64_t start_ticks);
-uint64_t sx_tm_laptime(uint64_t* last_ticks);
+SX_API double sx_tm_sec(uint64_t ticks);
+SX_API double sx_tm_ms(uint64_t ticks);
+SX_API double sx_tm_us(uint64_t ticks);
+SX_API double sx_tm_ns(uint64_t ticks);
 
-double sx_tm_sec(uint64_t ticks);
-double sx_tm_ms(uint64_t ticks);
-double sx_tm_us(uint64_t ticks);
-double sx_tm_ns(uint64_t ticks);
-
-#ifdef __cplusplus
-}
-#endif
 
 // Version history
 // 1.0      initial release

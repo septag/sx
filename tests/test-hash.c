@@ -3,6 +3,7 @@
 #include "sx/rng.h"
 #include "sx/string.h"
 #include "sx/timer.h"
+#include "sx/allocator.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -109,7 +110,7 @@ int main(int argc, char* argv[]) {
     sx_tm_init();
 
     const int       num_samples = 10000;
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
     sx_hashtbl*     tbl = sx_hashtbl_create(alloc, num_samples);
     sx_assert(tbl);
 

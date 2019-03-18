@@ -8,6 +8,8 @@
 #define SOKOL_API_IMPL static inline
 #include "../3rdparty/sokol/sokol_time.h"
 
+#include "sx/timer.h"
+
 void sx_tm_init() {
     stm_setup();
 }

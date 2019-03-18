@@ -28,54 +28,41 @@ typedef struct sx_file_info {
     uint64_t     last_modified;    // time_t
 } sx_file_info;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API int sx_os_minstacksz();
+SX_API int sx_os_maxstacksz();
+SX_API int sx_os_pagesz();
+SX_API size_t sx_os_align_pagesz(size_t size);
+SX_API char   sx_os_getch();
+SX_API size_t      sx_os_processmem();
+SX_API void*       sx_os_dlopen(const char* filepath);
+SX_API void        sx_os_dlclose(void* handle);
+SX_API void*       sx_os_dlsym(void* handle, const char* symbol);
+SX_API const char* sx_os_dlerr();
+SX_API int         sx_os_chdir(const char* path);
+SX_API void        sx_os_sleep(int ms);
+SX_API void*       sx_os_exec(const char* const* argv);
+SX_API bool        sx_os_copy(const char* src, const char* dest);
+SX_API bool        sx_os_rename(const char* src, const char* dest);
+SX_API bool        sx_os_del(const char* path, sx_file_type type);
 
-int         sx_os_minstacksz();
-int         sx_os_maxstacksz();
-int         sx_os_pagesz();
-size_t      sx_os_align_pagesz(size_t size);
-char        sx_os_getch();
-size_t      sx_os_processmem();
-void*       sx_os_dlopen(const char* filepath);
-void        sx_os_dlclose(void* handle);
-void*       sx_os_dlsym(void* handle, const char* symbol);
-const char* sx_os_dlerr();
-int         sx_os_chdir(const char* path);
-void        sx_os_sleep(int ms);
-void*       sx_os_exec(const char* const* argv);
-bool        sx_os_copy(const char* src, const char* dest);
-bool        sx_os_rename(const char* src, const char* dest);
-bool        sx_os_del(const char* path, sx_file_type type);
+SX_API char* sx_os_path_pwd(char* dst, int size);
+SX_API char* sx_os_path_abspath(char* dst, int size, const char* path);
+SX_API char* sx_os_path_unixpath(char* dst, int size, const char* path);
+SX_API char* sx_os_path_winpath(char* dst, int size, const char* path);
+SX_API char* sx_os_path_basename(char* dst, int size, const char* path);
+SX_API char* sx_os_path_dirname(char* dst, int size, const char* path);
+SX_API char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size,
+                                 const char* path);
+SX_API char* sx_os_path_ext(char* dst, int size, const char* path);
+SX_API char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b);
+SX_API char* sx_os_path_normcase(char* dst, int size, const char* path);
+SX_API char* sx_os_path_normpath(char* dst, int size, const char* path);
+SX_API char* sx_os_path_relpath(char* dst, int size, const char* path,
+                                const char* start sx_default(NULL));
+SX_API bool  sx_os_path_exists(const char* path);
+SX_API bool  sx_os_path_isfile(const char* path);
+SX_API bool  sx_os_path_isdir(const char* path);
 
-char* sx_os_path_pwd(char* dst, int size);
-char* sx_os_path_abspath(char* dst, int size, const char* path);
-char* sx_os_path_unixpath(char* dst, int size, const char* path);
-char* sx_os_path_winpath(char* dst, int size, const char* path);
-char* sx_os_path_basename(char* dst, int size, const char* path);
-char* sx_os_path_dirname(char* dst, int size, const char* path);
-char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size,
-                          const char* path);
-char* sx_os_path_ext(char* dst, int size, const char* path);
-char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b);
-char* sx_os_path_normcase(char* dst, int size, const char* path);
-char* sx_os_path_normpath(char* dst, int size, const char* path);
-char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start sx_default(NULL));
-bool  sx_os_path_exists(const char* path);
-bool  sx_os_path_isfile(const char* path);
-bool  sx_os_path_isdir(const char* path);
+SX_API sx_file_info sx_os_stat(const char* filepath);
 
-sx_file_info sx_os_stat(const char* filepath);
-
-int sx_os_numcores();
-
-#ifdef __cplusplus
-}
-#endif
-
-//
-// Version history
-//      1.0.0   Initial release
-//      1.1.0   Added path functions, sx_os_path_xxxx
-//
+SX_API int sx_os_numcores();

@@ -14,20 +14,14 @@
 #pragma once
 
 #include <stdint.h>
+#include "macros.h"
 
 typedef struct sx_rng {
     uint64_t state[2];
 } sx_rng;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API void     sx_rng_seed(sx_rng* rng, uint32_t seed);
+SX_API uint32_t sx_rng_gen(sx_rng* rng);
+SX_API float    sx_rng_gen_f(sx_rng* rng);
+SX_API int      sx_rng_gen_irange(sx_rng* rng, int _min, int _max);
 
-void     sx_rng_seed(sx_rng* rng, uint32_t seed);
-uint32_t sx_rng_gen(sx_rng* rng);
-float    sx_rng_gen_f(sx_rng* rng);
-int      sx_rng_gen_irange(sx_rng* rng, int _min, int _max);
-
-#ifdef __cplusplus
-}
-#endif

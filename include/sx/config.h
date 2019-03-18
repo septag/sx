@@ -4,6 +4,14 @@
 //
 #pragma once
 
+// indicates that the library is a shared-dll
+// If you are using the shared sx library, you should define SX_CONFIG_SHARED_LIB=1
+// If you are building the sx library itself, there is no need to modify this, it must be defined by
+// SX_SHARED_LIB cmake option
+#ifndef SX_CONFIG_SHARED_LIB
+#   define SX_CONFIG_SHARED_LIB 0
+#endif
+
 // Debug is forced to be off, so we undef _DEBUG if it's already defined
 #if defined(SX_DEBUG) && !SX_DEBUG
 #    ifdef _DEBUG

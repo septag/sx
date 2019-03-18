@@ -9,6 +9,7 @@
 //
 #pragma once
 
+#include "macros.h"
 typedef struct sx_alloc sx_alloc;
 
 /*
@@ -61,17 +62,9 @@ typedef struct sx_cmdline_opt_s {
 
 typedef struct getopt_context sx_cmdline_context;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc, const char** argv,
-                                              const sx_cmdline_opt* opts);
-void                sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc);
-int         sx_cmdline_next(sx_cmdline_context* ctx, int* index, const char** arg);
-const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer,
-                                          unsigned int buffer_size);
-
-#ifdef __cplusplus
-}
-#endif
+SX_API sx_cmdline_context* sx_cmdline_create_context(const sx_alloc* alloc, int argc,
+                                                     const char** argv, const sx_cmdline_opt* opts);
+SX_API void        sx_cmdline_destroy_context(sx_cmdline_context* ctx, const sx_alloc* alloc);
+SX_API int         sx_cmdline_next(sx_cmdline_context* ctx, int* index, const char** arg);
+SX_API const char* sx_cmdline_create_help_string(sx_cmdline_context* ctx, char* buffer,
+                                                 unsigned int buffer_size);

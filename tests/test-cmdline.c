@@ -8,7 +8,7 @@ static void print_help(sx_cmdline_context* ctx) {
 }
 
 int main(int argc, char* argv[]) {
-    const sx_alloc*      alloc = sx_alloc_malloc;
+    const sx_alloc*      alloc = sx_alloc_malloc();
     int                  verbose = 0;
     const sx_cmdline_opt opts[] = {
         { "help", 'h', SX_CMDLINE_OPTYPE_NO_ARG, 0x0, 'h', "print this help text", 0x0 },

@@ -1,5 +1,6 @@
 #include "sx/hash.h"
 #include "sx/rng.h"
+#include "sx/allocator.h"
 #include "sx/tlsf-alloc.h"
 
 #include <stdio.h>
@@ -12,7 +13,7 @@ static void tlsf_walk_fn(void* ptr, size_t size, int used, void* user) {
 
 int main(int argc, char* argv[]) {
     sx_alloc        tlsf;
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
 
     const int pool_size = 4 * 1024 * 1024;
     void*     mem = sx_malloc(alloc, pool_size);

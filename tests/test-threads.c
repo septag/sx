@@ -32,7 +32,7 @@ static int worker_thread_fn(void* user_data1, void* user_data2) {
 }
 
 int main(int argc, char* argv[]) {
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
 
     g_queue = sx_queue_spsc_create(alloc, sizeof(work_item), 10);
     sx_semaphore_init(&g_sem);

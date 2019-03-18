@@ -36,7 +36,9 @@ function(sx_remove_compile_options DEST_VAR COMPILER_FLAGS FLAGS)
 endfunction()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-option(SX_BUILD_TESTS "Build test executables" TRUE)
+
+option(SX_BUILD_TESTS "Build test executables" ON)
+option(SX_SHARED_LIB "Build shared library (.so/.dll/.dylib)" OFF)
 
 # Enable Assembler
 if (MSVC)
@@ -164,6 +166,10 @@ endif()
 if (RPI)
     add_definitions(-D__RPI__)
 endif()
+if (SX_SHARED_LIB)
+    add_definitions(-DSX_CONFIG_SHARED_LIB=1)
+    set(LIB_TYPE SHARED)
+endif()
 
 if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU"))
     add_compile_options(-nostdlib -Wno-deprecated-declarations)
@@ -183,7 +189,7 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif()
 
-add_library(sx ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
+add_library(sx ${LIB_TYPE} ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
 
 # compat files include dir
 if (MSVC)
@@ -199,7 +205,9 @@ endif()
 target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
 
 if (ANDROID)
-    target_link_libraries(sx PUBLIC dl pthread m cpufeatures)
+    include(AndroidNdkModules)
+    android_ndk_import_module_cpufeatures()
+    target_link_libraries(sx PUBLIC dl m PRIVATE cpufeatures)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(sx PUBLIC dl pthread m)
 elseif (APPLE)

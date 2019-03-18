@@ -49,7 +49,7 @@ static void job_fib_fn(int index, void* user) {
 
 int main(int argc, char* argv[]) {
     sx_rng_seed(&g_rng, (uint32_t)time(NULL));
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
     sx_job_context* ctx = sx_job_create_context(
         alloc, &(sx_job_context_desc){ .thread_init_cb = thread_init,
                                        .thread_shutdown_cb = thread_shutdown });

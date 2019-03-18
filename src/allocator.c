@@ -18,8 +18,13 @@ static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const c
 static const sx_alloc g_alloc_malloc = { sx__malloc_cb, NULL };
 static const sx_alloc g_alloc_malloc_leakd = { sx__malloc_leakd_cb, NULL };
 
-const sx_alloc* sx_alloc_malloc = &g_alloc_malloc;
-const sx_alloc* sx_alloc_malloc_leak_detect = &g_alloc_malloc_leakd;
+const sx_alloc* sx_alloc_malloc() {
+    return &g_alloc_malloc;
+} 
+
+const sx_alloc* sx_alloc_malloc_leak_detect() {
+    return &g_alloc_malloc_leakd;
+}
 
 static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                            const char* func, uint32_t line, void* user_data) {

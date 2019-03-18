@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     sx_rng rng;
     sx_rng_seed(&rng, (uint32_t)time(NULL));
 
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
     sx_bheap*       bh = sx_bheap_create(alloc, N);
 
     puts("\nPushing values to _MIN_ binary heap:");

@@ -117,26 +117,19 @@ typedef struct sx_job_context_desc {
                         // 64)
     int                    fiber_stack_sz;            // fiber stack size (default: 1mb)
     sx_job_thread_init_cb* thread_init_cb;            // callback function that will be called on
-                                                      // initialization of each worker thread
+                                                      // initiaslization of each worker thread
     sx_job_thread_shutdown_cb* thread_shutdown_cb;    // callback functions that will be called on
                                                       // the shutdown of each worker thread
     void* thread_user_data;    // user-data to be passed to callback functions above
 } sx_job_context_desc;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API sx_job_context* sx_job_create_context(const sx_alloc*            alloc,
+                                             const sx_job_context_desc* desc);
+SX_API void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
-sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_context_desc* desc);
-void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
-
-sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count,
-                         unsigned int tags sx_default(0));
-void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
-bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
-int      sx_job_num_worker_threads(sx_job_context* ctx);
-void     sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);
-
-#ifdef __cplusplus
-}
-#endif
+SX_API sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count,
+                                unsigned int tags sx_default(0));
+SX_API void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
+SX_API bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
+SX_API int      sx_job_num_worker_threads(sx_job_context* ctx);
+SX_API void     sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);

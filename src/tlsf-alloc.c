@@ -1,4 +1,5 @@
 #include "sx/tlsf-alloc.h"
+#include "sx/allocator.h"
 
 #define TLSF_PRIVATE_API
 #define tlsf_assert sx_assert

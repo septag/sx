@@ -192,69 +192,66 @@ typedef union sx_aabb {
     float f[6];
 } sx_aabb;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API SX_CONSTFN float sx_floor(float _f);
+SX_API SX_CONSTFN float sx_cos(float _a);
+SX_API SX_CONSTFN float sx_acos(float _a);
+SX_API SX_CONSTFN float sx_sin(float _a);
+SX_API SX_CONSTFN float sx_asin(float _a);
+SX_API SX_CONSTFN float sx_atan2(float _y, float _x);
+SX_API SX_CONSTFN float sx_exp(float _a);
+SX_API SX_CONSTFN float sx_log(float _a);
+SX_API SX_CONSTFN float sx_sqrt(float _a);
+SX_API SX_CONSTFN float sx_rsqrt(float _a);
 
-SX_CONSTFN float sx_floor(float _f);
-SX_CONSTFN float sx_cos(float _a);
-SX_CONSTFN float sx_acos(float _a);
-SX_CONSTFN float sx_sin(float _a);
-SX_CONSTFN float sx_asin(float _a);
-SX_CONSTFN float sx_atan2(float _y, float _x);
-SX_CONSTFN float sx_exp(float _a);
-SX_CONSTFN float sx_log(float _a);
-SX_CONSTFN float sx_sqrt(float _a);
-SX_CONSTFN float sx_rsqrt(float _a);
+SX_API sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+SX_API sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+SX_API sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num);
+SX_API sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num);
 
-sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
-sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
-sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num);
-sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num);
-
-sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos);
-sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_vec3 _pos,
-                                  float _angle);
-sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up);
-sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up);
+SX_API sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos);
+SX_API sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_vec3 _pos,
+                                         float _angle);
+SX_API sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up);
+SX_API sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up);
 // https://www.3dgep.com/understanding-the-view-matrix/
-sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw);
-sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot, const sx_vec3 target_pos);
+SX_API sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw);
+SX_API sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot,
+                                    const sx_vec3 target_pos);
 // https://docs.microsoft.com/en-us/windows/desktop/direct3d9/d3dxmatrixperspectivefovlh
-sx_mat4 sx_mat4_perspective(float width, float height, float zn, float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float ymax, float zn,
-                                      float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
-                                        float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_perspectiveFOV(float fov_y, float aspect, float zn, float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_perspectiveFOV_LH(float fov_y, float aspect, float zn, float zf, bool ogl_ndc);
-sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offset, bool ogl_ndc);
-sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float offset, bool ogl_ndc);
-sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, float zn, float zf,
-                                float offset, bool ogl_ndc);
-sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
-                                  float zf, float offset, bool ogl_ndc);
-sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx,
-                    float _ty, float _tz);
-sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b);
-sx_mat4 sx_mat4_inv(const sx_mat4* _a);
+SX_API sx_mat4 sx_mat4_perspective(float width, float height, float zn, float zf, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float ymax,
+                                             float zn, float zf, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, float ymax,
+                                               float zn, float zf, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_perspectiveFOV(float fov_y, float aspect, float zn, float zf, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_perspectiveFOV_LH(float fov_y, float aspect, float zn, float zf,
+                                         bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offset,
+                             bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float offset,
+                               bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, float zn,
+                                       float zf, float offset, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
+                                         float zf, float offset, bool ogl_ndc);
+SX_API sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az,
+                           float _tx, float _ty, float _tz);
+SX_API sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b);
+SX_API sx_mat4 sx_mat4_inv(const sx_mat4* _a);
 /// Inverse for transform-only matrices (column4=0) (mat4x)
-sx_mat4 sx_mat4x_inv(const sx_mat4* _a);
-sx_quat sx_mat4_quat(const sx_mat4* _mat);
-sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal);
+SX_API sx_mat4 sx_mat4x_inv(const sx_mat4* _a);
+SX_API sx_quat sx_mat4_quat(const sx_mat4* _mat);
+SX_API sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal);
 
-sx_mat3 sx_mat3_inv(const sx_mat3* _a);
-sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
+SX_API sx_mat3 sx_mat3_inv(const sx_mat3* _a);
+SX_API sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
 
-sx_mat4 sx_quat_mat4(const sx_quat quat);
+SX_API sx_mat4 sx_quat_mat4(const sx_quat quat);
 
-void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
-void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
+SX_API void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
+SX_API void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
 
-#ifdef __cplusplus
-}
-#endif
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 static inline SX_CONSTFN int sx_nearest_pow2(int n) {

@@ -134,20 +134,16 @@ typedef void(sx_fiber_cb)(sx_fiber_transfer transfer);
 // High level context API
 typedef struct sx_coro_context sx_coro_context;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SX_API sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
+SX_API void             sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
+SX_API void             sx_coro_update(sx_coro_context* ctx, float dt);
+SX_API bool             sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
+                                                 sx_fiber_cb* new_callback);
 
-sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
-void             sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
-void             sx_coro_update(sx_coro_context* ctx, float dt);
-bool             sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
-                                          sx_fiber_cb* new_callback);
-
-void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user);
-void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom);
-void sx__coro_wait(sx_coro_context* ctx, sx_fiber_t* pfrom, int msecs);
-void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates sx_default(1));
+SX_API void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user);
+SX_API void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom);
+SX_API void sx__coro_wait(sx_coro_context* ctx, sx_fiber_t* pfrom, int msecs);
+SX_API void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates sx_default(1));
 
 // coroutines macros (use these instead of above sx__coro functions)
 #define sx_coro_declare(_name) static void coro__##_name(sx_fiber_transfer __transfer)
@@ -160,13 +156,9 @@ void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates sx_def
 #define sx_coro_invoke(_ctx, _name, _user) sx__coro_invoke((_ctx), coro__##_name, (_user))
 
 // Low-level functions
-bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size sx_default(0));
-void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size);
-void sx_fiber_stack_release(sx_fiber_stack* fstack);
+SX_API bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size sx_default(0));
+SX_API void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size);
+SX_API void sx_fiber_stack_release(sx_fiber_stack* fstack);
 
-sx_fiber_t        sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
-sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);
-
-#ifdef __cplusplus
-}
-#endif
+SX_API sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb);
+SX_API sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user);

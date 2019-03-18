@@ -42,7 +42,7 @@ sx_coro_declare(yield_test) {
 }
 
 int main(int argc, char* argv[]) {
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
 
     puts("---------------------");
     puts("Low level fiber test:");

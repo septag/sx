@@ -13,7 +13,7 @@ static const char* ini_data =
     "is_library=1\n";
 
 int main(int argc, char* argv[]) {
-    const sx_alloc* alloc = sx_alloc_malloc;
+    const sx_alloc* alloc = sx_alloc_malloc();
     sx_ini*         ini = sx_ini_load(ini_data, alloc);
     if (!ini) {
         puts("Loading ini data failed");
