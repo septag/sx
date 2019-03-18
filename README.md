@@ -80,6 +80,7 @@ This library currently contains these functionalities (listed by header files):
 These are general options for cmake, where you can trim or customize the build:  
 
 - **SX_BUILD_TESTS** (Default=1): Set SX_BUILD_TESTS=0 to skip building test applications
+- **SX_SHARED_LIB** (Default=0): Builds shared library (.dll/.so/.dylib) instead of static
 
 These are also the macros that you can override in _config.h_ or add them to compile definitions:
 
