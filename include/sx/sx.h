@@ -7,7 +7,6 @@
 //
 #pragma once
 
-#include "config.h"
 #include "macros.h"
 
 #include <assert.h>     // assert

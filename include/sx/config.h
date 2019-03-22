@@ -47,7 +47,11 @@
 // All memory allocators aligns pointers to this value if 'align' parameter is less than natural
 // alignment
 #ifndef SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
-#    define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
+#    ifdef SX_PLATFORM_APPLE
+#        define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 16
+#    else
+#        define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
+#    endif
 #endif    // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
 // Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
