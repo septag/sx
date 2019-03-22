@@ -3,9 +3,9 @@
 # SX: Portable base library for C/C++ programs and games
 [@septag](https://twitter.com/septagh)
 
-SX is a minimal and performant base C library, runs on different platforms and OSes. Designed to help C developers (and C++ programmers who hate stl and boost) with their multiplatform programs and games.
+SX is a minimal and performant base C library, runs on different platforms and OSes. Designed to help C developers (and C++ programmers who doesn't like to use "modernized" and templated C++ libs like _stl_ and _boost_) with their multiplatform programs and games.
 
-Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut) and of course [the machinery](https://www.ourmachinery.com), I decided to make my own C base library for future projects. I also used and borrowed many of their code for SX.
+Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir Karadric](https://github.com/bkaradzic), [Andre Weissflog](https://github.com/floooh), [Mathias Gustavsson](https://github.com/mattiasgustavsson), [r-lyeh](https://github.com/r-lyeh), [ocornut](https://github.com/ocornut) and of course [the machinery](https://www.ourmachinery.com), I decided to make my own C base library for future projects. I also used and "borrowed" some of their code for SX.
 
 - The API is simple and portable across many other languages
 - Heap memory is under control: Almost every entity that allocates from heap requires `allocator` object and stdc's `malloc` and `free` are not used anywhere else.
