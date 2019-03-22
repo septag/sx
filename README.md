@@ -73,7 +73,7 @@ This library currently contains these functionalities (listed by header files):
 - **OSX**: Tested on x86_64 Darwin 17.4.0 - LLVM version 9.1.0 (clang-902.0.39.1)
 - **Android**: Test with ndk v17.1.4828580
 - **Emscripten**: Tested on v1.38.8 - currently with some restrictions. see below
-- **RaspberryPI**: Tested on RaspberryPI (model B) - Ubuntu jessie
+- **RaspberryPI**: Tested on RaspberryPI (model B) - Ubuntu jessie. use `-DCMAKE_TOOLCHAIN_FILE=cmake/rpi.cmake`
 
 ### CMake options
 
