@@ -101,11 +101,6 @@ These are also the macros that you can override in _config.h_ or add them to com
 ### Windows
 Some C feautures on MSVC's C-compiler is missing, the code can be compiled as cpp also (/TP). It's also compatible with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command (vs2015)
 
-```
-cd build
-cmake .. -G "Visual Studio 14 2015 Win64"
-```
-
 ### Emscripten
 
 It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some limitations:
