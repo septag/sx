@@ -45,9 +45,15 @@
 
 // Natural aligment is the default memory alignment for each platform
 // All memory allocators aligns pointers to this value if 'align' parameter is less than natural
-// alignment
+// alignment.
+// MacOS/iOS devices seems to be 16-byte aligned by default: 
+// https://developer.apple.com/library/archive/documentation/Performance/Conceptual/ManagingMemory/Articles/MemoryAlloc.html
 #ifndef SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
-#    define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
+#    if defined(__APPLE__) && defined(__MACH__)
+#        define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 16
+#    else
+#        define SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT 8
+#    endif
 #endif    // BX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 
 // Inserts code for hash-table debugging, used only for efficiency tests, see hash.h
