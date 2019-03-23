@@ -266,9 +266,12 @@ void sx_mutex_init(sx_mutex* mutex) {
     sx__mutex* _m = (sx__mutex*)mutex->data;
 
     pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
+    int r = pthread_mutexattr_init(&attr);
+    sx_assert(r == 0);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&_m->handle, &attr);
+    r = pthread_mutex_init(&_m->handle, &attr);
+    sx_assert(r == 0 && "pthread_mutex_init failed");
+    sx_unused(r);
 }
 
 void sx_mutex_release(sx_mutex* mutex) {

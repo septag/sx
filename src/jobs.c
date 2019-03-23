@@ -417,6 +417,10 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
                                                  bool main_thrd) {
     sx__job_thread_data* tdata =
         (sx__job_thread_data*)sx_malloc(alloc, sizeof(sx__job_thread_data));
+    if (!tdata) {
+        sx_out_of_memory();
+        return NULL;
+    }    
     sx_memset(tdata, 0x0, sizeof(sx__job_thread_data));
     tdata->tid = tid;
     tdata->tags = 0xffffffff;
