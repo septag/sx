@@ -55,8 +55,8 @@
         sx__malloc(_allocator, _size, _align, __FILE__, __FUNCTION__, __LINE__)
 #    define sx_aligned_realloc(_allocator, _ptr, _size, _align) \
         sx__realloc(_allocator, _ptr, _size, _align, __FILE__, __FUNCTION__, __LINE__)
-#    define sx_aligned_free(_allocator, _ptr) \
-        sx__free(_allocator, _ptr, 0, __FILE__, __FUNCTION__, __LINE__)
+#    define sx_aligned_free(_allocator, _ptr, _align) \
+        sx__free(_allocator, _ptr, _align, __FILE__, __FUNCTION__, __LINE__)
 #else
 #    define sx_malloc(_allocator, _size) sx__malloc(_allocator, _size, 0, NULL, NULL, 0)
 #    define sx_realloc(_allocator, _ptr, _size) \
@@ -66,8 +66,8 @@
         sx__malloc(_allocator, _size, _align, NULL, NULL, 0)
 #    define sx_aligned_realloc(_allocator, _ptr, _size, _align) \
         sx__realloc(_allocator, _ptr, _size, _align, NULL, NULL, 0)
-#    define sx_aligned_free(_allocator, _ptr) \
-        sx__free(_allocator, _ptr, 0, NULL, NULL, 0)
+#    define sx_aligned_free(_allocator, _ptr, _align) \
+        sx__free(_allocator, _ptr, _align, NULL, NULL, 0)
 #endif    // SX_CONFIG_ALLOCATOR_DEBUG
 
 typedef struct sx_alloc {
