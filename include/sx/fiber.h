@@ -152,7 +152,6 @@ SX_API void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates
 #define sx_coro_wait(_ctx, _msecs) sx__coro_wait((_ctx), &__transfer.from, (_msecs))
 #define sx_coro_yield(_ctx) sx__coro_yield((_ctx), &__transfer.from, 1)
 #define sx_coro_yieldn(_ctx, _n) sx__coro_yield((_ctx), &__transfer.from, (_n))
-#define sx_coro_end(_ctx) sx__coro_end((_ctx), &__transfer.from)
 #define sx_coro_invoke(_ctx, _name, _user) sx__coro_invoke((_ctx), coro__##_name, (_user))
 
 // Low-level functions
