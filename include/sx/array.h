@@ -60,46 +60,46 @@
 
 typedef struct sx_alloc sx_alloc;
 
-#define sx_array_free(_alloc, a) ((a) ? sx_free(_alloc, _sx_sbraw(a)), 0 : 0)
-#define sx_array_push(_alloc, a, v) (_sx_sbmaybegrow(_alloc, a, 1), (a)[_sx_sbn(a)++] = (v))
-#define sx_array_count(a) ((a) ? _sx_sbn(a) : 0)
+#define sx_array_free(_alloc, a) ((a) ? sx_free(_alloc, sx__sbraw(a)), 0 : 0)
+#define sx_array_push(_alloc, a, v) (sx__sbmaybegrow(_alloc, a, 1), (a)[sx__sbn(a)++] = (v))
+#define sx_array_count(a) ((a) ? sx__sbn(a) : 0)
 #define sx_array_add(_alloc, a, n) \
-    (_sx_sbmaybegrow(_alloc, a, n), _sx_sbn(a) += (n), &(a)[_sx_sbn(a) - (n)])
-#define sx_array_last(a) ((a)[_sx_sbn(a) - 1])
+    (sx__sbmaybegrow(_alloc, a, n), sx__sbn(a) += (n), &(a)[sx__sbn(a) - (n)])
+#define sx_array_last(a) ((a)[sx__sbn(a) - 1])
 #define sx_array_pop(a, idx)         \
     do {                             \
         (a)[idx] = sx_array_last(a); \
-        --_sx_sbn(a);                \
+        --sx__sbn(a);                \
     } while (0)
 #define sx_array_pop_last(a) \
     do {                     \
-        --_sx_sbn(a);        \
+        --sx__sbn(a);        \
     } while (0)
 #define sx_array_pop_lastn(a, n) \
     do {                         \
-        _sx_sbn(a) -= (n);       \
+        sx__sbn(a) -= (n);       \
     } while (0)
-#define sx_array_clear(a) ((a) ? (_sx_sbn(a) = 0) : 0)
+#define sx_array_clear(a) ((a) ? (sx__sbn(a) = 0) : 0)
 #define sx_array_reserve(_alloc, a, n) (sx_array_add(_alloc, a, n), sx_array_clear(a))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal
-#define _sx_sbraw(a) ((int*)(a)-2)
-#define _sx_sbm(a) _sx_sbraw(a)[0]
-#define _sx_sbn(a) _sx_sbraw(a)[1]
+#define sx__sbraw(a) ((int*)(a)-2)
+#define sx__sbm(a) sx__sbraw(a)[0]
+#define sx__sbn(a) sx__sbraw(a)[1]
 
-#define _sx_sbneedgrow(a, n) ((a) == 0 || _sx_sbn(a) + (n) >= _sx_sbm(a))
-#define _sx_sbmaybegrow(_alloc, a, n) (_sx_sbneedgrow(a, (n)) ? _sx_sbgrow(_alloc, a, n) : 0)
-#define _sx_sbgrow(_alloc, a, n) \
+#define sx__sbneedgrow(a, n) ((a) == 0 || sx__sbn(a) + (n) >= sx__sbm(a))
+#define sx__sbmaybegrow(_alloc, a, n) (sx__sbneedgrow(a, (n)) ? sx__sbgrow(_alloc, a, n) : 0)
+#define sx__sbgrow(_alloc, a, n) \
     (*((void**)&(a)) =           \
          sx__sbgrowf((a), (n), sizeof(*(a)), (_alloc), __FILE__, __FUNCTION__, __LINE__))
 
 static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc,
                                 const char* file, const char* func, int line) {
-    int  dbl_cur = arr ? (_sx_sbm(arr) << 1) : 0;
+    int  dbl_cur = arr ? (sx__sbm(arr) << 1) : 0;
     int  min_needed = sx_array_count(arr) + increment;
     int  m = dbl_cur > min_needed ? dbl_cur : min_needed;
-    int* p = (int*)sx__realloc(alloc, arr ? _sx_sbraw(arr) : 0, itemsize * m + sizeof(int) * 2, 0,
+    int* p = (int*)sx__realloc(alloc, arr ? sx__sbraw(arr) : 0, itemsize * m + sizeof(int) * 2, 0,
                                file, func, line);
     if (p) {
         if (!arr)
@@ -108,6 +108,6 @@ static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx
         return p + 2;
     } else {
         sx_out_of_memory();
-        return 0x0; // NULL
+        return 0x0;    // NULL
     }
 }

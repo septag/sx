@@ -220,7 +220,7 @@ sx_pinfo sx_os_exec(const char* const* argv) {
     if (0 == pid) {
         int result = execvp(argv[0], (char* const*)(&argv[1]));
         sx_unused(result);
-        return NULL;
+        return (sx_pinfo) {0};
     }
 
     return (sx_pinfo) { .linux_pid = (uintptr_t)pid };
@@ -260,7 +260,7 @@ sx_pinfo sx_os_exec(const char* const* argv) {
 #else
     sx_unused(argv);
     sx_assert(0 && "not implemented");
-    return {0};
+    return (sx_pinfo) {0};
 #endif    // SX_PLATFORM_
 }
 
