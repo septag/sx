@@ -493,7 +493,9 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs) {
 // https://github.com/mattiasgustavsson/libs/blob/master/thread.h
 void sx_signal_init(sx_signal* sig) {
     sx__signal* _sig = (sx__signal*)sig->data;
-    InitializeCriticalSectionAndSpinCount(&_sig->mutex, 32);
+    BOOL r = InitializeCriticalSectionAndSpinCount(&_sig->mutex, 32);
+    sx_assert(r && "InitializeCriticalSectionAndSpinCount failed");
+    sx_unused(r);
     InitializeConditionVariable(&_sig->cond);
     _sig->value = 0;
 }

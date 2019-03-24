@@ -213,7 +213,7 @@ void sx_os_sleep(int ms) {
 #endif    // SX_PLATFORM_
 }
 
-void* sx_os_exec(const char* const* argv) {
+sx_pinfo sx_os_exec(const char* const* argv) {
 #if SX_PLATFORM_LINUX || SX_PLATFORM_HURD
     pid_t pid = fork();
 
@@ -223,7 +223,7 @@ void* sx_os_exec(const char* const* argv) {
         return NULL;
     }
 
-    return (void*)(uintptr_t)pid;
+    return (sx_pinfo) { .linux_pid = (uintptr_t)pid };
 #elif SX_PLATFORM_WINDOWS
     STARTUPINFOA si;
     sx_memset(&si, 0, sizeof(STARTUPINFOA));
@@ -237,21 +237,30 @@ void* sx_os_exec(const char* const* argv) {
         total += sx_strlen(argv[ii]) + 1;
     }
 
+    sx_assert(total <= 32768);
     char* temp = (char*)alloca(total);
+    sx_assert(temp);
     int   len = 0;
     for (int ii = 0; NULL != argv[ii]; ++ii) {
         len += sx_snprintf(&temp[len], sx_max(0, total - len), "%s ", argv[ii]);
     }
 
+    sx_pinfo pinfo;
+
     bool ok = !!CreateProcessA(argv[0], temp, NULL, NULL, false, 0, NULL, NULL, &si, &pi);
     if (ok) {
-        return pi.hProcess;
+        pinfo.win_process_handle = pi.hProcess;
+        pinfo.win_thread_handle = pi.hThread;
+    } else {
+        pinfo.win_process_handle = NULL;
+        pinfo.win_thread_handle = NULL;
     }
 
-    return NULL;
+    return pinfo;
 #else
     sx_unused(argv);
-    return NULL;
+    sx_assert(0 && "not implemented");
+    return {0};
 #endif    // SX_PLATFORM_
 }
 

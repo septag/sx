@@ -28,6 +28,14 @@ typedef struct sx_file_info {
     uint64_t     last_modified;    // time_t
 } sx_file_info;
 
+typedef struct sx_pinfo {
+    union {
+        uintptr_t linux_pid;
+        void*     win_process_handle;
+    };
+    void* win_thread_handle;
+} sx_pinfo;
+
 SX_API int sx_os_minstacksz();
 SX_API int sx_os_maxstacksz();
 SX_API int sx_os_pagesz();
@@ -40,10 +48,10 @@ SX_API void*       sx_os_dlsym(void* handle, const char* symbol);
 SX_API const char* sx_os_dlerr();
 SX_API int         sx_os_chdir(const char* path);
 SX_API void        sx_os_sleep(int ms);
-SX_API void*       sx_os_exec(const char* const* argv);
-SX_API bool        sx_os_copy(const char* src, const char* dest);
-SX_API bool        sx_os_rename(const char* src, const char* dest);
-SX_API bool        sx_os_del(const char* path, sx_file_type type);
+SX_API sx_pinfo sx_os_exec(const char* const* argv);
+SX_API bool     sx_os_copy(const char* src, const char* dest);
+SX_API bool     sx_os_rename(const char* src, const char* dest);
+SX_API bool     sx_os_del(const char* path, sx_file_type type);
 
 SX_API char* sx_os_path_pwd(char* dst, int size);
 SX_API char* sx_os_path_abspath(char* dst, int size, const char* path);
