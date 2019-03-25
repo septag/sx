@@ -202,7 +202,12 @@ elseif(APPLE)
     endif()
 endif()
 
-target_include_directories(sx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${COMPAT_DIR})
+include(GNUInstallDirs)
+
+target_include_directories(sx PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<BUILD_INTERFACE:${COMPAT_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 if (ANDROID)
     include(AndroidNdkModules)
@@ -221,4 +226,17 @@ if (SX_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+install(
+    TARGETS sx
+    EXPORT sx-config
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
+install(
+    EXPORT sx-config
+    NAMESPACE sx::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sx)
+
+install(
+    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/sx
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
