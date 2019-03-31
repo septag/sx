@@ -52,6 +52,7 @@ SX_API sx_pinfo sx_os_exec(const char* const* argv);
 SX_API bool     sx_os_copy(const char* src, const char* dest);
 SX_API bool     sx_os_rename(const char* src, const char* dest);
 SX_API bool     sx_os_del(const char* path, sx_file_type type);
+SX_API bool     sx_os_mkdir(const char* path);
 
 SX_API char* sx_os_path_pwd(char* dst, int size);
 SX_API char* sx_os_path_abspath(char* dst, int size, const char* path);
@@ -70,6 +71,7 @@ SX_API char* sx_os_path_relpath(char* dst, int size, const char* path,
 SX_API bool  sx_os_path_exists(const char* path);
 SX_API bool  sx_os_path_isfile(const char* path);
 SX_API bool  sx_os_path_isdir(const char* path);
+SX_API char* sx_os_path_exepath(char* dst, int size);
 
 SX_API sx_file_info sx_os_stat(const char* filepath);
 

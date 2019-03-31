@@ -37,10 +37,12 @@
 #        include <linux/limits.h>
 #        include <sys/sendfile.h>    // sendfile
 #        include <sys/syscall.h>
+#        include <sys/types.h>
 #    elif SX_PLATFORM_APPLE
 //      https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/sendfile.2.html
 #        include <copyfile.h>
 #        include <mach/mach.h>
+#        include <mach-o/dyld.h>    // _NSGetExecutablePath
 #    elif SX_PLATFORM_HURD
 #        include <pthread/pthread.h>
 #    elif SX_PLATFORM_BSD
@@ -294,7 +296,7 @@ bool sx_os_copy(const char* src, const char* dest) {
 }
 
 bool sx_os_rename(const char* src, const char* dest) {
-#if SX_COMPILER_MSVC
+#if SX_PLATFORM_WINDOWS
     return MoveFileExA(src, dest, MOVEFILE_WRITE_THROUGH | MOVEFILE_REPLACE_EXISTING) ? true
                                                                                       : false;
 #else
@@ -304,7 +306,7 @@ bool sx_os_rename(const char* src, const char* dest) {
 
 bool sx_os_del(const char* path, sx_file_type type) {
     sx_assert(type != SX_FILE_TYPE_INVALID);
-#if SX_COMPILER_MSVC
+#if SX_PLATFORM_WINDOWS
     if (type == SX_FILE_TYPE_REGULAR)
         return DeleteFileA(path) ? true : false;
     else
@@ -313,6 +315,33 @@ bool sx_os_del(const char* path, sx_file_type type) {
     return type == SX_FILE_TYPE_REGULAR ? (unlink(path) == 0) : (rmdir(path) == 0);
 #endif
 }
+
+bool sx_os_mkdir(const char* path) {
+#if SX_PLATFORM_WINDOWS
+    return CreateDirectoryA(path, NULL) == TRUE;
+#else
+    return mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+#endif
+}
+
+char* sx_os_path_exepath(char* dst, int size) {
+#if SX_PLATFORM_WINDOWS
+    GetModuleFileName(NULL, dst, size);
+    return dst;
+#elif SX_PLATFORM_LINUX || SX_PLATFORM_RPI
+    char proc_path[32];
+    sx_snprintf(proc_path, sizeof(proc_path), "/proc/%d/exe", getpid());
+    size_t bytes = readlink(proc_path, dst, size);
+    dst[bytes] = 0;
+    return dst;
+#elif SX_PLATFORM_OSX
+    _NSGetExecutablePath(dst, (uint32_t*)&size);
+    return dst;
+#else
+    sx_assert(0 && "not implemented");
+#endif
+}
+
 
 sx_file_info sx_os_stat(const char* filepath) {
     sx_assert(filepath);
@@ -434,8 +463,12 @@ char* sx_os_path_dirname(char* dst, int size, const char* path) {
         r = sx_strrchar(path, '\\');
     if (r) {
         int o = (int)(intptr_t)(r - path);
-        sx_strncpy(dst, size, path, o);
-    } else {
+        if (dst == path) {
+            dst[o] = '\0';
+        } else {
+            sx_strncpy(dst, size, path, o);
+        }
+    } else if (dst != path) {
         sx_strcpy(dst, size, path);
     }
     return dst;

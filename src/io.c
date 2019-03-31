@@ -88,13 +88,24 @@ bool sx_mem_grow(sx_mem_block** pmem, int size) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-void sx_mem_init_writer(sx_mem_writer* writer, sx_mem_block* mem) {
-    sx_assert(mem && mem->size > 0);
+void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int init_size) {
+    sx_assert(alloc);
+    if (init_size <= 0)
+        init_size = 4096;
 
-    writer->mem = mem;
-    writer->data = (uint8_t*)mem->data;
+    writer->mem = sx_mem_create_block(alloc, init_size, NULL, 0);
+    sx_assert(writer->mem);
+
+    writer->data = (uint8_t*)writer->mem->data;
     writer->pos = writer->top = 0;
-    writer->size = mem->size;
+    writer->size = writer->mem->size;
+}
+
+void sx_mem_release_writer(sx_mem_writer* writer) {
+    sx_assert(writer);
+    if (writer->mem) {
+        sx_mem_destroy_block(writer->mem);
+    }
 }
 
 int sx_mem_write(sx_mem_writer* writer, const void* data, int size) {

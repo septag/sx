@@ -18,13 +18,14 @@
 //                                          initialized with _ptr
 //              sx_define_mem_block_onstack creates and initializes memory block on stack
 //
-//      sx_mem_writer: Writes to an initialized memory block in streaming manner
-//              sx_init_writer              initializes the writer, assign a valid memory ptr
+//      sx_mem_writer: Writes to an initialized memory block for streamed writing
+//              sx_mem_init_writer          initializes the writer, allocates init_size as start
+//              sx_mem_release_writer       releases writer memory
 //              sx_mem_write                writes a piece of data to memory
 //              sx_mem_seekw                seeks inside the buffer
 //              sx_mem_write_var            helper macro to write single variables
 //
-//      sx_mem_reader: Reads from a pre-allocated memory in streaming manner
+//      sx_mem_reader: Reads from a pre-allocated memory for streamed reading
 //              sx_init_reader              initializes the read, data must be pre-allocated and
 //                                          alive during the read operations
 //              sx_mem_read                 reads a piece of data to memory
@@ -104,12 +105,15 @@ typedef struct sx_mem_writer {
     int64_t       size;
 } sx_mem_writer;
 
-SX_API void sx_mem_init_writer(sx_mem_writer* writer, sx_mem_block* mem);
+SX_API void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int init_size);
+SX_API void sx_mem_release_writer(sx_mem_writer* writer);
+
 SX_API int  sx_mem_write(sx_mem_writer* writer, const void* data, int size);
 SX_API int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset,
                             sx_whence whence sx_default(SX_WHENCE_CURRENT));
 
 #define sx_mem_write_var(w, v) sx_mem_write((w), &(v), sizeof(v))
+#define sx_mem_write_text(w, s) sx_mem_write((w), (s), sx_strlen(s))
 
 // sx_mem_reader
 typedef struct sx_mem_reader {

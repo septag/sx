@@ -10,6 +10,8 @@
 
 // Convert a randomized uint32_t value to a float value x in the range 0.0f <= x < 1.0f. Contributed
 // by Jonatan Hedborg
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wstrict-aliasing")
 static inline float sx__rng_float_normalized(uint32_t value) {
     uint32_t exponent = 127;
     uint32_t mantissa = value >> 9;
@@ -17,6 +19,7 @@ static inline float sx__rng_float_normalized(uint32_t value) {
     float    fresult = *(float*)(&result);
     return fresult - 1.0f;
 }
+SX_PRAGMA_DIAGNOSTIC_POP()
 
 static inline uint64_t sx__rng_avalanche64(uint64_t h) {
     h ^= h >> 33;

@@ -1303,6 +1303,14 @@ static inline sx_ivec2 sx_ivec2_sub(const sx_ivec2 _a, const sx_ivec2 _b) {
     return sx_ivec2i(_a.x - _b.x, _a.y - _b.y);
 }
 
+static inline sx_ivec2 sx_ivec2_min(const sx_ivec2 _a, const sx_ivec2 _b) {
+    return sx_ivec2i(sx_min(_a.x, _b.x), sx_min(_a.y, _b.y));
+}
+
+static inline sx_ivec2 sx_ivec2_max(const sx_ivec2 _a, const sx_ivec2 _b) {
+    return sx_ivec2i(sx_max(_a.x, _b.x), sx_max(_a.y, _b.y));
+}
+
 static inline sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _ymax) {
 #ifdef __cplusplus
     return { { _xmin, _ymin, _xmax, _ymax } };
@@ -1339,6 +1347,11 @@ static inline bool sx_rect_test_rect(const sx_rect rc1, const sx_rect rc2) {
     if (rc1.ymax < rc2.ymin || rc1.ymin > rc2.ymax)
         return false;
     return true;
+}
+
+static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt) {
+    rc->vmin = sx_vec2_min(rc->vmin, pt);
+    rc->vmax = sx_vec2_max(rc->vmax, pt);
 }
 
 static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax) {
@@ -1380,6 +1393,10 @@ static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2) {
     return true;
 }
 
+static inline void sx_irect_add_point(sx_irect* rc, const sx_ivec2 pt) {
+    rc->vmin = sx_ivec2_min(rc->vmin, pt);
+    rc->vmax = sx_ivec2_max(rc->vmax, pt);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // AABB
 static inline sx_aabb sx_aabbf(float xmin, float ymin, float zmin, float xmax, float ymax,
