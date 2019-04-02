@@ -43,6 +43,8 @@
 #        include <copyfile.h>
 #        include <mach/mach.h>
 #        include <mach-o/dyld.h>    // _NSGetExecutablePath
+#        include <sys/types.h>
+#        include <sys/sysctl.h>
 #    elif SX_PLATFORM_HURD
 #        include <pthread/pthread.h>
 #    elif SX_PLATFORM_BSD
@@ -598,9 +600,6 @@ char* sx_os_path_normpath(char* dst, int size, const char* path) {
 #endif
 }
 
-// https://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
-int apple__numcores();    // fwd: os.m
-
 int sx_os_numcores() {
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO sysinfo;
@@ -611,7 +610,16 @@ int sx_os_numcores() {
 #elif SX_PLATFORM_ANDROID
     return android_getCpuCount();
 #elif SX_PLATFORM_APPLE
-    return apple__numcores();
+    int ncpu;
+    size_t ncpu_len = sizeof(ncpu);
+    // hw.physicalcpu - The number of physical processors available in the current power management mode.
+    // hw.physicalcpu_max - The maximum number of physical processors that could be available this boot.
+    // hw.logicalcpu - The number of logical processors available in the current power management mode.
+    // hw.logicalcpu_max - The maximum number of logical processors that could be available this boot.
+    if (sysctlbyname("hw.logicalcpu", &ncpu, &ncpu_len, NULL, 0) == 0)
+        return ncpu;
+    return 1;
+
 #elif SX_PLATFORM_BSD
     int    ctlarg[2], ncpu;
     size_t len;
