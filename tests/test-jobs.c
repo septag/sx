@@ -99,17 +99,6 @@ int main(int argc, char* argv[]) {
         printf("\t%u\n", results[i]);
     }
 
-    // puts("Dispatching jobs ...");
-    // jhandle = sx_job_dispatch(ctx, jobs, 8, 0);
-    // // sx_os_sleep(1000);
-    // puts("Waiting ...");
-    // sx_job_wait_and_del(ctx, jhandle);
-
-    // puts("Results: ");
-    // for (int i = 0; i < 16; i++) {
-    //     printf("\t%u\n", results[i]);
-    // }
-
     sx_job_destroy_context(ctx, alloc);
     sx_os_getch();
     return 0;
