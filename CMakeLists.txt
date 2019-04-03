@@ -149,6 +149,9 @@ set(ASM_SOURCES "asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
+if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4) 
+    set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_OPTIONS /safeseh)
+endif()
 
 if (EMSCRIPTEN) 
     unset(ASM_SOURCES)
