@@ -31,6 +31,7 @@
 #    define WIN32_LEAN_AND_MEAN
 #    include <limits.h>
 #    include <windows.h>
+#    include <synchapi.h>
 #endif    // SX_PLATFORM_
 
 #include "sx/atomic.h"
@@ -57,9 +58,13 @@ typedef struct sx__sem_s {
 
 typedef struct sx__signal_s {
 #if SX_PLATFORM_WINDOWS
+#   if _WIN32_WINNT >= 0x0600
     CRITICAL_SECTION   mutex;
     CONDITION_VARIABLE cond;
     int                value;
+#   else
+    HANDLE             e;
+#   endif
 #elif SX_PLATFORM_POSIX
     pthread_mutex_t mutex;
     pthread_cond_t  cond;
@@ -493,28 +498,42 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs) {
 // https://github.com/mattiasgustavsson/libs/blob/master/thread.h
 void sx_signal_init(sx_signal* sig) {
     sx__signal* _sig = (sx__signal*)sig->data;
+#if _WIN32_WINNT >= 0x0600
     BOOL r = InitializeCriticalSectionAndSpinCount(&_sig->mutex, 32);
     sx_assert(r && "InitializeCriticalSectionAndSpinCount failed");
     sx_unused(r);
     InitializeConditionVariable(&_sig->cond);
     _sig->value = 0;
+#else
+    _sig->e = CreateEvent(NULL, FALSE, FALSE, NULL);
+    sx_assert(_sig->e && "CreateEvent failed");
+#endif
 }
 
 void sx_signal_release(sx_signal* sig) {
     sx__signal* _sig = (sx__signal*)sig->data;
+#if _WIN32_WINNT >= 0x0600
     DeleteCriticalSection(&_sig->mutex);
+#else
+    CloseHandle(_sig->e);
+#endif
 }
 
 void sx_signal_raise(sx_signal* sig) {
     sx__signal* _sig = (sx__signal*)sig->data;
+#if _WIN32_WINNT >= 0x0600
     EnterCriticalSection(&_sig->mutex);
     _sig->value = 1;
     LeaveCriticalSection(&_sig->mutex);
     WakeConditionVariable(&_sig->cond);
+#else
+    SetEvent(_sig->e);
+#endif
 }
 
 bool sx_signal_wait(sx_signal* sig, int msecs) {
     sx__signal* _sig = (sx__signal*)sig->data;
+#if _WIN32_WINNT >= 0x0600
     bool timed_out = false;
     EnterCriticalSection(&_sig->mutex);
     DWORD _msecs = (msecs < 0) ? INFINITE : msecs;
@@ -529,6 +548,9 @@ bool sx_signal_wait(sx_signal* sig, int msecs) {
         _sig->value = 0;
     LeaveCriticalSection(&_sig->mutex);
     return !timed_out;
+#else
+    return WaitForSingleObject(_sig->e, msecs < 0 ? INFINITE : msecs) == WAIT_OBJECT_0;
+#endif
 }
 
 // Thread
