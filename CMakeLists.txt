@@ -102,19 +102,12 @@ if (EMSCRIPTEN)
     list(REMOVE_ITEM SOURCE_FILES include/sx/fiber.h)
 endif()
 
-# if (APPLE)
-#     list(APPEND SOURCE_FILES src/os.m)
-#     set(OBJC_SOURCES "src/os.m")
-#     set_source_files_properties(${OBJC_SOURCES} PROPERTIES LANGUAGE C
-# endif()
-
 ####################################################################################################
 # Assembly files for fcontext
 if (APPLE)
     # Apple comboned, include based on arch
     set(CPU_ARCH "combined")
-    set(ASM_EXT "all_macho_gas.S")
-    # set(ASM_EXT "sysv_macho_gas.S")
+    set(ASM_EXT "all_macho_gas.S")    
 elseif (ANDROID OR RPI)
     # Android (Arm/x86_64/Arm64)
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR RPI)

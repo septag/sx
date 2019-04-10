@@ -420,7 +420,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
     if (!tdata) {
         sx_out_of_memory();
         return NULL;
-    }
+    }    
     sx_memset(tdata, 0x0, sizeof(sx__job_thread_data));
     tdata->tid = tid;
     tdata->tags = 0xffffffff;
@@ -476,9 +476,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
     sx_memset(ctx, 0x0, sizeof(sx_job_context));
 
     ctx->alloc = alloc;
-    ctx->num_threads = desc->num_threads >= 0
-        ? desc->num_threads
-        : (sx_os_numcores() - 1);    
+    ctx->num_threads = desc->num_threads >= 0 ? desc->num_threads : (sx_os_numcores() - 1);
     ctx->thread_tls = sx_tls_create();
     ctx->stack_sz = desc->fiber_stack_sz > 0 ? desc->fiber_stack_sz : DEFAULT_FIBER_STACK_SIZE;
     ctx->thread_init_cb = desc->thread_init_cb;
