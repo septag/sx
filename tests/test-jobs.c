@@ -48,13 +48,8 @@ static void job_fib_fn(int index, void* user) {
 int main(int argc, char* argv[]) {
     const sx_alloc* alloc = sx_alloc_malloc();
     sx_job_context* ctx = sx_job_create_context(
-        alloc,
-        &(sx_job_context_desc){
-            .num_threads = -1,
-            .thread_init_cb = thread_init,
-            .thread_shutdown_cb = thread_shutdown
-        }
-    );
+        alloc, &(sx_job_context_desc){ .thread_init_cb = thread_init,
+                                       .thread_shutdown_cb = thread_shutdown });
     if (!ctx) {
         puts("Error: sx_job_create_context failed!");
         return -1;
@@ -85,7 +80,7 @@ int main(int argc, char* argv[]) {
     };
 
     puts("Dispatching jobs ...");
-    sx_job_t jhandle = sx_job_dispatch(ctx, jobs, 3, 0);    
+    sx_job_t jhandle = sx_job_dispatch(ctx, jobs, 3, 0);
 
     puts("Waiting ...");
     sx_job_wait_and_del(ctx, jhandle);
