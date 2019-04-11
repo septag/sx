@@ -359,7 +359,8 @@ static inline SX_CONSTFN float sx_ceil(float _f) {
 }
 
 static inline SX_CONSTFN float sx_lerp(float _a, float _b, float _t) {
-    return _a + (_b - _a) * _t;
+    // this version is more precise than: _a + (_b - _a) * _t
+    return (1.0f - _t) * _a + _t * _b;
 }
 
 static inline SX_CONSTFN float sx_sign(float _a) {
@@ -1354,6 +1355,25 @@ static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt) {
     rc->vmax = sx_vec2_max(rc->vmax, pt);
 }
 
+/*
+ *   2               3
+ *   -----------------
+ *   |               |
+ *   |               |
+ *   |               |
+ *   |               |
+ *   |               |
+ *   -----------------
+ *   0               1
+ */
+static inline sx_vec2 sx_rect_corner(const sx_rect* rc, int index) {
+    return sx_vec2f((index & 1) ? rc->xmax : rc->xmin, (index & 2) ? rc->ymax : rc->ymin);
+}
+
+static inline void sx_rect_corners(sx_vec2 corners[4], const sx_rect* rc) {
+    for (int i = 0; i < 4; i++) corners[0] = sx_rect_corner(rc, i);
+}
+
 static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax) {
 #ifdef __cplusplus
     return { { _xmin, _ymin, _xmax, _ymax } };
@@ -1397,6 +1417,7 @@ static inline void sx_irect_add_point(sx_irect* rc, const sx_ivec2 pt) {
     rc->vmin = sx_ivec2_min(rc->vmin, pt);
     rc->vmax = sx_ivec2_max(rc->vmax, pt);
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // AABB
 static inline sx_aabb sx_aabbf(float xmin, float ymin, float zmin, float xmax, float ymax,

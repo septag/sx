@@ -67,7 +67,7 @@
 #endif
 
 #ifndef SX_CONFIG_HANDLE_GEN_BITS
-#   define SX_CONFIG_HANDLE_GEN_BITS 16
+#   define SX_CONFIG_HANDLE_GEN_BITS 14
 #endif
 
 #ifndef SX_CONFIG_SIMD_DISABLE

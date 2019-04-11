@@ -50,6 +50,9 @@
 //                                          not call sx_hashtbl_destroy and free the pointers
 //      sx_hashtbl_valid_capacity    returns a valid/corrected hash-table capacity from the input,
 //                                   use this to pass a valid capacity to sx_hashtbl_init
+//      sx_hashtbl_fixed_size        returns size of a fixed size hash-table buffers in bytes
+//                                   can be used to allocate internal buffers manually for use in
+//                                   sx_hashtbl_init function
 //      sx_hashtbl_add               adds a key to the table
 //      sx_hashtbl_remove            removes a key from table
 //      sx_hashtbl_full              returns true if table is full
@@ -127,6 +130,7 @@ SX_API bool        sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc);
 
 SX_API void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr);
 SX_API int  sx_hashtbl_valid_capacity(int capacity);
+SX_API int  sx_hashtbl_fixed_size(int capacity);
 
 SX_API int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
 SX_API int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
