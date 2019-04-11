@@ -10,7 +10,6 @@
 #define MAX_FIBERS 100
 #define STACK_SIZE 128 * 1024
 
-static sx_rng          g_rng;
 static sx_job_context* g_ctx = NULL;
 
 static void thread_init(sx_job_context* ctx, int thread_index, uint32_t thread_id, void* user) {
@@ -37,18 +36,16 @@ static void job_fib_fn(int index, void* user) {
         b = f;
     }
 
-    const sx_job_desc jobs[] = { { job_wait_fn, NULL, SX_JOB_PRIORITY_HIGH },
-                                 { job_wait_fn, NULL, SX_JOB_PRIORITY_HIGH } };
-    // if (sx_rng_gen_irange(&g_rng, 1, 100) < 50) {
+    const sx_job_desc jobs[] = { { job_wait_fn, user, SX_JOB_PRIORITY_HIGH },
+                                 { job_wait_fn, user, SX_JOB_PRIORITY_HIGH } };
+
     sx_job_t job = sx_job_dispatch(g_ctx, jobs, 1, 0);
     sx_job_wait_and_del(g_ctx, job);
-    //}
 
     *((uint32_t*)user) = b;
 }
 
 int main(int argc, char* argv[]) {
-    sx_rng_seed(&g_rng, (uint32_t)time(NULL));
     const sx_alloc* alloc = sx_alloc_malloc();
     sx_job_context* ctx = sx_job_create_context(
         alloc, &(sx_job_context_desc){ .thread_init_cb = thread_init,
@@ -84,7 +81,6 @@ int main(int argc, char* argv[]) {
 
     puts("Dispatching jobs ...");
     sx_job_t jhandle = sx_job_dispatch(ctx, jobs, 3, 0);
-    // sx_os_sleep(1000);
 
     puts("Waiting ...");
     sx_job_wait_and_del(ctx, jhandle);
