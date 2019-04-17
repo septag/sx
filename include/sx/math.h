@@ -1218,10 +1218,16 @@ static inline sx_mat3 sx_mat3_scale(float sx, float sy) {
     return sx_mat3f(sx, 0.0f, 0.0f, 0.0f, sy, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_SRT(float _sx, float _sy, float _angle, float _tx, float _ty) {
-    float c = sx_cos(_angle);
-    float s = sx_sin(_angle);
-    return sx_mat3f(_sx * c, -_sy * s, _tx, _sx * s, _sy * c, _ty, 0.0f, 0.0f, 1.0f);
+static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, float ty) {
+    // scale -> rotate -> translate
+    // result of T(translate) * R(rotate) * S(scale)
+    float c = sx_cos(angle);
+    float s = sx_sin(angle);
+    // clang-format off
+    return sx_mat3f(sx*c,  -sy*s,  tx, 
+                    sx*s,   sy*c,  ty, 
+                    0.0f,   0.0f,  1.0f);
+    // clang-format on
 }
 static inline float sx_vec2_dot(const sx_vec2 _a, const sx_vec2 _b) {
     return _a.x * _b.x + _a.y * _b.y;
@@ -1374,6 +1380,14 @@ static inline void sx_rect_corners(sx_vec2 corners[4], const sx_rect* rc) {
     for (int i = 0; i < 4; i++) corners[0] = sx_rect_corner(rc, i);
 }
 
+static inline float sx_rect_width(const sx_rect rc) {
+    return rc.xmax - rc.xmin;
+}
+
+static inline float sx_rect_height(const sx_rect rc) {
+    return rc.ymax - rc.ymin;
+}
+
 static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax) {
 #ifdef __cplusplus
     return { { _xmin, _ymin, _xmax, _ymax } };
@@ -1416,6 +1430,33 @@ static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2) {
 static inline void sx_irect_add_point(sx_irect* rc, const sx_ivec2 pt) {
     rc->vmin = sx_ivec2_min(rc->vmin, pt);
     rc->vmax = sx_ivec2_max(rc->vmax, pt);
+}
+
+static inline int sx_irect_width(const sx_irect rc) {
+    return rc.xmax - rc.xmin;
+}
+
+static inline int sx_irect_height(const sx_irect rc) {
+    return rc.ymax - rc.ymin;
+}
+
+/*
+ *   2               3 (max)
+ *   -----------------
+ *   |               |
+ *   |               |
+ *   |               |
+ *   |               |
+ *   |               |
+ *   -----------------
+ *   0 (min)         1
+ */
+static inline sx_ivec2 sx_irect_corner(const sx_irect* rc, int index) {
+    return sx_ivec2i((index & 1) ? rc->xmax : rc->xmin, (index & 2) ? rc->ymax : rc->ymin);
+}
+
+static inline void sx_irect_corners(sx_ivec2 corners[4], const sx_irect* rc) {
+    for (int i = 0; i < 4; i++) corners[0] = sx_irect_corner(rc, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

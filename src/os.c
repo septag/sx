@@ -531,6 +531,7 @@ char* sx_os_path_ext(char* dst, int size, const char* path) {
 }
 
 char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b) {
+    sx_assert(dst != path_b);
     int len = sx_strlen(path_a);
     if (dst != path_a) {
         if (len > 0 && path_a[len - 1] == k_path_sep[0]) {
