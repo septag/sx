@@ -320,6 +320,11 @@ void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* val
 #endif
 }
 
+int sx_hashtbl_fixed_size(int capacity) {
+    int cap = sx_hashtbl_valid_capacity(capacity);
+    return cap * (sizeof(uint32_t) + sizeof(int));
+}
+
 int sx_hashtbl_valid_capacity(int capacity) {
     return sx__nearest_pow2(capacity);
 }
