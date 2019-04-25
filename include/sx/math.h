@@ -455,6 +455,17 @@ static inline SX_CONSTFN float sx_wrap(float _a, float _wrap) {
     return result;
 }
 
+static inline SX_CONSTFN float sx_wrap_range(float x, float fmin, float fmax) {
+    return sx_mod(x, fmax - fmin) + fmin;
+}
+
+static inline SX_CONSTFN int sx_iwrap_range(int x, int imin, int imax) {
+    int range = imax - imin + 1;
+    if (x < imin) 
+        x += range * ((imin - x) / range + 1);
+    return imin + (x - imin) % range;
+}
+
 // Returns 0 if _a < _edge, else 1
 static inline SX_CONSTFN float sx_step(float _a, float _edge) {
     return _a < _edge ? 0.0f : 1.0f;
@@ -630,6 +641,11 @@ static inline sx_color sx_colorn(unsigned int _n) {
 #else
     return (sx_color){ .n = _n };
 #endif
+}
+
+static inline sx_vec4 sx_color_vec4(sx_color c) {
+    float rcp = 1.0f / 255.0f;
+    return sx_vec4f((float)c.r*rcp, (float)c.g*rcp, (float)c.b*rcp, (float)c.a*rcp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
