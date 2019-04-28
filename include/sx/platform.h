@@ -2,10 +2,13 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
+// parts of this code is copied from bx library: https://github.com/bkaradzic/bx
+// Copyright 2011-2019 Branimir Karadzic. All rights reserved.
+// License: https://github.com/bkaradzic/bx#license-bsd-2-clause
+//
 // platform.h - v1.0 - Platform preprocessor definitions
 //					   Contains processor/arch/compiler/os definitions for different platforms
 //
-// Stole from: https://github.com/bkaradzic/bx/blob/master/include/bx/platform.h
 // Another useful reference: https://sourceforge.net/p/predef/wiki/Home/
 //
 #pragma once

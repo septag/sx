@@ -2,6 +2,10 @@
 // Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
+// parts of this code is copied from bx library: https://github.com/bkaradzic/bx
+// Copyright 2011-2019 Branimir Karadzic. All rights reserved.
+// License: https://github.com/bkaradzic/bx#license-bsd-2-clause
+//
 #include "sx/math.h"
 
 #if SX_CONFIG_STDMATH
