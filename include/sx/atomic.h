@@ -165,6 +165,9 @@ SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b) {
 #endif
 }
 
+// common use:
+// if (sx_atomic_cas(&var, y, x) == x)
+// means: if I'm the one changing var from x to y
 SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand) {
 #if SX_PLATFORM_WINDOWS
     return _InterlockedCompareExchange((long volatile*)a, xchg, comparand);
@@ -264,39 +267,41 @@ typedef sx_atomic_int sx_atomic_size;
     (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
 #    include <stdatomic.h>
 typedef atomic_flag  sx_lock_t;
+SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock) {
+    return *lock || atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
+}
+
 SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {
-    while (atomic_flag_test_and_set_explicit(lock, memory_order_acquire)) sx_yield_cpu();
+    while (sx_trylock(lock)) {
+        sx_yield_cpu();
+    }
 }
 
 SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock) {
     atomic_flag_clear_explicit(lock, memory_order_release);
 }
-
-SX_FORCE_INLINE void sx_trylock(sx_lock_t* lock) {
-    atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
-}
 #else
 typedef sx_atomic_int sx_lock_t;
 SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock) {
-#    if SX_PLATFORM_WINDOWS
-    sx_compiler_barrier();
-    *lock = 0;
-#    else
+#   if SX_PLATFORM_WINDOWS
+    sx_atomic_xchg(lock, 0);
+#   else
     __sync_lock_release(lock);
-#    endif
+#   endif
 }
 
 SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock) {
-#    if SX_PLATFORM_WINDOWS
-    int r = sx_atomic_xchg(lock, 1);
-    sx_compiler_barrier();
-    return r;
-#    else
-    return __sync_lock_test_and_set(lock, 1);
-#    endif
+#   if SX_PLATFORM_WINDOWS
+    return *lock || sx_atomic_xchg(lock, 1);
+#   else
+    return *lock || __sync_lock_test_and_set(lock, 1);
+#   endif
 }
 
 SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {
-    while (sx_trylock(lock)) sx_yield_cpu();
+    while (sx_trylock(lock)) {
+        sx_yield_cpu();
+    }
 }
+
 #endif    // SX_COMPILER_GCC || SX_COMPILER_CLANG

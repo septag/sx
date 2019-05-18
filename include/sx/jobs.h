@@ -68,6 +68,9 @@
 //                                     better call this inside `sx_job_thread_init_cb` callback
 //                                     function. See below for more details on the concept of Tags
 //
+//      sx_job_thread_index         Get current working thread's index (0..num_workers)
+//      sx_job_thread_id            Get current working thread's Os Id
+//
 // clang-format off
 //  Tags (Advanced):
 //      The concept is that every worker thread can be assigned a tag (which is a uint32_t bitset), and by default, every thread's tag is 0xffffffff
@@ -133,3 +136,6 @@ SX_API void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
 SX_API bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
 SX_API int      sx_job_num_worker_threads(sx_job_context* ctx);
 SX_API void     sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);
+
+SX_API int sx_job_thread_index(sx_job_context* ctx);
+SX_API unsigned int sx_job_thread_id(sx_job_context* ctx);

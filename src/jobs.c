@@ -42,6 +42,7 @@ typedef struct sx__job_thread_data {
     sx__job*       cur_job;
     sx_fiber_stack selector_stack;
     sx_fiber_t     selector_fiber;
+    int            thread_index;
     uint32_t       tid;
     uint32_t       tags;
     bool           main_thrd;
@@ -413,15 +414,16 @@ bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job) {
     return false;
 }
 
-static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t tid,
+static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t tid, int index,
                                                  bool main_thrd) {
     sx__job_thread_data* tdata =
         (sx__job_thread_data*)sx_malloc(alloc, sizeof(sx__job_thread_data));
     if (!tdata) {
         sx_out_of_memory();
         return NULL;
-    }    
+    }
     sx_memset(tdata, 0x0, sizeof(sx__job_thread_data));
+    tdata->thread_index = index;
     tdata->tid = tid;
     tdata->tags = 0xffffffff;
     tdata->main_thrd = main_thrd;
@@ -445,7 +447,7 @@ static int sx__job_thread_fn(void* user1, void* user2) {
     uint32_t thread_id = sx_thread_tid();
 
     // Create thread data
-    sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, false);
+    sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, index + 1, false);
     if (!tdata) {
         sx_assert(tdata && "ThreadData create failed!");
         return -1;
@@ -486,7 +488,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
 
     sx_semaphore_init(&ctx->sem);
 
-    sx__job_thread_data* main_tdata = sx__job_create_tdata(alloc, sx_thread_tid(), true);
+    sx__job_thread_data* main_tdata = sx__job_create_tdata(alloc, sx_thread_tid(), 0, true);
     if (!main_tdata) {
         sx_free(alloc, ctx);
         return NULL;
@@ -556,4 +558,16 @@ void sx_job_set_current_thread_tags(sx_job_context* ctx, uint32_t tags) {
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
     sx_assert(tdata);
     tdata->tags = tags;
+}
+
+int sx_job_thread_index(sx_job_context* ctx) {
+    sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
+    sx_assert(tdata);
+    return tdata->thread_index;
+}
+
+unsigned int sx_job_thread_id(sx_job_context* ctx) {
+    sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
+    sx_assert(tdata);
+    return tdata->tid;
 }

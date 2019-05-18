@@ -18,7 +18,7 @@
 // static_assert doesn't do anything in MSVC + C compiler, because we just don't have it !
 #    ifndef static_assert
 #        if SX_COMPILER_MSVC
-#            define static_assert(_e, _msg)
+#            define static_assert(_e, _msg) 
 #        else
 #            define static_assert(_e, _msg) _Static_assert(_e, _msg)
 #        endif
@@ -48,22 +48,22 @@ SX_API void sx__break_program(const char* text);
 
 #ifndef sx_memset
 #    include <string.h>    // memset
-#    define sx_memset(_dst, _n, _sz) memset(_dst, _n, _sz)
+#    define sx_memset(_dst, _n, _sz) memset((_dst), (_n), (_sz))
 #endif
 
 #ifndef sx_memcpy
 #    include <string.h>    // memcpy
-#    define sx_memcpy(_dst, _src, _n) memcpy(_dst, _src, _n)
+#    define sx_memcpy(_dst, _src, _n) memcpy((_dst), (_src), (_n))
 #endif
 
 #ifndef sx_memmove
 #    include <string.h>    // memmove
-#    define sx_memmove(_dst, _src, _n) memmove(_dst, _src, _n)
+#    define sx_memmove(_dst, _src, _n) memmove((_dst), (_src), (_n))
 #endif
 
 #ifndef sx_memcmp
 #    include <string.h>    // memcmp
-#    define sx_memcmp(_p1, _p2, _n) memcmp(_p1, _p2, _n)
+#    define sx_memcmp(_p1, _p2, _n) memcmp((_p1), (_p2), (_n))
 #endif
 
 #define sx_swap(a, b, _type) \
