@@ -15,40 +15,40 @@ Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir K
 
 This library currently contains these functionalities (listed by header files):
 
-- [allocator.h](https://github.com/septag/sx/blob/master/include/sx/allocator.h): basic memory allocation functions and default heap/leak_check allocators. 
-- [array.h](https://github.com/septag/sx/blob/master/include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
-- [atomic.h](https://github.com/septag/sx/blob/master/include/sx/atomic.h): Set of portable atomic types and functions like CAS/Exchange/Incr/etc. plus a minimal spinlock implementation.
-- [cmdline.h](https://github.com/septag/sx/blob/master/include/sx/cmdline.h): wrapper over [getopt](https://github.com/wc-duck/getopt) - getopt command line parser
-- [fiber.h](https://github.com/septag/sx/blob/master/include/sx/fiber.h): Portable fibers and coroutines, Assembly backend implementation taken from _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
+- [allocator.h](include/sx/allocator.h): basic memory allocation functions and default heap/leak_check allocators. 
+- [array.h](include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
+- [atomic.h](include/sx/atomic.h): Set of portable atomic types and functions like CAS/Exchange/Incr/etc. plus a minimal spinlock implementation.
+- [cmdline.h](include/sx/cmdline.h): wrapper over [getopt](https://github.com/wc-duck/getopt) - getopt command line parser
+- [fiber.h](include/sx/fiber.h): Portable fibers and coroutines, Assembly backend implementation taken from _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
 	- Includes low-level functions for fibers (_deboostified_ boost.context)
 	- Higher level coroutines (fiber-pool with streamlined coroutine update) that emulates a smiliar behaviour to unity's coroutines
-- [jobs.h](https://github.com/septag/sx/blob/master/include/sx/jobs.h): Fiber based task scheduler. Proof of concept for [Christian Gyrling 2015 GDC Talk](http://gdcvault.com/play/1022186/Parallelizing-the-Naughty-Dog-Engine)
+- [jobs.h](include/sx/jobs.h): Fiber based task scheduler. Proof of concept for [Christian Gyrling 2015 GDC Talk](http://gdcvault.com/play/1022186/Parallelizing-the-Naughty-Dog-Engine)
 	- Very fast low-level (assembly cpu state switch) fibers
 	- Wait on job dependencies without task chains or context switches
 	- Fixed thread pool
 	- Job priority support
 	- Overriadable thread init and shutdown. To initialize your own stuff on each thread
 	- Support for tags: each worker thread can be tagged to handle specific class of jobs
-- [handle.h](https://github.com/septag/sx/blob/master/include/sx/handle.h): Handle pool. sparse/dense handle allocator to address array items with handles instead of pointers. With generation counters for validating dead handles.
-- [hash.h](https://github.com/septag/sx/blob/master/include/sx/hash.h):  Some nice hash functions (xxhash/crc32/fnv1a) and a fast fibonacci multiplicative hash-table
-- [ini.h](https://github.com/septag/sx/blob/master/include/sx/ini.h): INI file encoder/decoder. wrapper over [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h)
-- [io.h](https://github.com/septag/sx/blob/master/include/sx/io.h): Read and write to/from memory and file streams
-- [lin-alloc.h](https://github.com/septag/sx/blob/master/include/sx/lin-alloc.h): Generic linear allocator
-- [platform.h](https://github.com/septag/sx/blob/master/include/sx/platform.h): Platform and compiler detection macros, taken from [bx](https://github.com/bkaradzic/bx)
-- [pool.h](https://github.com/septag/sx/blob/master/include/sx/pool.h): Self-contained pool allocator
-- [rng.h](https://github.com/septag/sx/blob/master/include/sx/rng.h): Random number generators. Currently only implementation is PCG.
-- [stack-alloc.h](https://github.com/septag/sx/blob/master/include/sx/stack-alloc.h): Generic linear stack based allocator
-- [string.h](https://github.com/septag/sx/blob/master/include/sx/string.h): Useful C-style string functions including Sean barret's [stb_printf](http://github.com/nothings/stb) implementation. Plus string pool implementation from [mattias](https://github.com/mattiasgustavsson/libs/blob/master/strpool.h)
-- [threads.h](https://github.com/septag/sx/blob/master/include/sx/threads.h): Portable threading primitives:
+- [handle.h](include/sx/handle.h): Handle pool. sparse/dense handle allocator to address array items with handles instead of pointers. With generation counters for validating dead handles.
+- [hash.h](include/sx/hash.h):  Some nice hash functions (xxhash/crc32/fnv1a) and a fast fibonacci multiplicative hash-table
+- [ini.h](include/sx/ini.h): INI file encoder/decoder. wrapper over [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h)
+- [io.h](include/sx/io.h): Read and write to/from memory and file streams
+- [lin-alloc.h](include/sx/lin-alloc.h): Generic linear allocator
+- [platform.h](include/sx/platform.h): Platform and compiler detection macros, taken from [bx](https://github.com/bkaradzic/bx)
+- [pool.h](include/sx/pool.h): Self-contained pool allocator
+- [rng.h](include/sx/rng.h): Random number generators. Currently only implementation is PCG.
+- [stack-alloc.h](include/sx/stack-alloc.h): Generic linear stack based allocator
+- [string.h](include/sx/string.h): Useful C-style string functions including Sean barret's [stb_printf](http://github.com/nothings/stb) implementation. Plus string pool implementation from [mattias](https://github.com/mattiasgustavsson/libs/blob/master/strpool.h)
+- [threads.h](include/sx/threads.h): Portable threading primitives:
 	- Thread
 	- Tls (Thread local storage)
 	- Mutex
 	- Semaphore
 	- Signal
 	- Self-contained single-producer-single-consumer lockless queue
-- [timer.h](https://github.com/septag/sx/blob/master/include/sx/timer.h): Portable high-res timer, wrapper over [sokol_time](https://github.com/floooh/sokol)
-- [virtual-alloc.h](https://github.com/septag/sx/blob/master/include/sx/virtual-alloc.h): Portable virtual memory allocator and low-level portable virtual memory management functions
-- [math.h](https://github.com/septag/sx/blob/master/include/sx/math.h): 
+- [timer.h](include/sx/timer.h): Portable high-res timer, wrapper over [sokol_time](https://github.com/floooh/sokol)
+- [virtual-alloc.h](include/sx/virtual-alloc.h): Portable virtual memory allocator and low-level portable virtual memory management functions
+- [math.h](include/sx/math.h): 
 	- Standard floating-point
 	- Vector (2,3,4)
 	- Matrix (3x3, 4x4)
@@ -56,14 +56,15 @@ This library currently contains these functionalities (listed by header files):
 	- Easing functions
 	- AABB
 	- Color (RGBA 4 unsigned bytes)
-- [os.h](https://github.com/septag/sx/blob/master/include/sx/os.h): Common portable OS related routines
+- [os.h](include/sx/os.h): Common portable OS related routines
 	- Basic system information like available memory and cpu cores count
 	- Shared library management
 	- Basic file operations
 	- Path manipulation functions (c-string)
-- [bheap.h](https://github.com/septag/sx/blob/master/include/sx/bheap.h): Binary heap implementation
-- [tlsf-alloc.h](https://github.com/septag/sx/blob/master/include/sx/tlsf-alloc.h): Tlsf (Two-Level Segregated Fit memory) memory allocator. Wrapper over [Mathew Conte's implementation](http://tlsf.baisoku.org)
-- [simd.h](https://github.com/septag/sx/blob/master/include/sx/simd.h): portable 128bit simd math intrinsics. currently there are two implementations: reference and SSE. ARM Neon will be added soon.
+- [bheap.h](include/sx/bheap.h): Binary heap implementation
+- [tlsf-alloc.h](include/sx/tlsf-alloc.h): Tlsf (Two-Level Segregated Fit memory) memory allocator. Wrapper over [Mathew Conte's implementation](http://tlsf.baisoku.org)
+- [simd.h](include/sx/simd.h): portable 128bit simd math intrinsics. currently there are two implementations: reference and SSE. ARM Neon will be added soon.
+- [ringbuffer.h](include/sx/ringbuffer.h): Basic ring-buffer (circular buffer)
 
 ## Build
 ### Current supported platforms

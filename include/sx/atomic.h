@@ -268,7 +268,7 @@ typedef sx_atomic_int sx_atomic_size;
 #    include <stdatomic.h>
 typedef atomic_flag  sx_lock_t;
 SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock) {
-    return *lock || atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
+    return atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
 }
 
 SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {
