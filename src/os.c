@@ -379,7 +379,7 @@ sx_file_info sx_os_stat(const char* filepath) {
     else if (0 != (st.st_mode & S_IFDIR))
         info.type = SX_FILE_TYPE_DIRECTORY;
     info.size = st.st_size;
-#    if SX_PLATFORM_OSX
+#    if SX_PLATFORM_OSX || SX_PLATFORM_IOS
     info.last_modified = st.st_mtimespec.tv_sec;
 #    else
     info.last_modified = st.st_mtim.tv_sec;
