@@ -36,6 +36,9 @@
 //             resets the array count to zero, but does not resize memory
 //         sx_array_reserve(sx_alloc* alloc, TYPE* a, int n)
 //             reserves N elements in array without incrementing the count
+//         sx_array_push_byindex
+//              receives index, if index is within the array, sets the array element to the value
+//              if not, pushes the element into the array
 // Usage:
 //       NOTE: include "allocator.h" before array.h to prevent warnings and errors
 //       SomeStruct *arr = NULL;
@@ -81,6 +84,13 @@ typedef struct sx_alloc sx_alloc;
     } while (0)
 #define sx_array_clear(a) ((a) ? (sx__sbn(a) = 0) : 0)
 #define sx_array_reserve(_alloc, a, n) (sx_array_add(_alloc, a, n), sx_array_clear(a))
+#define sx_array_push_byindex(_alloc, a, v, _index) \
+    do {                                            \
+        if ((_index) >= sx_array_count(a))          \
+            sx_array_push(_alloc, a, v);            \
+        else                                        \
+            (a)[(_index)] = (v);                    \
+    } while (0)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal

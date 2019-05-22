@@ -92,7 +92,7 @@ SX_API const uint32_t k__handle_gen_mask;
 SX_API const uint32_t k__handle_gen_shift;
 
 #define sx_handle_index(_h) (int)((_h)&k__handle_index_mask)
-#define sx_handle_gen(_h) (int)(((_h) >> SX_CONFIG_HANDLE_GEN_BITS) & k__handle_gen_shift)
+#define sx_handle_gen(_h) (int)(((_h) >> k__handle_gen_shift) & k__handle_gen_mask)
 #define sx__handle_make(_g, _idx)                                             \
     (uint32_t)((((uint32_t)(_g)&k__handle_gen_mask) << k__handle_gen_shift) | \
                ((uint32_t)(_idx)&k__handle_index_mask))
