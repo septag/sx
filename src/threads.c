@@ -212,7 +212,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     // Ensure that thread callback is running
     sx_semaphore_wait(&thrd->sem, -1);
 
-#    if !SX_PALTFORM_APPLE
+#    if !SX_PLATFORM_APPLE
     if (name)
         sx_thread_setname(thrd, name);
 #    endif
