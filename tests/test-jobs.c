@@ -41,7 +41,10 @@ static void job_fib_fn(int index, void* user) {
 
     sx_job_t job = sx_job_dispatch(g_ctx, jobs, 1, 0);
     sx_job_wait_and_del(g_ctx, job);
-
+    
+    job = sx_job_dispatch(g_ctx, jobs, 1, 0);
+    sx_job_wait_and_del(g_ctx, job);
+    
     *((uint32_t*)user) = b;
 }
 
@@ -49,7 +52,8 @@ int main(int argc, char* argv[]) {
     const sx_alloc* alloc = sx_alloc_malloc();
     sx_job_context* ctx = sx_job_create_context(
         alloc, &(sx_job_context_desc){ .thread_init_cb = thread_init,
-                                       .thread_shutdown_cb = thread_shutdown });
+                                       .thread_shutdown_cb = thread_shutdown
+        });
     if (!ctx) {
         puts("Error: sx_job_create_context failed!");
         return -1;
