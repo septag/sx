@@ -1,10 +1,11 @@
+#include "sx/allocator.h"
 #include "sx/fiber.h"
 #include "sx/os.h"
 #include "sx/timer.h"
-#include "sx/allocator.h"
 #include <stdio.h>
 
-void fiber1_fn(sx_fiber_transfer transfer) {
+void fiber1_fn(sx_fiber_transfer transfer)
+{
     puts("Fiber1");
     sx_fiber_switch(transfer.from, transfer.user);    // Get back to where fiber1 is switched
     puts("Fiber1 - End");
@@ -13,7 +14,8 @@ void fiber1_fn(sx_fiber_transfer transfer) {
         transfer.user);    // Always put this to return to caller at the end of the callback
 }
 
-sx_coro_declare(wait_test) {
+sx_coro_declare(wait_test)
+{
     sx_coro_context* ctx = sx_coro_userdata();
     puts("fiber_wait_fn: Start");
 
@@ -22,10 +24,11 @@ sx_coro_declare(wait_test) {
     puts("fiber_wait_fn: Continue");
 
     puts("fiber_wait_fn: End");
-    sx_coro_end(ctx);   // Always call this !
+    sx_coro_end(ctx);    // Always call this !
 }
 
-sx_coro_declare(yield_test) {
+sx_coro_declare(yield_test)
+{
     sx_coro_context* ctx = sx_coro_userdata();
     puts("fiber_pass_fn: Start");
 
@@ -41,7 +44,8 @@ sx_coro_declare(yield_test) {
     sx_coro_end(ctx);    // Always call this !
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     const sx_alloc* alloc = sx_alloc_malloc();
 
     puts("---------------------");
@@ -49,7 +53,7 @@ int main(int argc, char* argv[]) {
     sx_fiber_stack stack1;
     sx_fiber_stack_init(&stack1, 80 * 1024);
     puts("Main");
-    sx_fiber_t        fiber = sx_fiber_create(stack1, fiber1_fn);
+    sx_fiber_t fiber = sx_fiber_create(stack1, fiber1_fn);
     sx_fiber_transfer t = sx_fiber_switch(fiber, NULL);
     puts("Back to main");
     sx_fiber_switch(t.from, t.user);
@@ -67,7 +71,7 @@ int main(int argc, char* argv[]) {
     sx_coro_invoke(ctx, wait_test, ctx);
     sx_coro_invoke(ctx, yield_test, ctx);
     uint64_t tick = sx_tm_now();
-    float    dt = 0;
+    float dt = 0;
 
     while (1) {
         sx_coro_update(ctx, dt);

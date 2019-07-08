@@ -43,10 +43,18 @@
 //      sx_job_dispatch             (Thread-Safe) Submit bunch of sub-jobs for the scheduler, this
 //                                  will return a valid sx_job_t handle that you can later wait on
 //                                  submitted jobs are immedietely picked up by worker threads and
-//                                  processed
-//                                  - descs: job descriptions, each sub-job can contain a callback
-//                                           function, user data and execution priority
-//                                  - count: number of sub-jots (desc array size) to be submitted
+//                                  processed.
+//                                  - count: The count of items in the work set
+//                                           This value will be divided by job system into threads
+//                                           For example, if you submit count as 100 and there are 
+//                                           10 worker cores, then each core will have a range of 10 
+//                                           values of work
+//                                  - callback: worker callback function. `range_start` and 
+//                                              `range_end` parameters are assigned for each thread 
+//                                              which is within the `count` value
+//                                  - user: user pointer to be passed to callback function
+//                                  - priority: job priority, see `sx_job_priority`
+//                                              higher priority jobs gets executed earlier
 //                                  - tags: (default: 0) assigns work tag for the job. See below for
 //                                           more details on the concept of Tags
 //                                  NOTE: if max_fibers (running-jobs) is exceeded, job will be
@@ -91,11 +99,11 @@
 #include "macros.h"
 #include <stdbool.h>
 
-typedef struct sx_alloc       sx_alloc;
+typedef struct sx_alloc sx_alloc;
 typedef struct sx_job_context sx_job_context;
-typedef volatile int*         sx_job_t;
+typedef volatile int* sx_job_t;
 
-typedef void(sx_job_cb)(int index, void* user);
+typedef void(sx_job_cb)(int range_start, int range_end, int thread_index, void* user);
 typedef void(sx_job_thread_init_cb)(sx_job_context* ctx, int thread_index, unsigned int thread_id,
                                     void* user);
 typedef void(sx_job_thread_shutdown_cb)(sx_job_context* ctx, int thread_index,
@@ -108,17 +116,11 @@ typedef enum sx_job_priority {
     SX_JOB_PRIORITY_COUNT
 } sx_job_priority;
 
-typedef struct sx_job_desc {
-    sx_job_cb*      callback;
-    void*           user;
-    sx_job_priority priority;
-} sx_job_desc;
-
 typedef struct sx_job_context_desc {
     int num_threads;    // number of worker threads to spawn (default: num_cpu_cores-1)
     int max_fibers;     // maximum fibers that are allowed to be active at the same time (default:
                         // 64)
-    int                    fiber_stack_sz;            // fiber stack size (default: 1mb)
+    int fiber_stack_sz;                               // fiber stack size (default: 1mb)
     sx_job_thread_init_cb* thread_init_cb;            // callback function that will be called on
                                                       // initiaslization of each worker thread
     sx_job_thread_shutdown_cb* thread_shutdown_cb;    // callback functions that will be called on
@@ -126,16 +128,17 @@ typedef struct sx_job_context_desc {
     void* thread_user_data;    // user-data to be passed to callback functions above
 } sx_job_context_desc;
 
-SX_API sx_job_context* sx_job_create_context(const sx_alloc*            alloc,
+SX_API sx_job_context* sx_job_create_context(const sx_alloc* alloc,
                                              const sx_job_context_desc* desc);
-SX_API void            sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
+SX_API void sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
-SX_API sx_job_t sx_job_dispatch(sx_job_context* ctx, const sx_job_desc* descs, int count,
+SX_API sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, void* user,
+                                sx_job_priority priority sx_default(SX_JOB_PRIORITY_HIGH),
                                 unsigned int tags sx_default(0));
-SX_API void     sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
-SX_API bool     sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
-SX_API int      sx_job_num_worker_threads(sx_job_context* ctx);
-SX_API void     sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);
+SX_API void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
+SX_API bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);
+SX_API int sx_job_num_worker_threads(sx_job_context* ctx);
+SX_API void sx_job_set_current_thread_tags(sx_job_context* ctx, unsigned int tags);
 
 SX_API int sx_job_thread_index(sx_job_context* ctx);
 SX_API unsigned int sx_job_thread_id(sx_job_context* ctx);

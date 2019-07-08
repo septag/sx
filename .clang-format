@@ -1,7 +1,7 @@
 ﻿---
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: 'false'
-AlignConsecutiveDeclarations: 'true'
+AlignConsecutiveDeclarations: 'false'
 AlignEscapedNewlines: Left
 AlignTrailingComments: 'true'
 AllowAllParametersOfDeclarationOnNextLine: 'true'
@@ -13,7 +13,7 @@ AllowShortLoopsOnASingleLine: 'true'
 AlwaysBreakBeforeMultilineStrings: 'true'
 AlwaysBreakTemplateDeclarations: 'true'
 BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Linux
 ColumnLimit: '100'
 Cpp11BracedListStyle: 'false'
 IncludeBlocks: Preserve

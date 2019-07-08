@@ -23,31 +23,30 @@
 //
 #pragma once
 
-#include <stdbool.h>
 #include "macros.h"
+#include <stdbool.h>
 
 typedef struct sx_alloc sx_alloc;
 
 typedef struct sx_bheap_item {
-    int   key;
+    int key;
     void* user;
 } sx_bheap_item;
 
 typedef struct sx_bheap {
     sx_bheap_item* items;
-    int            count;
-    int            capacity;
+    int count;
+    int capacity;
 } sx_bheap;
 
 SX_API sx_bheap* sx_bheap_create(const sx_alloc* alloc, int capacity);
-SX_API void      sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
+SX_API void sx_bheap_destroy(sx_bheap* bh, const sx_alloc* alloc);
 
-SX_API void          sx_bheap_push_min(sx_bheap* bh, int key, void* user);
+SX_API void sx_bheap_push_min(sx_bheap* bh, int key, void* user);
 SX_API sx_bheap_item sx_bheap_pop_min(sx_bheap* bh);
 
-SX_API void          sx_bheap_push_max(sx_bheap* bh, int key, void* user);
+SX_API void sx_bheap_push_max(sx_bheap* bh, int key, void* user);
 SX_API sx_bheap_item sx_bheap_pop_max(sx_bheap* bh);
 
 SX_API void sx_bheap_clear(sx_bheap* bh);
 SX_API bool sx_bheap_empty(sx_bheap* bh);
-

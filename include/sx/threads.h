@@ -36,19 +36,19 @@ SX_API sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback
                                    void* user_data1 sx_default(NULL), int stack_sz sx_default(0),
                                    const char* name sx_default(NULL),
                                    void* user_data2 sx_default(NULL));
-SX_API int        sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc);
-SX_API bool       sx_thread_running(sx_thread* thrd);
-SX_API void       sx_thread_setname(sx_thread* thrd, const char* name);
-SX_API void       sx_thread_yield();
+SX_API int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc);
+SX_API bool sx_thread_running(sx_thread* thrd);
+SX_API void sx_thread_setname(sx_thread* thrd, const char* name);
+SX_API void sx_thread_yield();
 SX_API uint32_t sx_thread_tid();
 
 // Tls data
 typedef void* sx_tls;
 
 SX_API sx_tls sx_tls_create();
-SX_API void   sx_tls_destroy(sx_tls tls);
-SX_API void   sx_tls_set(sx_tls tls, void* data);
-SX_API void*  sx_tls_get(sx_tls tls);
+SX_API void sx_tls_destroy(sx_tls tls);
+SX_API void sx_tls_set(sx_tls tls, void* data);
+SX_API void* sx_tls_get(sx_tls tls);
 
 // Mutex
 typedef struct sx_mutex_s {
@@ -84,11 +84,11 @@ SX_API bool sx_signal_wait(sx_signal* sig, int msecs sx_default(-1));
 // Lock-Free single-producer/single-consumer self-contained-data queue
 typedef struct sx_queue_spsc sx_queue_spsc;
 SX_API sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capacity);
-SX_API void           sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc);
-SX_API bool           sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data);
-SX_API bool           sx_queue_spsc_consume(sx_queue_spsc* queue, void* data);
-SX_API bool           sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc);
-SX_API bool           sx_queue_spsc_full(const sx_queue_spsc* queue);
+SX_API void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc);
+SX_API bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data);
+SX_API bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data);
+SX_API bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc);
+SX_API bool sx_queue_spsc_full(const sx_queue_spsc* queue);
 
 #define sx_queue_spsc_produce_and_grow(_queue, _data, _alloc) \
     if (!sx_queue_spsc_produce((_queue), (_data))) {          \

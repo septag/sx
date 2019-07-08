@@ -105,10 +105,11 @@ typedef struct sx_alloc sx_alloc;
          sx__sbgrowf((a), (n), sizeof(*(a)), (_alloc), __FILE__, __FUNCTION__, __LINE__))
 
 static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc,
-                                const char* file, const char* func, int line) {
-    int  dbl_cur = arr ? (sx__sbm(arr) << 1) : 0;
-    int  min_needed = sx_array_count(arr) + increment;
-    int  m = dbl_cur > min_needed ? dbl_cur : min_needed;
+                                const char* file, const char* func, int line)
+{
+    int dbl_cur = arr ? (sx__sbm(arr) << 1) : 0;
+    int min_needed = sx_array_count(arr) + increment;
+    int m = dbl_cur > min_needed ? dbl_cur : min_needed;
     int* p = (int*)sx__realloc(alloc, arr ? sx__sbraw(arr) : 0, itemsize * m + sizeof(int) * 2, 0,
                                file, func, line);
     if (p) {

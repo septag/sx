@@ -18,7 +18,8 @@ extern "C" {
 #endif
 int _fltused = 0;
 
-void sx__break_program(const char* text) {
+void sx__break_program(const char* text)
+{
     // print
 #if SX_PLATFORM_ANDROID
     __android_log_write(ANDROID_LOG_DEBUG, "", text);

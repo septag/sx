@@ -30,11 +30,13 @@
 #        include <sys/syscall.h>    // syscall
 #    endif
 #elif SX_PLATFORM_WINDOWS
+// clang-format off
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
-#    include <limits.h>
 #    include <windows.h>
+#    include <limits.h>
 #    include <synchapi.h>
+// clang-format on
 #endif    // SX_PLATFORM_
 
 #include "sx/atomic.h"
@@ -52,8 +54,8 @@ typedef struct sx__sem_s {
     dispatch_semaphore_t handle;
 #elif SX_PLATFORM_POSIX
     pthread_mutex_t mutex;
-    pthread_cond_t  cond;
-    int             count;
+    pthread_cond_t cond;
+    int count;
 #elif SX_PLATFORM_WINDOWS
     HANDLE handle;
 #endif
@@ -61,38 +63,38 @@ typedef struct sx__sem_s {
 
 typedef struct sx__signal_s {
 #if SX_PLATFORM_WINDOWS
-#   if _WIN32_WINNT >= 0x0600
-    CRITICAL_SECTION   mutex;
+#    if _WIN32_WINNT >= 0x0600
+    CRITICAL_SECTION mutex;
     CONDITION_VARIABLE cond;
-    int                value;
-#   else
-    HANDLE             e;
-#   endif
+    int value;
+#    else
+    HANDLE e;
+#    endif
 #elif SX_PLATFORM_POSIX
     pthread_mutex_t mutex;
-    pthread_cond_t  cond;
-    int             value;
+    pthread_cond_t cond;
+    int value;
 #endif
 } sx__signal;
 
 typedef struct sx__thread_s {
-    sx_sem        sem;
+    sx_sem sem;
     sx_thread_cb* callback;
 
 #if SX_PLATFORM_WINDOWS
     HANDLE handle;
-    DWORD  thread_id;
+    DWORD thread_id;
 #elif SX_PLATFORM_POSIX
-    pthread_t       handle;
+    pthread_t handle;
 #    if SX_PLATFORM_APPLE
-    char            name[32];
+    char name[32];
 #    endif
 #endif
 
     void* user_data1;
     void* user_data2;
-    int   stack_sz;
-    bool  running;
+    int stack_sz;
+    bool running;
 } sx_thread;
 
 static_assert(sizeof(sx__mutex) <= sizeof(sx_mutex), "sx_mutex size mismatch");
@@ -102,13 +104,15 @@ static_assert(sizeof(sx__signal) <= sizeof(sx_signal), "sx_mutex size mismatch")
 // Apple has different implementation for semaphores
 #if SX_PLATFORM_APPLE
 
-void sx_semaphore_init(sx_sem* sem) {
+void sx_semaphore_init(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->handle = dispatch_semaphore_create(0);
     sx_assert(_sem->handle != NULL && "dispatch_semaphore_create failed");
 }
 
-void sx_semaphore_release(sx_sem* sem) {
+void sx_semaphore_release(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     if (_sem->handle) {
         dispatch_release(_sem->handle);
@@ -116,15 +120,17 @@ void sx_semaphore_release(sx_sem* sem) {
     }
 }
 
-void sx_semaphore_post(sx_sem* sem, int count) {
+void sx_semaphore_post(sx_sem* sem, int count)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     for (int i = 0; i < count; i++) {
         dispatch_semaphore_signal(_sem->handle);
     }
 }
 
-bool sx_semaphore_wait(sx_sem* sem, int msecs) {
-    sx__sem*        _sem = (sx__sem*)sem->data;
+bool sx_semaphore_wait(sx_sem* sem, int msecs)
+{
+    sx__sem* _sem = (sx__sem*)sem->data;
     dispatch_time_t dt = msecs < 0 ? DISPATCH_TIME_FOREVER
                                    : dispatch_time(DISPATCH_TIME_NOW, (int64_t)msecs * 1000000ll);
     return !dispatch_semaphore_wait(_sem->handle, dt);
@@ -135,38 +141,43 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs) {
 #if SX_PLATFORM_POSIX
 
 // Tls
-sx_tls sx_tls_create() {
+sx_tls sx_tls_create()
+{
     pthread_key_t key;
-    int           r = pthread_key_create(&key, NULL);
+    int r = pthread_key_create(&key, NULL);
     sx_assert(r == 0 && "pthread_key_create failed");
     sx_unused(r);
     return (sx_tls)(uintptr_t)key;
 }
 
-void sx_tls_destroy(sx_tls tls) {
+void sx_tls_destroy(sx_tls tls)
+{
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
-    int           r = pthread_key_delete(key);
+    int r = pthread_key_delete(key);
     sx_assert(r == 0 && "pthread_key_delete failed");
     sx_unused(r);
 }
 
-void sx_tls_set(sx_tls tls, void* data) {
+void sx_tls_set(sx_tls tls, void* data)
+{
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
-    int           r = pthread_setspecific(key, data);
+    int r = pthread_setspecific(key, data);
     sx_assert(r == 0 && "pthread_setspcific failed");
     sx_unused(r);
 }
 
-void* sx_tls_get(sx_tls tls) {
+void* sx_tls_get(sx_tls tls)
+{
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
     return pthread_getspecific(key);
 }
 
 // Thread
-static void* thread_fn(void* arg) {
+static void* thread_fn(void* arg)
+{
     sx_thread* thrd = (sx_thread*)arg;
     union {
-        void*   ptr;
+        void* ptr;
         int32_t i;
     } cast;
 
@@ -181,7 +192,8 @@ static void* thread_fn(void* arg) {
 }
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void* user_data1,
-                            int stack_sz, const char* name, void* user_data2) {
+                            int stack_sz, const char* name, void* user_data2)
+{
     sx_thread* thrd = (sx_thread*)sx_malloc(alloc, sizeof(sx_thread));
     if (!thrd)
         return NULL;
@@ -194,7 +206,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     thrd->running = true;
 
     pthread_attr_t attr;
-    int            r = pthread_attr_init(&attr);
+    int r = pthread_attr_init(&attr);
     sx_unused(r);
     sx_assert(r == 0 && "pthread_attr_init failed");
     r = pthread_attr_setstacksize(&attr, thrd->stack_sz);
@@ -220,11 +232,12 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     return thrd;
 }
 
-int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc) {
+int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc)
+{
     sx_assert(thrd->running && "Thread is not running!");
 
     union {
-        void*   ptr;
+        void* ptr;
         int32_t i;
     } cast;
 
@@ -240,11 +253,13 @@ int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc) {
     return cast.i;
 }
 
-bool sx_thread_running(sx_thread* thrd) {
+bool sx_thread_running(sx_thread* thrd)
+{
     return thrd->running;
 }
 
-void sx_thread_setname(sx_thread* thrd, const char* name) {
+void sx_thread_setname(sx_thread* thrd, const char* name)
+{
 #    if SX_PLATFORM_APPLE
     sx_unused(thrd);
     pthread_setname_np(name);
@@ -265,12 +280,14 @@ void sx_thread_setname(sx_thread* thrd, const char* name) {
 #    endif
 }
 
-void sx_thread_yield() {
+void sx_thread_yield()
+{
     sched_yield();
 }
 
 // Mutex
-void sx_mutex_init(sx_mutex* mutex) {
+void sx_mutex_init(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
 
     pthread_mutexattr_t attr;
@@ -282,42 +299,50 @@ void sx_mutex_init(sx_mutex* mutex) {
     sx_unused(r);
 }
 
-void sx_mutex_release(sx_mutex* mutex) {
+void sx_mutex_release(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     pthread_mutex_destroy(&_m->handle);
 }
 
-void sx_mutex_lock(sx_mutex* mutex) {
+void sx_mutex_lock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     pthread_mutex_lock(&_m->handle);
 }
 
-void sx_mutex_unlock(sx_mutex* mutex) {
+void sx_mutex_unlock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     pthread_mutex_unlock(&_m->handle);
 }
 
-bool sx_mutex_trylock(sx_mutex* mutex) {
+bool sx_mutex_trylock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     return pthread_mutex_trylock(&_m->handle) == 0;
 }
 
 // Signal
-static inline uint64_t sx__toNs(const struct timespec* _ts) {
+static inline uint64_t sx__toNs(const struct timespec* _ts)
+{
     return _ts->tv_sec * UINT64_C(1000000000) + _ts->tv_nsec;
 }
 
-static inline void sx__toTimespecNs(struct timespec* _ts, uint64_t _nsecs) {
+static inline void sx__toTimespecNs(struct timespec* _ts, uint64_t _nsecs)
+{
     _ts->tv_sec = _nsecs / UINT64_C(1000000000);
     _ts->tv_nsec = _nsecs % UINT64_C(1000000000);
 }
 
-static inline void sx__tm_add(struct timespec* _ts, int32_t _msecs) {
+static inline void sx__tm_add(struct timespec* _ts, int32_t _msecs)
+{
     uint64_t ns = sx__toNs(_ts);
     sx__toTimespecNs(_ts, ns + (uint64_t)(_msecs)*1000000);
 }
 
-void sx_signal_init(sx_signal* sig) {
+void sx_signal_init(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
     _sig->value = 0;
     int r = pthread_mutex_init(&_sig->mutex, NULL);
@@ -329,15 +354,17 @@ void sx_signal_init(sx_signal* sig) {
     sx_unused(r);
 }
 
-void sx_signal_release(sx_signal* sig) {
+void sx_signal_release(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
     pthread_cond_destroy(&_sig->cond);
     pthread_mutex_destroy(&_sig->mutex);
 }
 
-void sx_signal_raise(sx_signal* sig) {
+void sx_signal_raise(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-    int         r = pthread_mutex_lock(&_sig->mutex);
+    int r = pthread_mutex_lock(&_sig->mutex);
     sx_assert(r == 0);
     _sig->value = 1;
     pthread_mutex_unlock(&_sig->mutex);
@@ -345,9 +372,10 @@ void sx_signal_raise(sx_signal* sig) {
     sx_unused(r);
 }
 
-bool sx_signal_wait(sx_signal* sig, int msecs) {
+bool sx_signal_wait(sx_signal* sig, int msecs)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-    int         r = pthread_mutex_lock(&_sig->mutex);
+    int r = pthread_mutex_lock(&_sig->mutex);
     sx_assert(r == 0);
 
     if (msecs == -1) {
@@ -369,7 +397,8 @@ bool sx_signal_wait(sx_signal* sig, int msecs) {
 
 // Semaphore (posix only)
 #    if !SX_PLATFORM_APPLE
-void sx_semaphore_init(sx_sem* sem) {
+void sx_semaphore_init(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->count = 0;
     int r = pthread_mutex_init(&_sem->mutex, NULL);
@@ -381,15 +410,17 @@ void sx_semaphore_init(sx_sem* sem) {
     sx_unused(r);
 }
 
-void sx_semaphore_release(sx_sem* sem) {
+void sx_semaphore_release(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     pthread_cond_destroy(&_sem->cond);
     pthread_mutex_destroy(&_sem->mutex);
 }
 
-void sx_semaphore_post(sx_sem* sem, int count) {
+void sx_semaphore_post(sx_sem* sem, int count)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
-    int      r = pthread_mutex_lock(&_sem->mutex);
+    int r = pthread_mutex_lock(&_sem->mutex);
     sx_assert(r == 0);
 
     for (int ii = 0; ii < count; ii++) {
@@ -404,9 +435,10 @@ void sx_semaphore_post(sx_sem* sem, int count) {
     sx_unused(r);
 }
 
-bool sx_semaphore_wait(sx_sem* sem, int msecs) {
+bool sx_semaphore_wait(sx_sem* sem, int msecs)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
-    int      r = pthread_mutex_lock(&_sem->mutex);
+    int r = pthread_mutex_lock(&_sem->mutex);
     sx_assert(r == 0);
 
     if (msecs == -1) {
@@ -430,68 +462,81 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs) {
 #    endif
 #elif SX_PLATFORM_WINDOWS
 // Tls
-sx_tls sx_tls_create() {
+sx_tls sx_tls_create()
+{
     DWORD tls_id = TlsAlloc();
     sx_assert(tls_id != TLS_OUT_OF_INDEXES && "Failed to create tls!");
     return (sx_tls)(uintptr_t)tls_id;
 }
 
-void sx_tls_destroy(sx_tls tls) {
+void sx_tls_destroy(sx_tls tls)
+{
     TlsFree((DWORD)(uintptr_t)tls);
 }
 
-void sx_tls_set(sx_tls tls, void* data) {
+void sx_tls_set(sx_tls tls, void* data)
+{
     TlsSetValue((DWORD)(uintptr_t)tls, data);
 }
 
-void* sx_tls_get(sx_tls tls) {
+void* sx_tls_get(sx_tls tls)
+{
     return TlsGetValue((DWORD)(uintptr_t)tls);
 }
 
 // Mutex
-void sx_mutex_init(sx_mutex* mutex) {
+void sx_mutex_init(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     InitializeCriticalSection(&_m->handle);
 }
 
-void sx_mutex_release(sx_mutex* mutex) {
+void sx_mutex_release(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     DeleteCriticalSection(&_m->handle);
 }
 
-void sx_mutex_lock(sx_mutex* mutex) {
+void sx_mutex_lock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     EnterCriticalSection(&_m->handle);
 }
 
-void sx_mutex_unlock(sx_mutex* mutex) {
+void sx_mutex_unlock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     LeaveCriticalSection(&_m->handle);
 }
 
-bool sx_mutex_trylock(sx_mutex* mutex) {
+bool sx_mutex_trylock(sx_mutex* mutex)
+{
     sx__mutex* _m = (sx__mutex*)mutex->data;
     return TryEnterCriticalSection(&_m->handle) == TRUE;
 }
 
 // Semaphore
-void sx_semaphore_init(sx_sem* sem) {
+void sx_semaphore_init(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->handle = CreateSemaphoreA(NULL, 0, LONG_MAX, NULL);
     sx_assert(_sem->handle != NULL && "Failed to create semaphore");
 }
 
-void sx_semaphore_release(sx_sem* sem) {
+void sx_semaphore_release(sx_sem* sem)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     CloseHandle(_sem->handle);
 }
 
-void sx_semaphore_post(sx_sem* sem, int count) {
+void sx_semaphore_post(sx_sem* sem, int count)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     ReleaseSemaphore(_sem->handle, count, NULL);
 }
 
-bool sx_semaphore_wait(sx_sem* sem, int msecs) {
+bool sx_semaphore_wait(sx_sem* sem, int msecs)
+{
     sx__sem* _sem = (sx__sem*)sem->data;
     DWORD _msecs = (msecs < 0) ? INFINITE : msecs;
     return WaitForSingleObject(_sem->handle, _msecs) == WAIT_OBJECT_0;
@@ -499,44 +544,48 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs) {
 
 // Signal
 // https://github.com/mattiasgustavsson/libs/blob/master/thread.h
-void sx_signal_init(sx_signal* sig) {
+void sx_signal_init(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-#if _WIN32_WINNT >= 0x0600
+#    if _WIN32_WINNT >= 0x0600
     BOOL r = InitializeCriticalSectionAndSpinCount(&_sig->mutex, 32);
     sx_assert(r && "InitializeCriticalSectionAndSpinCount failed");
     sx_unused(r);
     InitializeConditionVariable(&_sig->cond);
     _sig->value = 0;
-#else
+#    else
     _sig->e = CreateEvent(NULL, FALSE, FALSE, NULL);
     sx_assert(_sig->e && "CreateEvent failed");
-#endif
+#    endif
 }
 
-void sx_signal_release(sx_signal* sig) {
+void sx_signal_release(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-#if _WIN32_WINNT >= 0x0600
+#    if _WIN32_WINNT >= 0x0600
     DeleteCriticalSection(&_sig->mutex);
-#else
+#    else
     CloseHandle(_sig->e);
-#endif
+#    endif
 }
 
-void sx_signal_raise(sx_signal* sig) {
+void sx_signal_raise(sx_signal* sig)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-#if _WIN32_WINNT >= 0x0600
+#    if _WIN32_WINNT >= 0x0600
     EnterCriticalSection(&_sig->mutex);
     _sig->value = 1;
     LeaveCriticalSection(&_sig->mutex);
     WakeConditionVariable(&_sig->cond);
-#else
+#    else
     SetEvent(_sig->e);
-#endif
+#    endif
 }
 
-bool sx_signal_wait(sx_signal* sig, int msecs) {
+bool sx_signal_wait(sx_signal* sig, int msecs)
+{
     sx__signal* _sig = (sx__signal*)sig->data;
-#if _WIN32_WINNT >= 0x0600
+#    if _WIN32_WINNT >= 0x0600
     bool timed_out = false;
     EnterCriticalSection(&_sig->mutex);
     DWORD _msecs = (msecs < 0) ? INFINITE : msecs;
@@ -551,13 +600,14 @@ bool sx_signal_wait(sx_signal* sig, int msecs) {
         _sig->value = 0;
     LeaveCriticalSection(&_sig->mutex);
     return !timed_out;
-#else
+#    else
     return WaitForSingleObject(_sig->e, msecs < 0 ? INFINITE : msecs) == WAIT_OBJECT_0;
-#endif
+#    endif
 }
 
 // Thread
-static DWORD WINAPI thread_fn(LPVOID arg) {
+static DWORD WINAPI thread_fn(LPVOID arg)
+{
     sx_thread* thrd = (sx_thread*)arg;
     thrd->thread_id = GetCurrentThreadId();
     sx_semaphore_post(&thrd->sem, 1);
@@ -565,7 +615,8 @@ static DWORD WINAPI thread_fn(LPVOID arg) {
 }
 
 sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void* user_data1,
-                            int stack_sz, const char* name, void* user_data2) {
+                            int stack_sz, const char* name, void* user_data2)
+{
     sx_thread* thrd = (sx_thread*)sx_malloc(alloc, sizeof(sx_thread));
     if (!thrd)
         return NULL;
@@ -590,7 +641,8 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     return thrd;
 }
 
-int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc) {
+int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc)
+{
     sx_assert(thrd->running && "Thread is not running!");
 
     DWORD exit_code;
@@ -608,11 +660,13 @@ int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc) {
     return (int)exit_code;
 }
 
-bool sx_thread_running(sx_thread* thrd) {
+bool sx_thread_running(sx_thread* thrd)
+{
     return thrd->running;
 }
 
-void sx_thread_yield() {
+void sx_thread_yield()
+{
     SwitchToThread();
 }
 
@@ -624,7 +678,8 @@ struct _ThreadName {
     DWORD flags;
 };
 #    pragma pack(pop)
-void sx_thread_setname(sx_thread* thrd, const char* name) {
+void sx_thread_setname(sx_thread* thrd, const char* name)
+{
     struct _ThreadName tn;
     tn.type = 0x1000;
     tn.name = name;
@@ -649,30 +704,31 @@ typedef struct sx__queue_spsc_node {
 } sx__queue_spsc_node;
 
 typedef struct sx__queue_spsc_bin {
-    sx__queue_spsc_node**      ptrs;
-    uint8_t*                   buff;
+    sx__queue_spsc_node** ptrs;
+    uint8_t* buff;
     struct sx__queue_spsc_bin* next;
-    int                        iter;
-    int                        _reserved;
+    int iter;
+    int _reserved;
 } sx__queue_spsc_bin;
 
 typedef struct sx_queue_spsc {
     sx__queue_spsc_node** ptrs;
-    uint8_t*              buff;
-    int                   iter;
-    int                   capacity;
-    int                   stride;
-    int                   _reserved;
+    uint8_t* buff;
+    int iter;
+    int capacity;
+    int stride;
+    int _reserved;
 
     sx__queue_spsc_node* first;
-    sx_atomic_ptr        last;
-    sx_atomic_ptr        divider;
+    sx_atomic_ptr last;
+    sx_atomic_ptr divider;
 
     sx__queue_spsc_bin* grow_bins;    // linked-list of bins, if queue is grown
 } sx_queue_spsc;
 
 static sx__queue_spsc_bin* sx__queue_spsc_create_bin(const sx_alloc* alloc, int item_sz,
-                                                     int capacity) {
+                                                     int capacity)
+{
     sx_assert(capacity % 16 == 0);
 
     uint8_t* buff = (uint8_t*)sx_malloc(
@@ -698,12 +754,14 @@ static sx__queue_spsc_bin* sx__queue_spsc_create_bin(const sx_alloc* alloc, int 
     return bin;
 }
 
-static void sx__queue_spsc_destroy_bin(sx__queue_spsc_bin* bin, const sx_alloc* alloc) {
+static void sx__queue_spsc_destroy_bin(sx__queue_spsc_bin* bin, const sx_alloc* alloc)
+{
     sx_assert(bin);
     sx_free(alloc, bin);
 }
 
-sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capacity) {
+sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capacity)
+{
     sx_assert(item_sz > 0);
 
     capacity = sx_align_mask(capacity, 15);
@@ -740,7 +798,8 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
     return queue;
 }
 
-void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc) {
+void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc)
+{
     sx_assert(queue);
 
     if (queue->grow_bins) {
@@ -756,9 +815,10 @@ void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc) {
     sx_free(alloc, queue);
 }
 
-bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data) {
+bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
+{
     sx__queue_spsc_node* node = NULL;
-    sx__queue_spsc_bin*  node_bin = NULL;
+    sx__queue_spsc_bin* node_bin = NULL;
     if (queue->iter > 0) {
         node = queue->ptrs[--queue->iter];
     } else {
@@ -801,7 +861,8 @@ bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data) {
     }
 }
 
-bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data) {
+bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
+{
     if (queue->divider != queue->last) {
         sx__queue_spsc_node* divider = (sx__queue_spsc_node*)queue->divider;
         sx_assert(divider->next);
@@ -814,7 +875,8 @@ bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data) {
     return false;
 }
 
-bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc) {
+bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc)
+{
     sx__queue_spsc_bin* bin = sx__queue_spsc_create_bin(alloc, queue->stride, queue->capacity);
     if (bin) {
         if (queue->grow_bins) {
@@ -830,7 +892,8 @@ bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc) {
     }
 }
 
-bool sx_queue_spsc_full(const sx_queue_spsc* queue) {
+bool sx_queue_spsc_full(const sx_queue_spsc* queue)
+{
     if (queue->iter > 0) {
         return true;
     } else {
@@ -847,7 +910,8 @@ bool sx_queue_spsc_full(const sx_queue_spsc* queue) {
 }
 
 
-uint32_t sx_thread_tid() {
+uint32_t sx_thread_tid()
+{
 #if SX_PLATFORM_WINDOWS
     return GetCurrentThreadId();
 #elif SX_PLATFORM_LINUX || SX_PLATFORM_RPI || SX_PLATFORM_STEAMLINK

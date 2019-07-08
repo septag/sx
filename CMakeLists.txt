@@ -239,3 +239,9 @@ install(
 install(
     DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/sx
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# copy compile_commands.json from build/ to parent in order for clangd to work properly
+if (CMAKE_EXPORT_COMPILE_COMMANDS) 
+    add_custom_target(compile_commands COMMAND ${CMAKE_COMMAND} -E 
+        copy ${CMAKE_CURRENT_SOURCE_DIR}/build/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

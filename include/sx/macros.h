@@ -12,8 +12,8 @@
 //      and simple preprocessor/code annotations are in UPPER_CASE
 #pragma once
 
-#include "platform.h"
 #include "config.h"
+#include "platform.h"
 
 ///
 #define sx_makefourcc(_a, _b, _c, _d) \

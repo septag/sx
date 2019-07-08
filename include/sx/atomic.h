@@ -67,7 +67,8 @@ typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
 
-SX_FORCE_INLINE void sx_yield_cpu() {
+SX_FORCE_INLINE void sx_yield_cpu()
+{
 #if SX_PLATFORM_WINDOWS
     _mm_pause();
 #else
@@ -79,7 +80,8 @@ SX_FORCE_INLINE void sx_yield_cpu() {
 #endif
 }
 
-SX_FORCE_INLINE void sx_memory_barrier() {
+SX_FORCE_INLINE void sx_memory_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _mm_mfence();
 #else
@@ -87,7 +89,8 @@ SX_FORCE_INLINE void sx_memory_barrier() {
 #endif
 }
 
-SX_FORCE_INLINE void sx_memory_read_barrier() {
+SX_FORCE_INLINE void sx_memory_read_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _mm_lfence();
 #else
@@ -95,7 +98,8 @@ SX_FORCE_INLINE void sx_memory_read_barrier() {
 #endif
 }
 
-SX_FORCE_INLINE void sx_memory_write_barrier() {
+SX_FORCE_INLINE void sx_memory_write_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _mm_sfence();
 #else
@@ -103,21 +107,24 @@ SX_FORCE_INLINE void sx_memory_write_barrier() {
 #endif
 }
 
-SX_FORCE_INLINE void sx_compiler_barrier() {
+SX_FORCE_INLINE void sx_compiler_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _ReadWriteBarrier();
 #else
 #endif
 }
 
-SX_FORCE_INLINE void sx_compiler_read_barrier() {
+SX_FORCE_INLINE void sx_compiler_read_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _ReadBarrier();
 #else
 #endif
 }
 
-SX_FORCE_INLINE void sx_compiler_write_barrier() {
+SX_FORCE_INLINE void sx_compiler_write_barrier()
+{
 #if SX_PLATFORM_WINDOWS
     _WriteBarrier();
 #else
@@ -125,7 +132,8 @@ SX_FORCE_INLINE void sx_compiler_write_barrier() {
 }
 
 // int atomic
-SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b) {
+SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedExchangeAdd((long volatile*)a, b);
 #else
@@ -133,7 +141,8 @@ SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b) {
 #endif
 }
 
-SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b) {
+SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedExchangeAdd((long volatile*)a, b) + b;
 #else
@@ -141,7 +150,8 @@ SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b) {
 #endif
 }
 
-SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a) {
+SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedIncrement((long volatile*)a);
 #else
@@ -149,7 +159,8 @@ SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a) {
 #endif
 }
 
-SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a) {
+SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedDecrement((long volatile*)a);
 #else
@@ -157,7 +168,8 @@ SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a) {
 #endif
 }
 
-SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b) {
+SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedExchange((long volatile*)a, b);
 #else
@@ -168,7 +180,8 @@ SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b) {
 // common use:
 // if (sx_atomic_cas(&var, y, x) == x)
 // means: if I'm the one changing var from x to y
-SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand) {
+SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedCompareExchange((long volatile*)a, xchg, comparand);
 #else
@@ -177,7 +190,8 @@ SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand) {
 }
 
 // pointer
-SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b) {
+SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedExchangePointer((void* volatile*)a, b);
 #else
@@ -185,7 +199,8 @@ SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b) {
 #endif
 }
 
-SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand) {
+SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand)
+{
 #if SX_PLATFORM_WINDOWS
     return _InterlockedCompareExchangePointer((void* volatile*)a, xchg, comparand);
 #else
@@ -195,110 +210,122 @@ SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comp
 
 // Int64 atomic
 #if SX_ARCH_64BIT
-SX_FORCE_INLINE int64_t sx_atomic_fetch_add64(sx_atomic_int64* a, int64_t b) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_fetch_add64(sx_atomic_int64* a, int64_t b)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedExchangeAdd64(a, b);
-#else
+#    else
     return __sync_fetch_and_add(a, b);
-#endif
+#    endif
 }
 
-SX_FORCE_INLINE int64_t sx_atomic_add_fetch64(sx_atomic_int64* a, int64_t b) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_add_fetch64(sx_atomic_int64* a, int64_t b)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedExchangeAdd64(a, b) + b;
-#else
+#    else
     return __sync_add_and_fetch(a, b);
-#endif
+#    endif
 }
 
-SX_FORCE_INLINE int64_t sx_atomic_incr64(sx_atomic_int64* a) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_incr64(sx_atomic_int64* a)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedIncrement64(a);
-#else
+#    else
     return __sync_add_and_fetch(a, 1);
-#endif
+#    endif
 }
 
-SX_FORCE_INLINE int64_t sx_atomic_decr64(sx_atomic_int64* a) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_decr64(sx_atomic_int64* a)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedDecrement64(a);
-#else
+#    else
     return __sync_sub_and_fetch(a, 1);
-#endif
+#    endif
 }
 
-SX_FORCE_INLINE int64_t sx_atomic_xchg64(sx_atomic_int64* a, int64_t b) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_xchg64(sx_atomic_int64* a, int64_t b)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedExchange64(a, b);
-#else
+#    else
     return __sync_lock_test_and_set(a, b);
-#endif
+#    endif
 }
 
-SX_FORCE_INLINE int64_t sx_atomic_cas64(sx_atomic_int64* a, int64_t xchg, int64_t comparand) {
-#if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int64_t sx_atomic_cas64(sx_atomic_int64* a, int64_t xchg, int64_t comparand)
+{
+#    if SX_PLATFORM_WINDOWS
     return _InterlockedCompareExchange64(a, xchg, comparand);
-#else
+#    else
     return __sync_val_compare_and_swap(a, comparand, xchg);
-#endif
+#    endif
 }
-#endif // SX_ARCH_64BIT
+#endif    // SX_ARCH_64BIT
 
 #if SX_ARCH_64BIT
 typedef sx_atomic_int64 sx_atomic_size;
-#define sx_atomic_fetch_add_size sx_atomic_fetch_add64
-#define sx_atomic_add_fetch_size sx_atomic_add_fetch64
-#define sx_atomic_incr_size      sx_atomic_incr64
-#define sx_atomic_decr_size      sx_atomic_decr64
-#define sx_atomic_xchg_size      sx_atomic_xchg64
-#define sx_atomic_cas_size       sx_atomic_cas64
+#    define sx_atomic_fetch_add_size sx_atomic_fetch_add64
+#    define sx_atomic_add_fetch_size sx_atomic_add_fetch64
+#    define sx_atomic_incr_size sx_atomic_incr64
+#    define sx_atomic_decr_size sx_atomic_decr64
+#    define sx_atomic_xchg_size sx_atomic_xchg64
+#    define sx_atomic_cas_size sx_atomic_cas64
 #else
 typedef sx_atomic_int sx_atomic_size;
-#define sx_atomic_fetch_add_size sx_atomic_fetch_add
-#define sx_atomic_add_fetch_size sx_atomic_add_fetch
-#define sx_atomic_incr_size      sx_atomic_incr
-#define sx_atomic_decr_size      sx_atomic_decr
-#define sx_atomic_xchg_size      sx_atomic_xchg
-#define sx_atomic_cas_size       sx_atomic_cas
-#endif // SX_ARCH_64BIT
+#    define sx_atomic_fetch_add_size sx_atomic_fetch_add
+#    define sx_atomic_add_fetch_size sx_atomic_add_fetch
+#    define sx_atomic_incr_size sx_atomic_incr
+#    define sx_atomic_decr_size sx_atomic_decr
+#    define sx_atomic_xchg_size sx_atomic_xchg
+#    define sx_atomic_cas_size sx_atomic_cas
+#endif    // SX_ARCH_64BIT
 
 #if !SX_PLATFORM_EMSCRIPTEN && (SX_COMPILER_GCC || SX_COMPILER_CLANG) && \
     __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__) &&      \
     (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
 #    include <stdatomic.h>
-typedef atomic_flag  sx_lock_t;
-SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock) {
+typedef atomic_flag sx_lock_t;
+SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
+{
     return atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
 }
 
-SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {
+SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+{
     while (sx_trylock(lock)) {
         sx_yield_cpu();
     }
 }
 
-SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock) {
+SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
+{
     atomic_flag_clear_explicit(lock, memory_order_release);
 }
 #else
 typedef sx_atomic_int sx_lock_t;
-SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock) {
-#   if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
+{
+#    if SX_PLATFORM_WINDOWS
     sx_atomic_xchg(lock, 0);
-#   else
+#    else
     __sync_lock_release(lock);
-#   endif
+#    endif
 }
 
-SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock) {
-#   if SX_PLATFORM_WINDOWS
+SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
+{
+#    if SX_PLATFORM_WINDOWS
     return *lock || sx_atomic_xchg(lock, 1);
-#   else
+#    else
     return *lock || __sync_lock_test_and_set(lock, 1);
-#   endif
+#    endif
 }
 
-SX_FORCE_INLINE void sx_lock(sx_lock_t* lock) {
+SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+{
     while (sx_trylock(lock)) {
         sx_yield_cpu();
     }

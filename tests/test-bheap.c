@@ -1,18 +1,19 @@
+#include "sx/allocator.h"
 #include "sx/bheap.h"
 #include "sx/rng.h"
-#include "sx/allocator.h"
 
 #include <stdio.h>
 #include <time.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     static const int N = 32;
 
     sx_rng rng;
     sx_rng_seed(&rng, (uint32_t)time(NULL));
 
     const sx_alloc* alloc = sx_alloc_malloc();
-    sx_bheap*       bh = sx_bheap_create(alloc, N);
+    sx_bheap* bh = sx_bheap_create(alloc, N);
 
     puts("\nPushing values to _MIN_ binary heap:");
     for (int i = 0; i < N; i++) {

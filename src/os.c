@@ -59,7 +59,8 @@ static const char* k_path_sep = "\\";
 static const char* k_path_sep = "/";
 #endif
 
-int sx_os_pagesz() {
+int sx_os_pagesz()
+{
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO si;
     GetSystemInfo(&si);
@@ -69,7 +70,8 @@ int sx_os_pagesz() {
 #endif
 }
 
-int sx_os_maxstacksz() {
+int sx_os_maxstacksz()
+{
 #if SX_PLATFORM_WINDOWS
     return 1073741824;    // 1gb
 #elif SX_PLATFORM_POSIX
@@ -79,11 +81,13 @@ int sx_os_maxstacksz() {
 #endif
 }
 
-int sx_os_minstacksz() {
+int sx_os_minstacksz()
+{
     return 32768;    // 32kb
 }
 
-char sx_os_getch() {
+char sx_os_getch()
+{
 #if SX_PLATFORM_WINDOWS
     return getchar();
 //#elif SX_PLATFORM_EMSCRIPTEN
@@ -102,14 +106,16 @@ char sx_os_getch() {
 #endif
 }
 
-size_t sx_os_align_pagesz(size_t size) {
+size_t sx_os_align_pagesz(size_t size)
+{
     sx_assert(size > 0);
-    int       page_sz = sx_os_pagesz();
+    int page_sz = sx_os_pagesz();
     size_t page_cnt = (size + page_sz - 1) / page_sz;
     return page_cnt * page_sz;
 }
 
-size_t sx_os_processmem() {
+size_t sx_os_processmem()
+{
 #if SX_PLATFORM_ANDROID
     struct mallinfo mi = mallinfo();
     return mi.uordblks;
@@ -120,18 +126,18 @@ size_t sx_os_processmem() {
     }
 
     long pages = 0;
-    int  items = fscanf(file, "%*s%ld", &pages);
+    int items = fscanf(file, "%*s%ld", &pages);
     fclose(file);
     return 1 == items ? pages * sysconf(_SC_PAGESIZE) : 0;
 #elif SX_PLATFORM_OSX
 #    if defined(MACH_TASK_BASIC_INFO)
     struct mach_task_basic_info info;
-    mach_msg_type_number_t      infoCount = MACH_TASK_BASIC_INFO_COUNT;
+    mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
 
     int const result =
         task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &infoCount);
 #    else
-    task_basic_info        info;
+    task_basic_info info;
     mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
 
     int const result = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &infoCount);
@@ -150,7 +156,8 @@ size_t sx_os_processmem() {
 #endif    // SX_PLATFORM_*
 }
 
-void* sx_os_dlopen(const char* filepath) {
+void* sx_os_dlopen(const char* filepath)
+{
 #if SX_PLATFORM_WINDOWS
     return (void*)LoadLibraryA(filepath);
 #elif SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT
@@ -161,7 +168,8 @@ void* sx_os_dlopen(const char* filepath) {
 #endif    // SX_PLATFORM_
 }
 
-void sx_os_dlclose(void* handle) {
+void sx_os_dlclose(void* handle)
+{
 #if SX_PLATFORM_WINDOWS
     FreeLibrary((HMODULE)handle);
 #elif SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE
@@ -171,7 +179,8 @@ void sx_os_dlclose(void* handle) {
 #endif
 }
 
-void* sx_os_dlsym(void* handle, const char* symbol) {
+void* sx_os_dlsym(void* handle, const char* symbol)
+{
 #if SX_PLATFORM_WINDOWS
     return (void*)GetProcAddress((HMODULE)handle, symbol);
 #elif SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE
@@ -183,7 +192,8 @@ void* sx_os_dlsym(void* handle, const char* symbol) {
 #endif
 }
 
-const char* sx_os_dlerr() {
+const char* sx_os_dlerr()
+{
 #if SX_PLATFORM_WINDOWS
     return "";
 #elif SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE
@@ -193,7 +203,8 @@ const char* sx_os_dlerr() {
 #endif
 }
 
-int sx_os_chdir(const char* path) {
+int sx_os_chdir(const char* path)
+{
 #if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_PLATFORM_ANDROID || \
     Sx_PLATFORM_IOS
     sx_unused(path);
@@ -205,7 +216,8 @@ int sx_os_chdir(const char* path) {
 #endif    // SX_COMPILER_
 }
 
-void sx_os_sleep(int ms) {
+void sx_os_sleep(int ms)
+{
 #if SX_PLATFORM_WINDOWS
     Sleep(ms);
 #elif SX_PLATFORM_XBOXONE
@@ -217,17 +229,18 @@ void sx_os_sleep(int ms) {
 #endif    // SX_PLATFORM_
 }
 
-sx_pinfo sx_os_exec(const char* const* argv) {
+sx_pinfo sx_os_exec(const char* const* argv)
+{
 #if SX_PLATFORM_LINUX || SX_PLATFORM_HURD
     pid_t pid = fork();
 
     if (0 == pid) {
         int result = execvp(argv[0], (char* const*)(&argv[1]));
         sx_unused(result);
-        return (sx_pinfo) {0};
+        return (sx_pinfo){ 0 };
     }
 
-    return (sx_pinfo) { .linux_pid = (uintptr_t)pid };
+    return (sx_pinfo){ .linux_pid = (uintptr_t)pid };
 #elif SX_PLATFORM_WINDOWS
     STARTUPINFOA si;
     sx_memset(&si, 0, sizeof(STARTUPINFOA));
@@ -244,7 +257,7 @@ sx_pinfo sx_os_exec(const char* const* argv) {
     sx_assert(total <= 32768);
     char* temp = (char*)alloca(total);
     sx_assert(temp);
-    int   len = 0;
+    int len = 0;
     for (int ii = 0; NULL != argv[ii]; ++ii) {
         len += sx_snprintf(&temp[len], sx_max(0, total - len), "%s ", argv[ii]);
     }
@@ -264,18 +277,19 @@ sx_pinfo sx_os_exec(const char* const* argv) {
 #else
     sx_unused(argv);
     sx_assert(0 && "not implemented");
-    return (sx_pinfo) {0};
+    return (sx_pinfo){ 0 };
 #endif    // SX_PLATFORM_
 }
 
-bool sx_os_copy(const char* src, const char* dest) {
+bool sx_os_copy(const char* src, const char* dest)
+{
 #if SX_PLATFORM_WINDOWS
     return CopyFileA(src, dest, FALSE) ? true : false;
 #elif SX_PLATFORM_APPLE
     return copyfile(src, dest, NULL, COPYFILE_ALL | COPYFILE_NOFOLLOW_DST) == 0;
 #elif SX_PLATFORM_LINUX || SX_PLATFORM_ANDROID || SX_PLATFORM_RPI
     // Reference: http://www.informit.com/articles/article.aspx?p=23618&seqNum=13
-    int         input, output;
+    int input, output;
     struct stat src_stat;
     if ((input = open(src, O_RDONLY)) == -1) {
         return false;
@@ -297,7 +311,8 @@ bool sx_os_copy(const char* src, const char* dest) {
 #endif
 }
 
-bool sx_os_rename(const char* src, const char* dest) {
+bool sx_os_rename(const char* src, const char* dest)
+{
 #if SX_PLATFORM_WINDOWS
     return MoveFileExA(src, dest, MOVEFILE_WRITE_THROUGH | MOVEFILE_REPLACE_EXISTING) ? true
                                                                                       : false;
@@ -306,7 +321,8 @@ bool sx_os_rename(const char* src, const char* dest) {
 #endif
 }
 
-bool sx_os_del(const char* path, sx_file_type type) {
+bool sx_os_del(const char* path, sx_file_type type)
+{
     sx_assert(type != SX_FILE_TYPE_INVALID);
 #if SX_PLATFORM_WINDOWS
     if (type == SX_FILE_TYPE_REGULAR)
@@ -318,7 +334,8 @@ bool sx_os_del(const char* path, sx_file_type type) {
 #endif
 }
 
-bool sx_os_mkdir(const char* path) {
+bool sx_os_mkdir(const char* path)
+{
 #if SX_PLATFORM_WINDOWS
     return CreateDirectoryA(path, NULL) == TRUE;
 #else
@@ -326,7 +343,8 @@ bool sx_os_mkdir(const char* path) {
 #endif
 }
 
-char* sx_os_path_exepath(char* dst, int size) {
+char* sx_os_path_exepath(char* dst, int size)
+{
 #if SX_PLATFORM_WINDOWS
     GetModuleFileName(NULL, dst, size);
     return dst;
@@ -345,7 +363,8 @@ char* sx_os_path_exepath(char* dst, int size) {
 }
 
 
-sx_file_info sx_os_stat(const char* filepath) {
+sx_file_info sx_os_stat(const char* filepath)
+{
     sx_assert(filepath);
     sx_file_info info = { SX_FILE_TYPE_INVALID, 0, 0 };
 
@@ -370,7 +389,7 @@ sx_file_info sx_os_stat(const char* filepath) {
     info.last_modified = (uint64_t)(tm.QuadPart / 10000000 - 11644473600LL);
 #else
     struct stat st;
-    int32_t     result = stat(filepath, &st);
+    int32_t result = stat(filepath, &st);
     if (0 != result)
         return info;
 
@@ -389,7 +408,8 @@ sx_file_info sx_os_stat(const char* filepath) {
     return info;
 }
 
-char* sx_os_path_pwd(char* dst, int size) {
+char* sx_os_path_pwd(char* dst, int size)
+{
 #if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_CRT_NONE
     sx_unused(dst);
     sx_unused(size);
@@ -401,7 +421,8 @@ char* sx_os_path_pwd(char* dst, int size) {
 #endif    // SX_COMPILER_
 }
 
-char* sx_os_path_abspath(char* dst, int size, const char* path) {
+char* sx_os_path_abspath(char* dst, int size, const char* path)
+{
 #if SX_PLATFORM_POSIX
     char abs_path[PATH_MAX];
     if (realpath(path, abs_path) != NULL) {
@@ -419,7 +440,8 @@ char* sx_os_path_abspath(char* dst, int size, const char* path) {
 #endif
 }
 
-char* sx_os_path_unixpath(char* dst, int size, const char* path) {
+char* sx_os_path_unixpath(char* dst, int size, const char* path)
+{
     int len = sx_strlen(path);
     len = sx_min(len, size - 1);
 
@@ -433,7 +455,8 @@ char* sx_os_path_unixpath(char* dst, int size, const char* path) {
     return dst;
 }
 
-char* sx_os_path_winpath(char* dst, int size, const char* path) {
+char* sx_os_path_winpath(char* dst, int size, const char* path)
+{
     int len = sx_strlen(path);
     len = sx_min(len, size - 1);
 
@@ -447,7 +470,8 @@ char* sx_os_path_winpath(char* dst, int size, const char* path) {
     return dst;
 }
 
-char* sx_os_path_basename(char* dst, int size, const char* path) {
+char* sx_os_path_basename(char* dst, int size, const char* path)
+{
     const char* r = sx_strrchar(path, '/');
     if (!r)
         r = sx_strrchar(path, '\\');
@@ -459,7 +483,8 @@ char* sx_os_path_basename(char* dst, int size, const char* path) {
     return dst;
 }
 
-char* sx_os_path_dirname(char* dst, int size, const char* path) {
+char* sx_os_path_dirname(char* dst, int size, const char* path)
+{
     const char* r = sx_strrchar(path, '/');
     if (!r)
         r = sx_strrchar(path, '\\');
@@ -477,7 +502,8 @@ char* sx_os_path_dirname(char* dst, int size, const char* path) {
 }
 
 char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size,
-                          const char* path) {
+                          const char* path)
+{
     sx_assert(ext != path);
 
     int len = sx_strlen(path);
@@ -507,7 +533,8 @@ char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_
     return ext;
 }
 
-char* sx_os_path_ext(char* dst, int size, const char* path) {
+char* sx_os_path_ext(char* dst, int size, const char* path)
+{
     sx_assert(size > 0);
 
     int len = sx_strlen(path);
@@ -530,7 +557,8 @@ char* sx_os_path_ext(char* dst, int size, const char* path) {
     return dst;
 }
 
-char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b) {
+char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b)
+{
     sx_assert(dst != path_b);
     int len = sx_strlen(path_a);
     if (dst != path_a) {
@@ -552,7 +580,8 @@ char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_
     return dst;
 }
 
-char* sx_os_path_normcase(char* dst, int size, const char* path) {
+char* sx_os_path_normcase(char* dst, int size, const char* path)
+{
 #if SX_PLATFORM_WINDOWS
     return sx_tolower(dst, size, path);
 #else
@@ -562,7 +591,8 @@ char* sx_os_path_normcase(char* dst, int size, const char* path) {
 #endif
 }
 
-char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start) {
+char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start)
+{
     sx_assert(start != dst);
 
     const char* sub = sx_strstr(path, start);
@@ -579,19 +609,23 @@ char* sx_os_path_relpath(char* dst, int size, const char* path, const char* star
     return NULL;
 }
 
-bool sx_os_path_exists(const char* path) {
+bool sx_os_path_exists(const char* path)
+{
     return sx_os_stat(path).type != SX_FILE_TYPE_INVALID;
 }
 
-bool sx_os_path_isfile(const char* filepath) {
+bool sx_os_path_isfile(const char* filepath)
+{
     return (sx_os_stat(filepath).type == SX_FILE_TYPE_REGULAR);
 }
 
-bool sx_os_path_isdir(const char* filepath) {
+bool sx_os_path_isdir(const char* filepath)
+{
     return (sx_os_stat(filepath).type == SX_FILE_TYPE_DIRECTORY);
 }
 
-char* sx_os_path_normpath(char* dst, int size, const char* path) {
+char* sx_os_path_normpath(char* dst, int size, const char* path)
+{
 #if SX_PLATFORM_WINDOWS
     return sx_tolower(dst, size, sx_os_path_winpath(dst, size, path));
 #elif SX_PLATFORM_APPLE
@@ -601,7 +635,8 @@ char* sx_os_path_normpath(char* dst, int size, const char* path) {
 #endif
 }
 
-int sx_os_numcores() {
+int sx_os_numcores()
+{
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);
@@ -613,16 +648,17 @@ int sx_os_numcores() {
 #elif SX_PLATFORM_APPLE
     int ncpu;
     size_t ncpu_len = sizeof(ncpu);
-    // hw.physicalcpu - The number of physical processors available in the current power management mode.
-    // hw.physicalcpu_max - The maximum number of physical processors that could be available this boot.
-    // hw.logicalcpu - The number of logical processors available in the current power management mode.
-    // hw.logicalcpu_max - The maximum number of logical processors that could be available this boot.
+    // hw.physicalcpu - The number of physical processors available in the current power management
+    // mode. hw.physicalcpu_max - The maximum number of physical processors that could be available
+    // this boot. hw.logicalcpu - The number of logical processors available in the current power
+    // management mode. hw.logicalcpu_max - The maximum number of logical processors that could be
+    // available this boot.
     if (sysctlbyname("hw.logicalcpu", &ncpu, &ncpu_len, NULL, 0) == 0)
         return ncpu;
     return 1;
 
 #elif SX_PLATFORM_BSD
-    int    ctlarg[2], ncpu;
+    int ctlarg[2], ncpu;
     size_t len;
 
     ctlarg[0] = CTL_HW;

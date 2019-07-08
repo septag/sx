@@ -121,11 +121,11 @@ typedef void* sx_fiber_t;
 
 typedef struct sx_fiber_transfer {
     sx_fiber_t from;
-    void*      user;
+    void* user;
 } sx_fiber_transfer;
 
 typedef struct sx_fiber_stack {
-    void*        sptr;
+    void* sptr;
     unsigned int ssize;
 } sx_fiber_stack;
 
@@ -135,10 +135,10 @@ typedef void(sx_fiber_cb)(sx_fiber_transfer transfer);
 typedef struct sx_coro_context sx_coro_context;
 
 SX_API sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
-SX_API void             sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
-SX_API void             sx_coro_update(sx_coro_context* ctx, float dt);
-SX_API bool             sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
-                                                 sx_fiber_cb* new_callback);
+SX_API void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
+SX_API void sx_coro_update(sx_coro_context* ctx, float dt);
+SX_API bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
+                                     sx_fiber_cb* new_callback);
 
 SX_API void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user);
 SX_API void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom);

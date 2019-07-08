@@ -23,14 +23,14 @@
 #include "sx.h"
 
 typedef struct sx_alloc sx_alloc;
-typedef void*           sx_tlsf_pool_t;
+typedef void* sx_tlsf_pool_t;
 
 SX_API bool sx_tlsfalloc_init(sx_alloc* tlsf, void* mem, int size);
 SX_API void sx_tlsfalloc_release(sx_alloc* tlsf);
 
 // Pool management, additional pools
 SX_API sx_tlsf_pool_t sx_tlsfalloc_add_pool(sx_alloc* tlsf, void* mem, int size);
-SX_API void           sx_tlsfalloc_remove_pool(sx_alloc* tlsf, sx_tlsf_pool_t pool);
+SX_API void sx_tlsfalloc_remove_pool(sx_alloc* tlsf, sx_tlsf_pool_t pool);
 SX_API sx_tlsf_pool_t sx_tlsfalloc_get_pool(sx_alloc* tlsf);
 
 // Debug

@@ -9,7 +9,7 @@
 // If you are building the sx library itself, there is no need to modify this, it must be defined by
 // SX_SHARED_LIB cmake option
 #ifndef SX_CONFIG_SHARED_LIB
-#   define SX_CONFIG_SHARED_LIB 0
+#    define SX_CONFIG_SHARED_LIB 0
 #endif
 
 // Debug is forced to be off, so we undef _DEBUG if it's already defined
@@ -46,7 +46,7 @@
 // Natural aligment is the default memory alignment for each platform
 // All memory allocators aligns pointers to this value if 'align' parameter is less than natural
 // alignment.
-// MacOS/iOS devices seems to be 16-byte aligned by default: 
+// MacOS/iOS devices seems to be 16-byte aligned by default:
 // https://developer.apple.com/library/archive/documentation/Performance/Conceptual/ManagingMemory/Articles/MemoryAlloc.html
 #ifndef SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
 #    if defined(__APPLE__) && defined(__MACH__)
@@ -67,11 +67,11 @@
 #endif
 
 #ifndef SX_CONFIG_HANDLE_GEN_BITS
-#   define SX_CONFIG_HANDLE_GEN_BITS 14
+#    define SX_CONFIG_HANDLE_GEN_BITS 14
 #endif
 
 #ifndef SX_CONFIG_SIMD_DISABLE
-#   define SX_CONFIG_SIMD_DISABLE 0
+#    define SX_CONFIG_SIMD_DISABLE 0
 #endif
 
 #if defined(_MSC_VER) && 0

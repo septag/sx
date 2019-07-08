@@ -19,7 +19,8 @@
 
 #include "sx/os.h"
 
-void* sx_virtual_reserve(size_t reserve_sz) {
+void* sx_virtual_reserve(size_t reserve_sz)
+{
     sx_assert(reserve_sz % sx_os_pagesz() == 0);
 #if SX_PLATFORM_WINDOWS
     return VirtualAlloc(NULL, reserve_sz, MEM_RESERVE, PAGE_READWRITE);
@@ -28,7 +29,8 @@ void* sx_virtual_reserve(size_t reserve_sz) {
 #endif
 }
 
-void sx_virtual_release(void* ptr, size_t sz) {
+void sx_virtual_release(void* ptr, size_t sz)
+{
 #if SX_PLATFORM_WINDOWS
     sx_unused(sz);
     VirtualFree(ptr, 0, MEM_RELEASE);
@@ -37,7 +39,8 @@ void sx_virtual_release(void* ptr, size_t sz) {
 #endif
 }
 
-void sx_virtual_protect(void* ptr, size_t sz) {
+void sx_virtual_protect(void* ptr, size_t sz)
+{
     sx_unused(ptr);
     sx_unused(sz);
 
@@ -45,7 +48,8 @@ void sx_virtual_protect(void* ptr, size_t sz) {
     sx_assert(0 && "not implemented");
 }
 
-void* sx_virtual_commit(void* addr, size_t sz) {
+void* sx_virtual_commit(void* addr, size_t sz)
+{
     int page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)addr % page_sz == 0);
     sx_assert(sz % page_sz == 0);
@@ -57,7 +61,8 @@ void* sx_virtual_commit(void* addr, size_t sz) {
 #endif
 }
 
-void sx_virtual_decommit(void* addr, size_t sz) {
+void sx_virtual_decommit(void* addr, size_t sz)
+{
     int page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)addr % page_sz == 0);
     sx_assert(sz % page_sz == 0);
@@ -72,11 +77,12 @@ void sx_virtual_decommit(void* addr, size_t sz) {
 // TODO: VirtualProtect allocations
 
 typedef struct sx__virtualalloc_hdr {
-    size_t   size;
+    size_t size;
     uint32_t padding;
 } sx__virtualalloc_hdr;
 
-static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, uint32_t align) {
+static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, uint32_t align)
+{
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     const size_t total = sx_os_align_pagesz(size + sizeof(size_t) + align);
     if (valloc->offset + size <= valloc->reserved_sz) {
@@ -101,17 +107,18 @@ static void* sx__virtualalloc_malloc(sx_virtualalloc* valloc, size_t size, uint3
 }
 
 static void* sx__virtualalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
-                                 const char* func, uint32_t line, void* user_data) {
+                                 const char* func, uint32_t line, void* user_data)
+{
     sx_unused(file);
     sx_unused(line);
     sx_unused(func);
-    
+
     sx_virtualalloc* valloc = (sx_virtualalloc*)user_data;
     if (size == 0) {
         // free
         if (ptr) {
             sx__virtualalloc_hdr* hdr = (sx__virtualalloc_hdr*)ptr - 1;
-            void*                 old_ptr = (uint8_t*)ptr - hdr->padding;
+            void* old_ptr = (uint8_t*)ptr - hdr->padding;
             sx_virtual_decommit(old_ptr, hdr->size);
         }
         return NULL;
@@ -131,7 +138,8 @@ static void* sx__virtualalloc_cb(void* ptr, size_t size, uint32_t align, const c
     }
 }
 
-bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz) {
+bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz)
+{
     sx_assert(reserve_sz > 0);
 
     // Align size to pages
@@ -149,7 +157,8 @@ bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz) {
     return true;
 }
 
-void sx_virtualalloc_release(sx_virtualalloc* valloc) {
+void sx_virtualalloc_release(sx_virtualalloc* valloc)
+{
     if (valloc->ptr) {
         sx_virtual_release(valloc->ptr, valloc->reserved_sz);
         valloc->ptr = NULL;

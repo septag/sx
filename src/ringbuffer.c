@@ -3,28 +3,32 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 
-#include "sx/allocator.h"
 #include "sx/ringbuffer.h"
+#include "sx/allocator.h"
 
-sx_ringbuffer* sx_ringbuffer_create(const sx_alloc* alloc, int capacity) {
+sx_ringbuffer* sx_ringbuffer_create(const sx_alloc* alloc, int capacity)
+{
     sx_ringbuffer* rb = sx_aligned_malloc(alloc, sizeof(sx_ringbuffer) + sx_align_16(capacity), 16);
     rb->capacity = capacity;
     rb->size = rb->start = rb->start = 0;
     return rb;
 }
 
-void sx_ringbuffer_destroy(sx_ringbuffer* rb, const sx_alloc* alloc) {
+void sx_ringbuffer_destroy(sx_ringbuffer* rb, const sx_alloc* alloc)
+{
     sx_aligned_free(alloc, rb, 16);
 }
 
-int sx_ringbuffer_expect_write(const sx_ringbuffer* rb) {
+int sx_ringbuffer_expect_write(const sx_ringbuffer* rb)
+{
     return rb->capacity - rb->size;
 }
 
-void sx_ringbuffer_write(sx_ringbuffer* rb, const void* data, int size) {
+void sx_ringbuffer_write(sx_ringbuffer* rb, const void* data, int size)
+{
     sx_assert(size > 0);
     sx_assert(size <= sx_ringbuffer_expect_write(rb));
-    
+
     uint8_t* buff = (uint8_t*)(rb + 1);
     const uint8_t* udata = (const uint8_t*)data;
     int remain = rb->capacity - rb->end;
@@ -39,7 +43,8 @@ void sx_ringbuffer_write(sx_ringbuffer* rb, const void* data, int size) {
     rb->size += size;
 }
 
-int sx_ringbuffer_read(sx_ringbuffer* rb, void* data, int size) {
+int sx_ringbuffer_read(sx_ringbuffer* rb, void* data, int size)
+{
     sx_assert(size > 0);
 
     size = sx_min(size, rb->size);

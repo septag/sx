@@ -6,7 +6,8 @@
 #include "sx/allocator.h"
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-static inline SX_CONSTFN int sx__nearest_pow2(int n) {
+static inline SX_CONSTFN int sx__nearest_pow2(int n)
+{
     n--;
     n |= n >> 1;
     n |= n >> 2;
@@ -17,12 +18,14 @@ static inline SX_CONSTFN int sx__nearest_pow2(int n) {
     return n;
 }
 
-static inline SX_CONSTFN bool sx__ispow2(int n) {
+static inline SX_CONSTFN bool sx__ispow2(int n)
+{
     return (n & (n - 1)) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32_t sx_hash_u32(uint32_t key) {
+uint32_t sx_hash_u32(uint32_t key)
+{
     const uint32_t c2 = 0x27d4eb2d;    // a prime or an odd constant
     key = (key ^ 61) ^ (key >> 16);
     key = key + (key << 3);
@@ -32,7 +35,8 @@ uint32_t sx_hash_u32(uint32_t key) {
     return key;
 }
 
-uint64_t sx_hash_u64(uint64_t key) {
+uint64_t sx_hash_u64(uint64_t key)
+{
     key = (~key) + (key << 21);    // key = (key << 21) - key - 1;
     key = key ^ (key >> 24);
     key = (key + (key << 3)) + (key << 8);    // key * 265
@@ -43,7 +47,8 @@ uint64_t sx_hash_u64(uint64_t key) {
     return key;
 }
 
-uint32_t sx_hash_u64_to_u32(uint64_t key) {
+uint32_t sx_hash_u64_to_u32(uint64_t key)
+{
     key = (~key) + (key << 18);
     key = key ^ (key >> 31);
     key = key * 21;
@@ -58,56 +63,68 @@ uint32_t sx_hash_u64_to_u32(uint64_t key) {
 #define XXH_PRIVATE_API
 #include "../3rdparty/xxhash/xxhash.h"
 
-uint32_t sx_hash_xxh32(const void* data, size_t len, uint32_t seed) {
+uint32_t sx_hash_xxh32(const void* data, size_t len, uint32_t seed)
+{
     return XXH32(data, len, seed);
 }
 
-uint64_t sx_hash_xxh64(const void* data, size_t len, uint64_t seed) {
+uint64_t sx_hash_xxh64(const void* data, size_t len, uint64_t seed)
+{
     return XXH64(data, len, seed);
 }
 
-sx_hash_xxh32_t* sx_hash_create_xxh32(const sx_alloc* alloc) {
+sx_hash_xxh32_t* sx_hash_create_xxh32(const sx_alloc* alloc)
+{
     return (sx_hash_xxh32_t*)sx_malloc(alloc, sizeof(XXH32_state_t));
 }
 
-void sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc) {
+void sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc)
+{
     sx_free(alloc, state);
 }
 
-void sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed) {
+void sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed)
+{
     XXH32_state_t* xstate = (XXH32_state_t*)state;
     XXH32_reset(xstate, seed);
 }
 
-void sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len) {
+void sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len)
+{
     XXH32_state_t* xstate = (XXH32_state_t*)state;
     XXH32_update(xstate, data, len);
 }
 
-uint32_t sx_hash_xxh32_digest(sx_hash_xxh32_t* state) {
+uint32_t sx_hash_xxh32_digest(sx_hash_xxh32_t* state)
+{
     XXH32_state_t* xstate = (XXH32_state_t*)state;
     return XXH32_digest(xstate);
 }
 
-sx_hash_xxh64_t* sx_hash_create_xxh64(const sx_alloc* alloc) {
+sx_hash_xxh64_t* sx_hash_create_xxh64(const sx_alloc* alloc)
+{
     return (sx_hash_xxh64_t*)sx_malloc(alloc, sizeof(XXH64_state_t));
 }
 
-void sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc) {
+void sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc)
+{
     sx_free(alloc, state);
 }
 
-void sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed) {
+void sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed)
+{
     XXH64_state_t* xstate = (XXH64_state_t*)state;
     XXH64_reset(xstate, seed);
 }
 
-void sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len) {
+void sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len)
+{
     XXH64_state_t* xstate = (XXH64_state_t*)state;
     XXH64_update(xstate, data, len);
 }
 
-uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state) {
+uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state)
+{
     XXH64_state_t* xstate = (XXH64_state_t*)state;
     return XXH64_digest(xstate);
 }
@@ -118,7 +135,8 @@ uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state) {
 
 #define FNV1_32_INIT 0x811c9dc5
 #define FNV1_32_PRIME 0x01000193
-uint32_t sx_hash_fnv32(const void* data, size_t len) {
+uint32_t sx_hash_fnv32(const void* data, size_t len)
+{
     const char* bp = (const char*)data;
     const char* be = bp + len;
 
@@ -131,7 +149,8 @@ uint32_t sx_hash_fnv32(const void* data, size_t len) {
     return hval;
 }
 
-uint32_t sx_hash_fnv32_str(const char* str) {
+uint32_t sx_hash_fnv32_str(const char* str)
+{
     const char* s = str;
 
     uint32_t hval = FNV1_32_INIT;
@@ -212,9 +231,10 @@ static const uint32_t crc_table[256] = {
     DO4(buf);    \
     DO4(buf);
 
-uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed) {
+uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed)
+{
     const uint8_t* buf = (const uint8_t*)data;
-    uint32_t       crc = seed ^ 0xffffffffL;
+    uint32_t crc = seed ^ 0xffffffffL;
 
     while (len >= 8) {
         DO8(buf);
@@ -233,15 +253,17 @@ uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/
-static inline uint32_t sx__fib_hash(uint32_t h, int bits) {
+static inline uint32_t sx__fib_hash(uint32_t h, int bits)
+{
     uint64_t h64 = (uint64_t)h;
     h64 ^= (h64 >> bits);
     return (uint32_t)((h64 * 11400714819323198485llu) >> bits);
 }
 
 // https://www.exploringbinary.com/number-of-bits-in-a-decimal-integer/
-static inline int sx__calc_bitshift(int n) {
-    int      c = 0;
+static inline int sx__calc_bitshift(int n)
+{
+    int c = 0;
     uint32_t un = (uint32_t)n;
     while (un > 1) {
         c++;
@@ -251,7 +273,8 @@ static inline int sx__calc_bitshift(int n) {
     return 64 - c;
 }
 
-sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity) {
+sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
+{
     sx_assert(capacity > 0);
 
     capacity = sx__nearest_pow2(capacity);
@@ -279,13 +302,15 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity) {
     return tbl;
 }
 
-void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc) {
+void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc)
+{
     sx_assert(tbl);
     tbl->count = tbl->capacity = 0;
     sx_free(alloc, tbl);
 }
 
-bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc) {
+bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc)
+{
     sx_hashtbl* tbl = *ptbl;
     // Create a new table (double the size), repopulate it and replace previous one
     sx_hashtbl* new_tbl = sx_hashtbl_create(alloc, tbl->capacity << 1);
@@ -302,7 +327,8 @@ bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc) {
     return true;
 }
 
-void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr) {
+void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr)
+{
     sx_assert(sx__ispow2(capacity) &&
               "Table size must be power of 2, get it from sx_hashtbl_valid_capacity");
 
@@ -320,16 +346,19 @@ void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* val
 #endif
 }
 
-int sx_hashtbl_fixed_size(int capacity) {
+int sx_hashtbl_fixed_size(int capacity)
+{
     int cap = sx_hashtbl_valid_capacity(capacity);
     return cap * (sizeof(uint32_t) + sizeof(int));
 }
 
-int sx_hashtbl_valid_capacity(int capacity) {
+int sx_hashtbl_valid_capacity(int capacity)
+{
     return sx__nearest_pow2(capacity);
 }
 
-int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value) {
+int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
+{
     sx_assert(tbl->count < tbl->capacity);
 
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
@@ -345,7 +374,8 @@ int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value) {
     return h;
 }
 
-int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key) {
+int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key)
+{
     uint32_t h = sx__fib_hash(key, tbl->_bitshift);
     uint32_t cnt = (uint32_t)tbl->capacity;
     if (tbl->keys[h] == key) {
@@ -369,7 +399,8 @@ int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key) {
     }
 }
 
-void sx_hashtbl_clear(sx_hashtbl* tbl) {
+void sx_hashtbl_clear(sx_hashtbl* tbl)
+{
     sx_memset(tbl->keys, 0x0, sizeof(uint32_t) * tbl->capacity);
     tbl->count = 0;
 }

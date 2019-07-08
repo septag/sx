@@ -12,16 +12,18 @@
 // by Jonatan Hedborg
 SX_PRAGMA_DIAGNOSTIC_PUSH()
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wstrict-aliasing")
-static inline float sx__rng_float_normalized(uint32_t value) {
+static inline float sx__rng_float_normalized(uint32_t value)
+{
     uint32_t exponent = 127;
     uint32_t mantissa = value >> 9;
     uint32_t result = (exponent << 23) | mantissa;
-    float    fresult = *(float*)(&result);
+    float fresult = *(float*)(&result);
     return fresult - 1.0f;
 }
 SX_PRAGMA_DIAGNOSTIC_POP()
 
-static inline uint64_t sx__rng_avalanche64(uint64_t h) {
+static inline uint64_t sx__rng_avalanche64(uint64_t h)
+{
     h ^= h >> 33;
     h *= 0xff51afd7ed558ccd;
     h ^= h >> 33;
@@ -30,7 +32,8 @@ static inline uint64_t sx__rng_avalanche64(uint64_t h) {
     return h;
 }
 
-void sx_rng_seed(sx_rng* rng, uint32_t seed) {
+void sx_rng_seed(sx_rng* rng, uint32_t seed)
+{
     uint64_t value = (((uint64_t)seed) << 1ull) | 1ull;    // make it odd
     value = sx__rng_avalanche64(value);
     rng->state[0] = 0ull;
@@ -40,7 +43,8 @@ void sx_rng_seed(sx_rng* rng, uint32_t seed) {
     sx_rng_gen(rng);
 }
 
-uint32_t sx_rng_gen(sx_rng* rng) {
+uint32_t sx_rng_gen(sx_rng* rng)
+{
     uint64_t oldstate = rng->state[0];
     rng->state[0] = oldstate * 0x5851f42d4c957f2dull + rng->state[1];
     uint32_t xorshifted = (uint32_t)(((oldstate >> 18ull) ^ oldstate) >> 27ull);
@@ -48,11 +52,13 @@ uint32_t sx_rng_gen(sx_rng* rng) {
     return (xorshifted >> rot) | (xorshifted << ((-(int)rot) & 31));
 }
 
-float sx_rng_gen_f(sx_rng* rng) {
+float sx_rng_gen_f(sx_rng* rng)
+{
     return sx__rng_float_normalized(sx_rng_gen(rng));
 }
 
-int sx_rng_gen_irange(sx_rng* rng, int _min, int _max) {
+int sx_rng_gen_irange(sx_rng* rng, int _min, int _max)
+{
     sx_assert(_min <= _max);
 
     const uint32_t range = (uint32_t)(_max - _min) + 1;

@@ -42,6 +42,7 @@ imgui.ini
 install
 *.log
 .vscode
+compile_commands.json
 
 # Compiled binaries
 *.so

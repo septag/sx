@@ -96,28 +96,28 @@ SX_API uint32_t sx_hash_u64_to_u32(uint64_t key);
 typedef struct sx_hash_xxh32 sx_hash_xxh32_t;
 
 SX_API sx_hash_xxh32_t* sx_hash_create_xxh32(const sx_alloc* alloc);
-SX_API void             sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc);
-SX_API void             sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed);
-SX_API void             sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len);
+SX_API void sx_hash_destroy_xxh32(sx_hash_xxh32_t* state, const sx_alloc* alloc);
+SX_API void sx_hash_xxh32_init(sx_hash_xxh32_t* state, uint32_t seed);
+SX_API void sx_hash_xxh32_update(sx_hash_xxh32_t* state, const void* data, size_t len);
 SX_API uint32_t sx_hash_xxh32_digest(sx_hash_xxh32_t* state);
 
 // Streaming (state based) hash using xxhash64
 typedef struct sx_hash_xxh64_s sx_hash_xxh64_t;
 
 SX_API sx_hash_xxh64_t* sx_hash_create_xxh64(const sx_alloc* alloc);
-SX_API void             sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc);
-SX_API void             sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed);
-SX_API void             sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len);
+SX_API void sx_hash_destroy_xxh64(sx_hash_xxh64_t* state, const sx_alloc* alloc);
+SX_API void sx_hash_xxh64_init(sx_hash_xxh64_t* state, uint64_t seed);
+SX_API void sx_hash_xxh64_update(sx_hash_xxh64_t* state, const void* data, size_t len);
 SX_API uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Hash table
 typedef struct sx_hashtbl {
     uint32_t* keys;
-    int*      values;
-    int       _bitshift;
-    int       count;
-    int       capacity;
+    int* values;
+    int _bitshift;
+    int count;
+    int capacity;
 #if SX_CONFIG_HASHTBL_DEBUG
     int _miss_cnt;
     int _probe_cnt;
@@ -125,42 +125,47 @@ typedef struct sx_hashtbl {
 } sx_hashtbl;
 
 SX_API sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity);
-SX_API void        sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc);
-SX_API bool        sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc);
+SX_API void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc);
+SX_API bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc);
 
 SX_API void sx_hashtbl_init(sx_hashtbl* tbl, int capacity, uint32_t* keys_ptr, int* values_ptr);
-SX_API int  sx_hashtbl_valid_capacity(int capacity);
-SX_API int  sx_hashtbl_fixed_size(int capacity);
+SX_API int sx_hashtbl_valid_capacity(int capacity);
+SX_API int sx_hashtbl_fixed_size(int capacity);
 
-SX_API int  sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
-SX_API int  sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
+SX_API int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
+SX_API int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
 SX_API void sx_hashtbl_clear(sx_hashtbl* tbl);
 
 
-static inline int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val) {
+static inline int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
+{
     int index = sx_hashtbl_find(tbl, key);
     return index != -1 ? tbl->values[index] : not_found_val;
 }
 
-static inline void sx_hashtbl_remove(sx_hashtbl* tbl, int index) {
+static inline void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
+{
     sx_assert(index >= 0 && index < tbl->capacity);
 
     tbl->keys[index] = 0;
     --tbl->count;
 }
 
-static inline void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key) {
+static inline void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key)
+{
     int index = sx_hashtbl_find(tbl, key);
     if (index != -1)
         sx_hashtbl_remove(tbl, index);
 }
 
 
-static inline bool sx_hashtbl_full(const sx_hashtbl* tbl) {
+static inline bool sx_hashtbl_full(const sx_hashtbl* tbl)
+{
     return tbl->capacity == tbl->count;
 }
 
-static inline int sx_hashtbl_get(const sx_hashtbl* tbl, int index) {
+static inline int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
+{
     sx_assert(index >= 0 && index < tbl->capacity);
     return tbl->values[index];
 }

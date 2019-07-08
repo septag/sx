@@ -24,16 +24,17 @@
 
 typedef struct sx_alloc sx_alloc;
 
-typedef sx_align_decl(16, struct) sx_ringbuffer {
+typedef sx_align_decl(16, struct) sx_ringbuffer
+{
     int capacity;
-    int size;   // valid data size
-    int start;  // read offset
-    int end;    // write offset
-} sx_ringbuffer; 
+    int size;     // valid data size
+    int start;    // read offset
+    int end;      // write offset
+}
+sx_ringbuffer;
 
 SX_API sx_ringbuffer* sx_ringbuffer_create(const sx_alloc* alloc, int capacity);
 SX_API void sx_ringbuffer_destroy(sx_ringbuffer* rb, const sx_alloc* alloc);
 SX_API int sx_ringbuffer_expect_write(const sx_ringbuffer* rb);
 SX_API void sx_ringbuffer_write(sx_ringbuffer* rb, const void* data, int size);
 SX_API int sx_ringbuffer_read(sx_ringbuffer* rb, void* data, int size);
-

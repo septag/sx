@@ -20,7 +20,8 @@
 #    define ftello64 ftell
 #endif    // SX_
 
-sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* data, int align) {
+sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* data, int align)
+{
     align = sx_max(align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     sx_mem_block* mem = (sx_mem_block*)sx_malloc(alloc, size + sizeof(sx_mem_block) + align);
     if (mem) {
@@ -37,7 +38,8 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size, const void* d
     }
 }
 
-sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data) {
+sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data)
+{
     sx_mem_block* mem = (sx_mem_block*)sx_malloc(alloc, sizeof(sx_mem_block));
     if (mem) {
         mem->alloc = alloc;
@@ -51,7 +53,8 @@ sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data) {
     }
 }
 
-void sx_mem_destroy_block(sx_mem_block* mem) {
+void sx_mem_destroy_block(sx_mem_block* mem)
+{
     sx_assert(mem);
 
     if (mem->alloc) {
@@ -59,14 +62,16 @@ void sx_mem_destroy_block(sx_mem_block* mem) {
     }
 }
 
-void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size) {
+void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size)
+{
     mem->alloc = NULL;
     mem->data = data;
     mem->size = size;
     mem->align = 0;
 }
 
-bool sx_mem_grow(sx_mem_block** pmem, int size) {
+bool sx_mem_grow(sx_mem_block** pmem, int size)
+{
     sx_mem_block* mem = *pmem;
     sx_assert(mem->alloc &&
               "Growable memory must be created with an allocator - sx_mem_create_block");
@@ -88,7 +93,8 @@ bool sx_mem_grow(sx_mem_block** pmem, int size) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int init_size) {
+void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int init_size)
+{
     sx_assert(alloc);
     if (init_size <= 0)
         init_size = 4096;
@@ -101,14 +107,16 @@ void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int init_s
     writer->size = writer->mem->size;
 }
 
-void sx_mem_release_writer(sx_mem_writer* writer) {
+void sx_mem_release_writer(sx_mem_writer* writer)
+{
     sx_assert(writer);
     if (writer->mem) {
         sx_mem_destroy_block(writer->mem);
     }
 }
 
-int sx_mem_write(sx_mem_writer* writer, const void* data, int size) {
+int sx_mem_write(sx_mem_writer* writer, const void* data, int size)
+{
     sx_mem_block* mem = writer->mem;
 
     // need to grow memory ?
@@ -136,7 +144,8 @@ int sx_mem_write(sx_mem_writer* writer, const void* data, int size) {
     return size;
 }
 
-int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset, sx_whence whence) {
+int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset, sx_whence whence)
+{
     switch (whence) {
     case SX_WHENCE_BEGIN:
         writer->pos = sx_clamp(offset, (int64_t)0ll, writer->top);
@@ -153,7 +162,8 @@ int64_t sx_mem_seekw(sx_mem_writer* writer, int64_t offset, sx_whence whence) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-void sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size) {
+void sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size)
+{
     sx_assert(data);
     sx_assert(size);
 
@@ -162,7 +172,8 @@ void sx_mem_init_reader(sx_mem_reader* reader, const void* data, int64_t size) {
     reader->pos = 0;
 }
 
-int sx_mem_read(sx_mem_reader* reader, void* data, int size) {
+int sx_mem_read(sx_mem_reader* reader, void* data, int size)
+{
     int64_t remain = reader->top - reader->pos;
     if (size > (int)remain) {
         size = (int)remain;
@@ -173,7 +184,8 @@ int sx_mem_read(sx_mem_reader* reader, void* data, int size) {
     return size;
 }
 
-int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence) {
+int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence)
+{
     switch (whence) {
     case SX_WHENCE_BEGIN:
         reader->pos = sx_clamp(offset, (int64_t)0ll, reader->top);
@@ -188,7 +200,8 @@ int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence) {
     return reader->pos;
 }
 
-sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc) {
+sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc)
+{
     int64_t end = (size > 0) ? sx_min(reader->pos + size, reader->top) : reader->top;
     end -= 8;
     if (reader->pos >= end) {
@@ -225,7 +238,8 @@ typedef struct sx__file_data {
     FILE* f;
 } sx__file_data;
 
-bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t flags) {
+bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t flags)
+{
     static_assert(sizeof(writer->data) >= sizeof(sx__file_data), "Invalid data buffer size");
 
     sx__file_data* data = (sx__file_data*)writer->data;
@@ -233,7 +247,8 @@ bool sx_file_open_writer(sx_file_writer* writer, const char* filepath, uint32_t 
     return data->f != NULL;
 }
 
-void sx_file_close_writer(sx_file_writer* writer) {
+void sx_file_close_writer(sx_file_writer* writer)
+{
     sx__file_data* data = (sx__file_data*)writer->data;
     if (data->f) {
         fclose(data->f);
@@ -241,16 +256,18 @@ void sx_file_close_writer(sx_file_writer* writer) {
     }
 }
 
-int sx_file_write(sx_file_writer* writer, const void* data, int size) {
+int sx_file_write(sx_file_writer* writer, const void* data, int size)
+{
     sx__file_data* fdata = (sx__file_data*)writer->data;
-    int            written = (int)fwrite(data, 1, size, fdata->f);
+    int written = (int)fwrite(data, 1, size, fdata->f);
     if (written != size) {
         sx_data_truncate();
     }
     return written;
 }
 
-int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset, sx_whence whence) {
+int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset, sx_whence whence)
+{
     sx__file_data* fdata = (sx__file_data*)writer->data;
     fseeko64(fdata->f, offset, whence);
     return ftello64(fdata->f);
@@ -258,7 +275,8 @@ int64_t sx_file_seekw(sx_file_writer* writer, int64_t offset, sx_whence whence) 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-bool sx_file_open_reader(sx_file_reader* reader, const char* filepath) {
+bool sx_file_open_reader(sx_file_reader* reader, const char* filepath)
+{
     static_assert(sizeof(reader->data) >= sizeof(sx__file_data), "Invalid data buffer size");
 
     sx__file_data* data = (sx__file_data*)reader->data;
@@ -266,7 +284,8 @@ bool sx_file_open_reader(sx_file_reader* reader, const char* filepath) {
     return data->f != NULL;
 }
 
-void sx_file_close_reader(sx_file_reader* reader) {
+void sx_file_close_reader(sx_file_reader* reader)
+{
     sx__file_data* data = (sx__file_data*)reader->data;
     if (data->f) {
         fclose(data->f);
@@ -274,22 +293,25 @@ void sx_file_close_reader(sx_file_reader* reader) {
     }
 }
 
-int sx_file_read(sx_file_reader* reader, void* data, int size) {
+int sx_file_read(sx_file_reader* reader, void* data, int size)
+{
     sx__file_data* fdata = (sx__file_data*)reader->data;
-    int            r = (int)fread(data, 1, size, fdata->f);
+    int r = (int)fread(data, 1, size, fdata->f);
     if (r < size) {
         sx_data_truncate();
     }
     return r;
 }
 
-int64_t sx_file_seekr(sx_file_reader* reader, int64_t offset, sx_whence whence) {
+int64_t sx_file_seekr(sx_file_reader* reader, int64_t offset, sx_whence whence)
+{
     sx__file_data* fdata = (sx__file_data*)reader->data;
     fseeko64(fdata->f, offset, whence);
     return ftello64(fdata->f);
 }
 
-sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath) {
+sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath)
+{
     sx_file_reader reader;
     if (sx_file_open_reader(&reader, filepath)) {
         int64_t sz = sx_file_seekr(&reader, 0, SX_WHENCE_END);
@@ -309,7 +331,8 @@ sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath) {
     return NULL;
 }
 
-sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath) {
+sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath)
+{
     sx_file_reader reader;
     if (sx_file_open_reader(&reader, filepath)) {
         int64_t sz = sx_file_seekr(&reader, 0, SX_WHENCE_END);

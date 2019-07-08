@@ -9,7 +9,8 @@ typedef struct sx__linalloc_hdr_s {
     int padding;    // number of bytes that is padded before the pointer
 } sx__linalloc_hdr;
 
-static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align) {
+static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align)
+{
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
     size_t total = size + sizeof(sx__linalloc_hdr) + align;
     if ((alloc->offset + total) > (size_t)alloc->size) {
@@ -32,14 +33,15 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align
 }
 
 static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
-                             const char* func, uint32_t line, void* user_data) {
+                             const char* func, uint32_t line, void* user_data)
+{
     sx_unused(file);
     sx_unused(func);
     sx_unused(line);
 
 
     sx_linalloc* linalloc = (sx_linalloc*)user_data;
-    void*        last_ptr = linalloc->ptr + linalloc->last_ptr_offset;
+    void* last_ptr = linalloc->ptr + linalloc->last_ptr_offset;
     if (size > 0) {
         if (ptr == NULL) {
             // malloc
@@ -74,7 +76,8 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
     return NULL;
 }
 
-void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size) {
+void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size)
+{
     sx_assert(linalloc);
     sx_assert(ptr);
     sx_assert(size);
@@ -87,7 +90,8 @@ void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size) {
     linalloc->offset = linalloc->peak = 0;
 }
 
-void sx_linalloc_reset(sx_linalloc* linalloc) {
+void sx_linalloc_reset(sx_linalloc* linalloc)
+{
     linalloc->last_ptr_offset = 0;
     linalloc->offset = 0;
 }

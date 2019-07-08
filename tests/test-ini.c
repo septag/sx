@@ -1,5 +1,5 @@
-#include "sx/ini.h"
 #include "sx/allocator.h"
+#include "sx/ini.h"
 #include <stdio.h>
 
 static const char* ini_data =
@@ -12,9 +12,10 @@ static const char* ini_data =
     "[sx]\n"
     "is_library=1\n";
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     const sx_alloc* alloc = sx_alloc_malloc();
-    sx_ini*         ini = sx_ini_load(ini_data, alloc);
+    sx_ini* ini = sx_ini_load(ini_data, alloc);
     if (!ini) {
         puts("Loading ini data failed");
         return -1;

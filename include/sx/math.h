@@ -259,7 +259,8 @@ SX_API void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
 
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-static inline SX_CONSTFN int sx_nearest_pow2(int n) {
+static inline SX_CONSTFN int sx_nearest_pow2(int n)
+{
     n--;
     n |= n >> 1;
     n |= n >> 2;
@@ -270,130 +271,153 @@ static inline SX_CONSTFN int sx_nearest_pow2(int n) {
     return n;
 }
 
-static inline SX_CONSTFN bool sx_ispow2(int n) {
+static inline SX_CONSTFN bool sx_ispow2(int n)
+{
     return (n & (n - 1)) == 0;
 }
 
-static inline SX_CONSTFN float sx_torad(float _deg) {
+static inline SX_CONSTFN float sx_torad(float _deg)
+{
     return _deg * SX_PI / 180.0f;
 }
 
-static inline SX_CONSTFN float sx_todeg(float _rad) {
+static inline SX_CONSTFN float sx_todeg(float _rad)
+{
     return _rad * 180.0f / SX_PI;
 }
 
 // Packs float to unsigned int
-static inline SX_CONSTFN unsigned int sx_ftob(float _a) {
+static inline SX_CONSTFN unsigned int sx_ftob(float _a)
+{
     union {
-        float        f;
+        float f;
         unsigned int ui;
     } u = { _a };
     return u.ui;
 }
 
 // Unpacks float from unsigned int
-static inline SX_CONSTFN float sx_btof(unsigned int _a) {
+static inline SX_CONSTFN float sx_btof(unsigned int _a)
+{
     union {
         unsigned int ui;
-        float        f;
+        float f;
     } u = { _a };
     return u.f;
 }
 
 // Packs double to uint64_t
-static inline SX_CONSTFN uint64_t sx_dtob(double _a) {
+static inline SX_CONSTFN uint64_t sx_dtob(double _a)
+{
     union {
-        double   f;
+        double f;
         uint64_t ui;
     } u = { _a };
     return u.ui;
 }
 
 // Unpacks uint64_t to double
-static inline SX_CONSTFN double sx_btod(uint64_t _a) {
+static inline SX_CONSTFN double sx_btod(uint64_t _a)
+{
     union {
         uint64_t ui;
-        double   f;
+        double f;
     } u = { _a };
     return u.f;
 }
 
 // Returns sortable bit packed float value
 // http://archive.fo/2012.12.08-212402/http://stereopsis.com/radix.html
-static inline SX_CONSTFN unsigned int sx_fflip(unsigned int _value) {
+static inline SX_CONSTFN unsigned int sx_fflip(unsigned int _value)
+{
     unsigned int mask = -((int32_t)(_value >> 31)) | 0x80000000;
     return _value ^ mask;
 }
 
-static inline SX_CONSTFN bool sx_isnan(float _f) {
+static inline SX_CONSTFN bool sx_isnan(float _f)
+{
     const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp > UINT32_C(0x7f800000);
 }
 
-static inline SX_CONSTFN bool sx_isnand(double _f) {
+static inline SX_CONSTFN bool sx_isnand(double _f)
+{
     const uint64_t tmp = sx_dtob(_f) & INT64_MAX;
     return tmp > UINT64_C(0x7ff0000000000000);
 }
 
-static inline SX_CONSTFN bool sx_isfin(float _f) {
+static inline SX_CONSTFN bool sx_isfin(float _f)
+{
     const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp < UINT32_C(0x7f800000);
 }
 
-static inline SX_CONSTFN bool sx_isfind(double _f) {
+static inline SX_CONSTFN bool sx_isfind(double _f)
+{
     const uint64_t tmp = sx_dtob(_f) & INT64_MAX;
     return tmp < UINT64_C(0x7ff0000000000000);
 }
 
-static inline SX_CONSTFN bool sx_isinf(float _f) {
+static inline SX_CONSTFN bool sx_isinf(float _f)
+{
     const unsigned int tmp = sx_ftob(_f) & INT32_MAX;
     return tmp == UINT32_C(0x7f800000);
 }
 
-static inline SX_CONSTFN bool sx_isinfd(double _f) {
+static inline SX_CONSTFN bool sx_isinfd(double _f)
+{
     const uint64_t tmp = sx_dtob(_f) & INT64_MAX;
     return tmp == UINT64_C(0x7ff0000000000000);
 }
 
-static inline SX_CONSTFN float sx_round(float _f) {
+static inline SX_CONSTFN float sx_round(float _f)
+{
     return sx_floor(_f + 0.5f);
 }
 
-static inline SX_CONSTFN float sx_ceil(float _f) {
+static inline SX_CONSTFN float sx_ceil(float _f)
+{
     return -sx_floor(-_f);
 }
 
-static inline SX_CONSTFN float sx_lerp(float _a, float _b, float _t) {
+static inline SX_CONSTFN float sx_lerp(float _a, float _b, float _t)
+{
     // this version is more precise than: _a + (_b - _a) * _t
     return (1.0f - _t) * _a + _t * _b;
 }
 
-static inline SX_CONSTFN float sx_sign(float _a) {
+static inline SX_CONSTFN float sx_sign(float _a)
+{
     return _a < 0.0f ? -1.0f : 1.0f;
 }
 
-static inline SX_CONSTFN float sx_abs(float _a) {
+static inline SX_CONSTFN float sx_abs(float _a)
+{
     union {
-        float        f;
+        float f;
         unsigned int ui;
     } u = { _a };
     u.ui &= 0x7FFFFFFF;
     return u.f;
 }
 
-static inline SX_CONSTFN float sx_tan(float _a) {
+static inline SX_CONSTFN float sx_tan(float _a)
+{
     return sx_sin(_a) / sx_cos(_a);
 }
 
-static inline SX_CONSTFN float sx_sinh(float _a) {
+static inline SX_CONSTFN float sx_sinh(float _a)
+{
     return 0.5f * (sx_exp(_a) - sx_exp(-_a));
 }
 
-static inline SX_CONSTFN float sx_cosh(float _a) {
+static inline SX_CONSTFN float sx_cosh(float _a)
+{
     return 0.5f * (sx_exp(_a) + sx_exp(-_a));
 }
 
-static inline SX_CONSTFN float sx_tanh(float _a) {
+static inline SX_CONSTFN float sx_tanh(float _a)
+{
     const float tmp0 = sx_exp(2.0f * _a);
     const float tmp1 = tmp0 - 1.0f;
     const float tmp2 = tmp0 + 1.0f;
@@ -402,51 +426,60 @@ static inline SX_CONSTFN float sx_tanh(float _a) {
     return result;
 }
 
-static inline SX_CONSTFN float sx_atan(float _a) {
+static inline SX_CONSTFN float sx_atan(float _a)
+{
     return sx_atan2(_a, 1.0f);
 }
 
-static inline SX_CONSTFN float sx_pow(float _a, float _b) {
+static inline SX_CONSTFN float sx_pow(float _a, float _b)
+{
     return sx_exp(_b * sx_log(_a));
 }
 
-static inline SX_CONSTFN float sx_exp2(float _a) {
+static inline SX_CONSTFN float sx_exp2(float _a)
+{
     return sx_pow(2.0f, _a);
 }
 
-static inline SX_CONSTFN float sx_log2(float _a) {
+static inline SX_CONSTFN float sx_log2(float _a)
+{
     return sx_log(_a) * SX_INVLOG_NAT2;
 }
 
 // Returns the nearest integer not greater in magnitude than _a.
-static inline SX_CONSTFN float sx_trunc(float _a) {
+static inline SX_CONSTFN float sx_trunc(float _a)
+{
     return (float)((int)_a);
 }
 
 // Returns the fractional (or decimal) part of _a, which is 0~1
-static inline SX_CONSTFN float sx_fract(float _a) {
+static inline SX_CONSTFN float sx_fract(float _a)
+{
     return _a - sx_trunc(_a);
 }
 
 // Returns the floating-point remainder of the division operation _a/_b.
-static inline SX_CONSTFN float sx_mod(float _a, float _b) {
+static inline SX_CONSTFN float sx_mod(float _a, float _b)
+{
     return _a - _b * sx_floor(_a / _b);
 }
 
 // http://realtimecollisiondetection.net/blog/?t=89
 SX_PRAGMA_DIAGNOSTIC_PUSH()
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wshadow")
-static inline SX_CONSTFN bool sx_equal(float _a, float _b, float _epsilon) {
+static inline SX_CONSTFN bool sx_equal(float _a, float _b, float _epsilon)
+{
     const float lhs = sx_abs(_a - _b);
-    float       aa = sx_abs(_a);
-    float       ab = sx_abs(_b);
+    float aa = sx_abs(_a);
+    float ab = sx_abs(_b);
     const float rhs = _epsilon * sx_max(1.0f, sx_max(aa, ab));
     return lhs <= rhs;
 }
 SX_PRAGMA_DIAGNOSTIC_POP()
 
 static inline SX_CONSTFN bool sx_equal_arr(const float* _a, const float* _b, int _num,
-                                           float _epsilon) {
+                                           float _epsilon)
+{
     bool result = sx_equal(_a[0], _b[0], _epsilon);
     for (int ii = 1; result && ii < _num; ++ii) {
         result = sx_equal(_a[ii], _b[ii], _epsilon);
@@ -454,38 +487,45 @@ static inline SX_CONSTFN bool sx_equal_arr(const float* _a, const float* _b, int
     return result;
 }
 
-static inline SX_CONSTFN float sx_wrap(float _a, float _wrap) {
+static inline SX_CONSTFN float sx_wrap(float _a, float _wrap)
+{
     const float tmp0 = sx_mod(_a, _wrap);
     const float result = tmp0 < 0.0f ? _wrap + tmp0 : tmp0;
     return result;
 }
 
-static inline SX_CONSTFN float sx_wrap_range(float x, float fmin, float fmax) {
+static inline SX_CONSTFN float sx_wrap_range(float x, float fmin, float fmax)
+{
     return sx_mod(x, fmax - fmin) + fmin;
 }
 
-static inline SX_CONSTFN int sx_iwrap_range(int x, int imin, int imax) {
+static inline SX_CONSTFN int sx_iwrap_range(int x, int imin, int imax)
+{
     int range = imax - imin + 1;
-    if (x < imin) 
+    if (x < imin)
         x += range * ((imin - x) / range + 1);
     return imin + (x - imin) % range;
 }
 
 // Returns 0 if _a < _edge, else 1
-static inline SX_CONSTFN float sx_step(float _a, float _edge) {
+static inline SX_CONSTFN float sx_step(float _a, float _edge)
+{
     return _a < _edge ? 0.0f : 1.0f;
 }
 
-static inline SX_CONSTFN float sx_pulse(float _a, float _start, float _end) {
+static inline SX_CONSTFN float sx_pulse(float _a, float _start, float _end)
+{
     return sx_step(_a, _start) - sx_step(_a, _end);
 }
 
-static inline SX_CONSTFN float sx_saturate(float _n) {
+static inline SX_CONSTFN float sx_saturate(float _n)
+{
     return sx_clamp(_n, 0.0f, 1.0f);
 }
 
 // smooth Hermite interpolation (result = 0..1) when edge0 < x < edge1
-static inline SX_CONSTFN float sx_smoothstep(float _a, float _edge1, float _edge2) {
+static inline SX_CONSTFN float sx_smoothstep(float _a, float _edge1, float _edge2)
+{
     sx_assert(_edge1 < _edge2);
     float a = sx_saturate((_a - _edge1) / (_edge2 - _edge1));
     return a * a * (3.0f - 2.0f * a);
@@ -493,14 +533,16 @@ static inline SX_CONSTFN float sx_smoothstep(float _a, float _edge1, float _edge
 
 // like smoothstep but linear
 // result is 0..1 when in _min.._max range, 0 if less than _min, 1 if more than _max
-static inline SX_CONSTFN float sx_linearstep(float t, float _min, float _max) {
+static inline SX_CONSTFN float sx_linearstep(float t, float _min, float _max)
+{
     sx_assert(_min < _max);
     return sx_saturate((t - _min) / (_max - _min));
 }
 
 // used for normalizing time values to 0..1
 // based on the assumption that time 't' starts from 0.._max or more than that
-static inline SX_CONSTFN float sx_normalize_time(float t, float _max) {
+static inline SX_CONSTFN float sx_normalize_time(float t, float _max)
+{
     sx_assert(_max > 0);
     float nt = t / _max;
     return nt < 1.0f ? nt : 1.0f;
@@ -511,28 +553,33 @@ static inline SX_CONSTFN float sx_normalize_time(float t, float _max) {
 //  - Bias And Gain Are Your Friend
 //    http://blog.demofox.org/2012/09/24/bias-and-gain-are-your-friend/
 //  - http://demofox.org/biasgain.html
-static inline SX_CONSTFN float sx_bias(float _time, float _bias) {
+static inline SX_CONSTFN float sx_bias(float _time, float _bias)
+{
     return _time / (((1.0f / _bias - 2.0f) * (1.0f - _time)) + 1.0f);
 }
 
-static inline SX_CONSTFN float sx_gain(float _time, float _gain) {
+static inline SX_CONSTFN float sx_gain(float _time, float _gain)
+{
     if (_time < 0.5f)
         return sx_bias(_time * 2.0f, _gain) * 0.5f;
 
     return sx_bias(_time * 2.0f - 1.0f, 1.0f - _gain) * 0.5f + 0.5f;
 }
 
-static inline SX_CONSTFN float sx_angle_diff(float _a, float _b) {
+static inline SX_CONSTFN float sx_angle_diff(float _a, float _b)
+{
     const float dist = sx_wrap(_b - _a, SX_PI2);
     return sx_wrap(dist * 2.0f, SX_PI2) - dist;
 }
 
-static inline SX_CONSTFN float sx_angle_lerp(float _a, float _b, float _t) {
+static inline SX_CONSTFN float sx_angle_lerp(float _a, float _b, float _t)
+{
     return _a + sx_angle_diff(_a, _b) * _t;
 }
 
 //
-static inline sx_vec3 sx_vec3f(float _x, float _y, float _z) {
+static inline sx_vec3 sx_vec3f(float _x, float _y, float _z)
+{
 #ifdef __cplusplus
     return { { _x, _y, _z } };
 #else
@@ -540,7 +587,8 @@ static inline sx_vec3 sx_vec3f(float _x, float _y, float _z) {
 #endif
 }
 
-static inline sx_vec3 sx_vec3fv(const float* _f) {
+static inline sx_vec3 sx_vec3fv(const float* _f)
+{
 #ifdef __cplusplus
     return { { _f[0], _f[1], _f[2] } };
 #else
@@ -548,16 +596,19 @@ static inline sx_vec3 sx_vec3fv(const float* _f) {
 #endif
 }
 
-static inline sx_vec3 sx_vec3v2(const sx_vec2 _vec, float _z) {
+static inline sx_vec3 sx_vec3v2(const sx_vec2 _vec, float _z)
+{
     return sx_vec3f(_vec.x, _vec.y, _z);
 }
 
-static inline sx_vec3 sx_vec3splat(float _f) {
+static inline sx_vec3 sx_vec3splat(float _f)
+{
     return sx_vec3f(_f, _f, _f);
 }
 
 //
-static inline sx_vec2 sx_vec2f(float _x, float _y) {
+static inline sx_vec2 sx_vec2f(float _x, float _y)
+{
 #ifdef __cplusplus
     return { { _x, _y } };
 #else
@@ -565,7 +616,8 @@ static inline sx_vec2 sx_vec2f(float _x, float _y) {
 #endif
 }
 
-static inline sx_vec2 sx_vec2fv(const float* _f) {
+static inline sx_vec2 sx_vec2fv(const float* _f)
+{
 #ifdef __cplusplus
     return { { _f[0], _f[1] } };
 #else
@@ -573,12 +625,14 @@ static inline sx_vec2 sx_vec2fv(const float* _f) {
 #endif
 }
 
-static inline sx_vec2 sx_vec2splat(float _f) {
+static inline sx_vec2 sx_vec2splat(float _f)
+{
     return sx_vec2f(_f, _f);
 }
 
 //
-static inline sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w) {
+static inline sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w)
+{
 #ifdef __cplusplus
     return { { _x, _y, _z, _w } };
 #else
@@ -586,7 +640,8 @@ static inline sx_vec4 sx_vec4f(float _x, float _y, float _z, float _w) {
 #endif
 }
 
-static inline sx_vec4 sx_vec4fv(const float* _f) {
+static inline sx_vec4 sx_vec4fv(const float* _f)
+{
 #ifdef __cplusplus
     return { { _f[0], _f[1], _f[2], _f[3] } };
 #else
@@ -594,16 +649,19 @@ static inline sx_vec4 sx_vec4fv(const float* _f) {
 #endif
 }
 
-static inline sx_vec4 sx_vec4v3(const sx_vec3 _vec, float _w) {
+static inline sx_vec4 sx_vec4v3(const sx_vec3 _vec, float _w)
+{
     return sx_vec4f(_vec.x, _vec.y, _vec.z, _w);
 }
 
-static inline sx_vec4 sx_vec4splat(float _f) {
+static inline sx_vec4 sx_vec4splat(float _f)
+{
     return sx_vec4f(_f, _f, _f, _f);
 }
 
 //
-static inline sx_ivec2 sx_ivec2i(int _x, int _y) {
+static inline sx_ivec2 sx_ivec2i(int _x, int _y)
+{
 #ifdef __cplusplus
     return { { _x, _y } };
 #else
@@ -611,7 +669,8 @@ static inline sx_ivec2 sx_ivec2i(int _x, int _y) {
 #endif
 }
 
-static inline sx_ivec2 sx_ivec2iv(const int* _f) {
+static inline sx_ivec2 sx_ivec2iv(const int* _f)
+{
 #ifdef __cplusplus
     return { { _f[0], _f[1] } };
 #else
@@ -619,13 +678,15 @@ static inline sx_ivec2 sx_ivec2iv(const int* _f) {
 #endif
 }
 
-static inline sx_ivec2 sx_ivec2splat(int _f) {
+static inline sx_ivec2 sx_ivec2splat(int _f)
+{
     return sx_ivec2i(_f, _f);
 }
 
 //
 static inline sx_color sx_color4u(unsigned char _r, unsigned char _g, unsigned char _b,
-                                  unsigned char _a sx_default(255)) {
+                                  unsigned char _a sx_default(255))
+{
 #ifdef __cplusplus
     return { { _r, _g, _b, _a } };
 #else
@@ -633,12 +694,14 @@ static inline sx_color sx_color4u(unsigned char _r, unsigned char _g, unsigned c
 #endif
 }
 
-static inline sx_color sx_color4f(float _r, float _g, float _b, float _a sx_default(1.0f)) {
+static inline sx_color sx_color4f(float _r, float _g, float _b, float _a sx_default(1.0f))
+{
     return sx_color4u((unsigned char)(_r * 255.0f), (unsigned char)(_g * 255.0f),
                       (unsigned char)(_b * 255.0f), (unsigned char)(_a * 255.0f));
 }
 
-static inline sx_color sx_colorn(unsigned int _n) {
+static inline sx_color sx_colorn(unsigned int _n)
+{
 #ifdef __cplusplus
     sx_color c;
     c.n = _n;
@@ -648,14 +711,16 @@ static inline sx_color sx_colorn(unsigned int _n) {
 #endif
 }
 
-static inline sx_vec4 sx_color_vec4(sx_color c) {
+static inline sx_vec4 sx_color_vec4(sx_color c)
+{
     float rcp = 1.0f / 255.0f;
-    return sx_vec4f((float)c.r*rcp, (float)c.g*rcp, (float)c.b*rcp, (float)c.a*rcp);
+    return sx_vec4f((float)c.r * rcp, (float)c.g * rcp, (float)c.b * rcp, (float)c.a * rcp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quaternion
-static inline sx_quat sx_quat4f(float _x, float _y, float _z, float _w) {
+static inline sx_quat sx_quat4f(float _x, float _y, float _z, float _w)
+{
 #ifdef __cplusplus
     return { { _x, _y, _z, _w } };
 #else
@@ -663,7 +728,8 @@ static inline sx_quat sx_quat4f(float _x, float _y, float _z, float _w) {
 #endif
 }
 
-static inline sx_quat sx_quatfv(const float* _f) {
+static inline sx_quat sx_quatfv(const float* _f)
+{
 #ifdef __cplusplus
     return { { _f[0], _f[1], _f[2], _f[3] } };
 #else
@@ -671,11 +737,13 @@ static inline sx_quat sx_quatfv(const float* _f) {
 #endif
 }
 
-static inline sx_quat sx_quat_ident() {
+static inline sx_quat sx_quat_ident()
+{
     return sx_quat4f(0, 0, 0, 1.0f);
 }
 
-static inline sx_vec3 sx_quat_mulXYZ(const sx_quat _qa, const sx_quat _qb) {
+static inline sx_vec3 sx_quat_mulXYZ(const sx_quat _qa, const sx_quat _qb)
+{
     const float ax = _qa.x;
     const float ay = _qa.y;
     const float az = _qa.z;
@@ -692,7 +760,8 @@ static inline sx_vec3 sx_quat_mulXYZ(const sx_quat _qa, const sx_quat _qb) {
 
 // The product of two rotation quaternions will be equivalent to the rotation q followed by
 // the rotation p
-static inline sx_quat sx_quat_mul(const sx_quat p, const sx_quat q) {
+static inline sx_quat sx_quat_mul(const sx_quat p, const sx_quat q)
+{
     // clang-format off
     return sx_quat4f(
         p.f[3] * q.f[0] + p.f[0] * q.f[3] + p.f[1] * q.f[2] - p.f[2] * q.f[1],
@@ -703,15 +772,18 @@ static inline sx_quat sx_quat_mul(const sx_quat p, const sx_quat q) {
     // clang-format on
 }
 
-static inline sx_quat sx_quat_inv(const sx_quat _quat) {
+static inline sx_quat sx_quat_inv(const sx_quat _quat)
+{
     return sx_quat4f(-_quat.x, -_quat.y, -_quat.z, _quat.w);
 }
 
-static inline float sx_quat_dot(const sx_quat _a, const sx_quat _b) {
+static inline float sx_quat_dot(const sx_quat _a, const sx_quat _b)
+{
     return _a.x * _b.x + _a.y * _b.y + _a.z * _b.z + _a.w * _b.w;
 }
 
-static inline sx_quat sx_quat_norm(const sx_quat _quat) {
+static inline sx_quat sx_quat_norm(const sx_quat _quat)
+{
     const float norm = sx_quat_dot(_quat, _quat);
     if (0.0f < norm) {
         const float inv_norm = sx_rsqrt(norm);
@@ -723,7 +795,8 @@ static inline sx_quat sx_quat_norm(const sx_quat _quat) {
     }
 }
 
-static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat) {
+static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat)
+{
     const float x = _quat.x;
     const float y = _quat.y;
     const float z = _quat.z;
@@ -738,28 +811,32 @@ static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat) {
                     sx_asin(2.0f * (x * y + z * w)));
 }
 
-static inline sx_quat sx_quat_rotateaxis(const sx_vec3 _axis, float _angle) {
+static inline sx_quat sx_quat_rotateaxis(const sx_vec3 _axis, float _angle)
+{
     const float ha = _angle * 0.5f;
     const float ca = sx_cos(ha);
     const float sa = sx_sin(ha);
     return sx_quat4f(_axis.x * sa, _axis.y * sa, _axis.z * sa, ca);
 }
 
-static inline sx_quat sx_quat_rotateX(float _ax) {
+static inline sx_quat sx_quat_rotateX(float _ax)
+{
     const float hx = _ax * 0.5f;
     const float cx = sx_cos(hx);
     const float sx = sx_sin(hx);
     return sx_quat4f(sx, 0.0f, 0.0f, cx);
 }
 
-static inline sx_quat sx_quat_rotateY(float _ay) {
+static inline sx_quat sx_quat_rotateY(float _ay)
+{
     const float hy = _ay * 0.5f;
     const float cy = sx_cos(hy);
     const float sy = sx_sin(hy);
     return sx_quat4f(0.0f, sy, 0.0f, cy);
 }
 
-static inline sx_quat sx_quat_rotateZ(float _az) {
+static inline sx_quat sx_quat_rotateZ(float _az)
+{
     const float hz = _az * 0.5f;
     const float cz = sx_cos(hz);
     const float sz = sx_sin(hz);
@@ -768,56 +845,69 @@ static inline sx_quat sx_quat_rotateZ(float _az) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vec3
-static inline sx_vec3 sx_vec3_abs(const sx_vec3 _a) {
+static inline sx_vec3 sx_vec3_abs(const sx_vec3 _a)
+{
     return sx_vec3f(sx_abs(_a.x), sx_abs(_a.y), sx_abs(_a.z));
 }
 
-static inline sx_vec3 sx_vec3_neg(const sx_vec3 _a) {
+static inline sx_vec3 sx_vec3_neg(const sx_vec3 _a)
+{
     return sx_vec3f(-_a.x, -_a.y, -_a.z);
 }
 
-static inline sx_vec3 sx_vec3_add(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_add(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(_a.x + _b.x, _a.y + _b.y, _a.z + _b.z);
 }
 
-static inline sx_vec3 sx_vec3_addf(const sx_vec3 _a, float _b) {
+static inline sx_vec3 sx_vec3_addf(const sx_vec3 _a, float _b)
+{
     return sx_vec3f(_a.x + _b, _a.y + _b, _a.z + _b);
 }
 
-static inline sx_vec3 sx_vec3_sub(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_sub(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(_a.x - _b.x, _a.y - _b.y, _a.z - _b.z);
 }
 
-static inline sx_vec3 sx_vec3_subf(const sx_vec3 _a, float _b) {
+static inline sx_vec3 sx_vec3_subf(const sx_vec3 _a, float _b)
+{
     return sx_vec3f(_a.x - _b, _a.y - _b, _a.z - _b);
 }
 
-static inline sx_vec3 sx_vec3_mul(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_mul(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(_a.x * _b.x, _a.y * _b.y, _a.z * _b.z);
 }
 
-static inline sx_vec3 sx_vec3_mulf(const sx_vec3 _a, float _b) {
+static inline sx_vec3 sx_vec3_mulf(const sx_vec3 _a, float _b)
+{
     return sx_vec3f(_a.x * _b, _a.y * _b, _a.z * _b);
 }
 
-static inline float sx_vec3_dot(const sx_vec3 _a, const sx_vec3 _b) {
+static inline float sx_vec3_dot(const sx_vec3 _a, const sx_vec3 _b)
+{
     return _a.x * _b.x + _a.y * _b.y + _a.z * _b.z;
 }
 
-static inline sx_vec3 sx_vec3_cross(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_cross(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(_a.y * _b.z - _a.z * _b.y, _a.z * _b.x - _a.x * _b.z,
                     _a.x * _b.y - _a.y * _b.x);
 }
 
-static inline float sx_vec3_len(const sx_vec3 _a) {
+static inline float sx_vec3_len(const sx_vec3 _a)
+{
     return sx_sqrt(sx_vec3_dot(_a, _a));
 }
 
-static inline sx_vec3 sx_vec3_lerp(const sx_vec3 _a, const sx_vec3 _b, float _t) {
+static inline sx_vec3 sx_vec3_lerp(const sx_vec3 _a, const sx_vec3 _b, float _t)
+{
     return sx_vec3f(sx_lerp(_a.x, _b.x, _t), sx_lerp(_a.y, _b.y, _t), sx_lerp(_a.z, _b.z, _t));
 }
 
-static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a) {
+static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a)
+{
     const float len = sx_vec3_len(_a);
     if (len > 0.0f) {
         const float invlen = 1.0f / len;
@@ -828,7 +918,8 @@ static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a) {
     }
 }
 
-static inline sx_vec3 sx_vec3_norm_len(const sx_vec3 _a, float* _outlen) {
+static inline sx_vec3 sx_vec3_norm_len(const sx_vec3 _a, float* _outlen)
+{
     sx_assert(_outlen);
     const float len = sx_vec3_len(_a);
     if (len > 0.0f) {
@@ -841,19 +932,23 @@ static inline sx_vec3 sx_vec3_norm_len(const sx_vec3 _a, float* _outlen) {
     }
 }
 
-static inline sx_vec3 sx_vec3_min(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_min(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(sx_min(_a.x, _b.x), sx_min(_a.y, _b.y), sx_min(_a.z, _b.z));
 }
 
-static inline sx_vec3 sx_vec3_max(const sx_vec3 _a, const sx_vec3 _b) {
+static inline sx_vec3 sx_vec3_max(const sx_vec3 _a, const sx_vec3 _b)
+{
     return sx_vec3f(sx_max(_a.x, _b.x), sx_max(_a.y, _b.y), sx_max(_a.z, _b.z));
 }
 
-static inline sx_vec3 sx_vec3_rcp(const sx_vec3 _a) {
+static inline sx_vec3 sx_vec3_rcp(const sx_vec3 _a)
+{
     return sx_vec3f(1.0f / _a.x, 1.0f / _a.y, 1.0f / _a.z);
 }
 
-static inline void sx_vec3_tangent(sx_vec3* _t, sx_vec3* _b, const sx_vec3 _n) {
+static inline void sx_vec3_tangent(sx_vec3* _t, sx_vec3* _b, const sx_vec3 _n)
+{
     const float nx = _n.x;
     const float ny = _n.y;
     const float nz = _n.z;
@@ -869,7 +964,8 @@ static inline void sx_vec3_tangent(sx_vec3* _t, sx_vec3* _b, const sx_vec3 _n) {
     *_b = sx_vec3_cross(_n, *_t);
 }
 
-static inline void sx_vec3_tangent_angle(sx_vec3* _t, sx_vec3* _b, const sx_vec3 _n, float _angle) {
+static inline void sx_vec3_tangent_angle(sx_vec3* _t, sx_vec3* _b, const sx_vec3 _n, float _angle)
+{
     sx_vec3_tangent(_t, _b, _n);
 
     const float sa = sx_sin(_angle);
@@ -880,7 +976,8 @@ static inline void sx_vec3_tangent_angle(sx_vec3* _t, sx_vec3* _b, const sx_vec3
     *_b = sx_vec3_cross(_n, *_t);
 }
 
-static inline sx_vec3 sx_vec3_fromlatlong(float _u, float _v) {
+static inline sx_vec3 sx_vec3_fromlatlong(float _u, float _v)
+{
     const float phi = _u * SX_PI2;
     const float theta = _v * SX_PI;
 
@@ -892,14 +989,16 @@ static inline sx_vec3 sx_vec3_fromlatlong(float _u, float _v) {
     return sx_vec3f(-st * sp, ct, -st * cp);
 }
 
-static inline sx_vec2 sx_vec3_tolatlong(const sx_vec3 _dir) {
+static inline sx_vec2 sx_vec3_tolatlong(const sx_vec3 _dir)
+{
     const float phi = sx_atan2(_dir.x, _dir.z);
     const float theta = sx_acos(_dir.y);
 
     return sx_vec2f((SX_PI + phi) / SX_PI2, theta * SX_PI);
 }
 
-static inline sx_vec3 sx_vec3_mul_quat(const sx_vec3 _vec, const sx_quat _quat) {
+static inline sx_vec3 sx_vec3_mul_quat(const sx_vec3 _vec, const sx_quat _quat)
+{
     sx_quat tmp0 = sx_quat_inv(_quat);
     sx_quat qv = sx_quat4f(_vec.x, _vec.y, _vec.z, 0.0f);
     sx_quat tmp1 = sx_quat_mul(tmp0, qv);
@@ -910,7 +1009,8 @@ static inline sx_vec3 sx_vec3_mul_quat(const sx_vec3 _vec, const sx_quat _quat) 
 // Matrix
 static inline sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14, float m21, float m22,
                                float m23, float m24, float m31, float m32, float m33, float m34,
-                               float m41, float m42, float m43, float m44) {
+                               float m41, float m42, float m43, float m44)
+{
 #ifdef __cplusplus
     return { { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } };
 #else
@@ -934,7 +1034,8 @@ static inline sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14, float
 }
 
 static inline sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const float* _col3,
-                                const float* _col4) {
+                                const float* _col4)
+{
 #ifdef __cplusplus
     return { { _col1[0], _col1[1], _col1[2], _col1[3], _col2[0], _col2[1], _col2[2], _col2[3],
                _col3[0], _col3[1], _col3[2], _col3[3], _col4[0], _col4[1], _col4[2], _col4[3] } };
@@ -947,7 +1048,8 @@ static inline sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const fl
 }
 
 static inline sx_mat4 sx_mat4v(const sx_vec4 _col1, const sx_vec4 _col2, const sx_vec4 _col3,
-                               const sx_vec4 _col4) {
+                               const sx_vec4 _col4)
+{
 #ifdef __cplusplus
     return { { _col1.f[0], _col1.f[1], _col1.f[2], _col1.f[3], _col2.f[0], _col2.f[1], _col2.f[2],
                _col2.f[3], _col3.f[0], _col3.f[1], _col3.f[2], _col3.f[3], _col4.f[0], _col4.f[1],
@@ -957,42 +1059,51 @@ static inline sx_mat4 sx_mat4v(const sx_vec4 _col1, const sx_vec4 _col2, const s
 #endif
 }
 
-static inline sx_mat4 sx_mat4_ident() {
+static inline sx_mat4 sx_mat4_ident()
+{
     return sx_mat4f(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_vec4 sx_mat4_row1(const sx_mat4* m) {
+static inline sx_vec4 sx_mat4_row1(const sx_mat4* m)
+{
     return sx_vec4f(m->m11, m->m12, m->m13, m->m14);
 }
 
-static inline sx_vec4 sx_mat4_row2(const sx_mat4* m) {
+static inline sx_vec4 sx_mat4_row2(const sx_mat4* m)
+{
     return sx_vec4f(m->m21, m->m22, m->m23, m->m24);
 }
 
-static inline sx_vec4 sx_mat4_row3(const sx_mat4* m) {
+static inline sx_vec4 sx_mat4_row3(const sx_mat4* m)
+{
     return sx_vec4f(m->m31, m->m32, m->m33, m->m34);
 }
 
-static inline sx_vec4 sx_mat4_row4(const sx_mat4* m) {
+static inline sx_vec4 sx_mat4_row4(const sx_mat4* m)
+{
     return sx_vec4f(m->m41, m->m42, m->m43, m->m44);
 }
 
-static inline sx_mat4 sx_mat4_translate(float _tx, float _ty, float _tz) {
+static inline sx_mat4 sx_mat4_translate(float _tx, float _ty, float _tz)
+{
     return sx_mat4f(1.0f, 0.0f, 0.0f, _tx, 0.0f, 1.0f, 0.0f, _ty, 0.0f, 0.0f, 1.0f, _tz, 0.0f, 0.0f,
                     0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_scale(float _sx, float _sy, float _sz) {
+static inline sx_mat4 sx_mat4_scale(float _sx, float _sy, float _sz)
+{
     return sx_mat4f(_sx, 0.0f, 0.0f, 0.0f, 0.0f, _sy, 0.0f, 0.0f, 0.0f, 0.0f, _sz, 0.0f, 0.0f, 0.0f,
                     0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_scalef(float _scale) {
+static inline sx_mat4 sx_mat4_scalef(float _scale)
+{
     return sx_mat4_scale(_scale, _scale, _scale);
 }
 
-static inline sx_mat4 sx_mat4_rotateX(float _ax) {
+static inline sx_mat4 sx_mat4_rotateX(float _ax)
+{
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
 
@@ -1000,7 +1111,8 @@ static inline sx_mat4 sx_mat4_rotateX(float _ax) {
                     0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_rotateY(float _ay) {
+static inline sx_mat4 sx_mat4_rotateY(float _ay)
+{
     const float sy = sx_sin(_ay);
     const float cy = sx_cos(_ay);
 
@@ -1008,7 +1120,8 @@ static inline sx_mat4 sx_mat4_rotateY(float _ay) {
                     0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_rotateZ(float _az) {
+static inline sx_mat4 sx_mat4_rotateZ(float _az)
+{
     const float sz = sx_sin(_az);
     const float cz = sx_cos(_az);
 
@@ -1016,7 +1129,8 @@ static inline sx_mat4 sx_mat4_rotateZ(float _az) {
                     0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_rotateXY(float _ax, float _ay) {
+static inline sx_mat4 sx_mat4_rotateXY(float _ax, float _ay)
+{
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1026,7 +1140,8 @@ static inline sx_mat4 sx_mat4_rotateXY(float _ax, float _ay) {
                     0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_rotateXYZ(float _ax, float _ay, float _az) {
+static inline sx_mat4 sx_mat4_rotateXYZ(float _ax, float _ay, float _az)
+{
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1039,7 +1154,8 @@ static inline sx_mat4 sx_mat4_rotateXYZ(float _ax, float _ay, float _az) {
                     0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat4 sx_mat4_rotateZYX(float _ax, float _ay, float _az) {
+static inline sx_mat4 sx_mat4_rotateZYX(float _ax, float _ay, float _az)
+{
     const float sx = sx_sin(_ax);
     const float cx = sx_cos(_ax);
     const float sy = sx_sin(_ay);
@@ -1052,7 +1168,8 @@ static inline sx_mat4 sx_mat4_rotateZYX(float _ax, float _ay, float _az) {
                     0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 };
 
-static inline sx_mat4 sx_mat4_quat_translate(const sx_quat _quat, const sx_vec3 _translation) {
+static inline sx_mat4 sx_mat4_quat_translate(const sx_quat _quat, const sx_vec3 _translation)
+{
     sx_mat4 mat = sx_quat_mat4(_quat);
     mat.m14 = -(mat.m11 * _translation.x + mat.m12 * _translation.y + mat.m13 * _translation.z);
     mat.m24 = -(mat.m21 * _translation.x + mat.m22 * _translation.y + mat.m23 * _translation.z);
@@ -1060,26 +1177,30 @@ static inline sx_mat4 sx_mat4_quat_translate(const sx_quat _quat, const sx_vec3 
     return mat;
 }
 
-static inline sx_mat4 sx_mat4_quat_translate_HMD(const sx_quat _quat, const sx_vec3 _translation) {
+static inline sx_mat4 sx_mat4_quat_translate_HMD(const sx_quat _quat, const sx_vec3 _translation)
+{
     return sx_mat4_quat_translate(sx_quat4f(-_quat.x, -_quat.y, _quat.z, _quat.w), _translation);
 }
 
 /// multiply vector3 into 4x4 matrix without considering 4th column, which is not used in transform
 /// matrices
-static inline sx_vec3 sx_mat4_mul_vec3(const sx_mat4* _mat, const sx_vec3 _vec) {
+static inline sx_vec3 sx_mat4_mul_vec3(const sx_mat4* _mat, const sx_vec3 _vec)
+{
     return sx_vec3f(_vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13 + _mat->m14,
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23 + _mat->m24,
                     _vec.x * _mat->m31 + _vec.y * _mat->m32 + _vec.z * _mat->m33 + _mat->m34);
 }
 
 /// multiply vector3 into rotation part of the matrix only (used for normal vectors, etc...)
-static inline sx_vec3 sx_mat4_mul_vec3_xyz0(const sx_mat4* _mat, const sx_vec3 _vec) {
+static inline sx_vec3 sx_mat4_mul_vec3_xyz0(const sx_mat4* _mat, const sx_vec3 _vec)
+{
     return sx_vec3f(_vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13,
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23,
                     _vec.x * _mat->m31 + _vec.y * _mat->m32 + _vec.z * _mat->m33);
 }
 
-static inline sx_vec3 sx_mat4_mul_vec3_H(const sx_mat4* _mat, const sx_vec3 _vec) {
+static inline sx_vec3 sx_mat4_mul_vec3_H(const sx_mat4* _mat, const sx_vec3 _vec)
+{
     float xx = _vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13 + _mat->m14;
     float yy = _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23 + _mat->m24;
     float zz = _vec.x * _mat->m31 + _vec.y * _mat->m32 + _vec.z * _mat->m33 + _mat->m34;
@@ -1088,7 +1209,8 @@ static inline sx_vec3 sx_mat4_mul_vec3_H(const sx_mat4* _mat, const sx_vec3 _vec
     return sx_vec3f(xx * iw, yy * iw, zz * iw);
 }
 
-static inline sx_vec4 sx_mat4_mul_vec4(const sx_mat4* _mat, const sx_vec4 _vec) {
+static inline sx_vec4 sx_mat4_mul_vec4(const sx_mat4* _mat, const sx_vec4 _vec)
+{
     return sx_vec4f(
         _vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13 + _vec.w * _mat->m14,
         _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23 + _vec.w * _mat->m24,
@@ -1096,30 +1218,36 @@ static inline sx_vec4 sx_mat4_mul_vec4(const sx_mat4* _mat, const sx_vec4 _vec) 
         _vec.x * _mat->m41 + _vec.y * _mat->m42 + _vec.z * _mat->m43 + _vec.w * _mat->m44);
 }
 
-static inline sx_vec4 sx_vec4_mul(const sx_vec4 _a, const sx_vec4 _b) {
+static inline sx_vec4 sx_vec4_mul(const sx_vec4 _a, const sx_vec4 _b)
+{
     return sx_vec4f(_a.x * _b.x, _a.y * _b.y, _a.z * _b.z, _a.w * _b.w);
 }
 
-static inline sx_vec4 sx_vec4_mulf(const sx_vec4 _a, float _b) {
+static inline sx_vec4 sx_vec4_mulf(const sx_vec4 _a, float _b)
+{
     return sx_vec4f(_a.x * _b, _a.y * _b, _a.z * _b, _a.w * _b);
 }
 
-static inline sx_vec4 sx_vec4_add(const sx_vec4 _a, const sx_vec4 _b) {
+static inline sx_vec4 sx_vec4_add(const sx_vec4 _a, const sx_vec4 _b)
+{
     return sx_vec4f(_a.x + _b.x, _a.y + _b.y, _a.z + _b.z, _a.w + _b.w);
 }
 
-static inline sx_vec4 sx_vec4_sub(const sx_vec4 _a, const sx_vec4 _b) {
+static inline sx_vec4 sx_vec4_sub(const sx_vec4 _a, const sx_vec4 _b)
+{
     return sx_vec4f(_a.x - _b.x, _a.y - _b.y, _a.z - _b.z, _a.w - _b.w);
 }
 
-static inline sx_mat4 sx_mat4_transpose(const sx_mat4* _a) {
+static inline sx_mat4 sx_mat4_transpose(const sx_mat4* _a)
+{
     return sx_mat4f(_a->m11, _a->m21, _a->m31, _a->m41, _a->m12, _a->m22, _a->m32, _a->m42, _a->m13,
                     _a->m23, _a->m33, _a->m43, _a->m14, _a->m24, _a->m34, _a->m44);
 }
 
 
 /// Convert LH to RH projection matrix and vice versa.
-static inline void sx_mat4_proj_flip_handedness(sx_mat4* _dst, const sx_mat4* _src) {
+static inline void sx_mat4_proj_flip_handedness(sx_mat4* _dst, const sx_mat4* _src)
+{
     _dst->m11 = -_src->m11;
     _dst->m12 = -_src->m12;
     _dst->m13 = -_src->m13;
@@ -1139,7 +1267,8 @@ static inline void sx_mat4_proj_flip_handedness(sx_mat4* _dst, const sx_mat4* _s
 }
 
 /// Convert LH to RH view matrix and vice versa.
-static inline void sx_mat4_view_flip_handedness(sx_mat4* _dst, const sx_mat4* _src) {
+static inline void sx_mat4_view_flip_handedness(sx_mat4* _dst, const sx_mat4* _src)
+{
     _dst->m11 = -_src->m11;
     _dst->m12 = _src->m12;
     _dst->m13 = -_src->m13;
@@ -1158,14 +1287,16 @@ static inline void sx_mat4_view_flip_handedness(sx_mat4* _dst, const sx_mat4* _s
     _dst->m44 = _src->m44;
 }
 
-static inline SX_CONSTFN float sx_color_tolinear(float _a) {
+static inline SX_CONSTFN float sx_color_tolinear(float _a)
+{
     const float lo = _a / 12.92f;
     const float hi = sx_pow((_a + 0.055f) / 1.055f, 2.4f);
     const float result = sx_lerp(hi, lo, _a <= 0.04045f ? 1.0f : 0.0f);
     return result;
 }
 
-static inline SX_CONSTFN float sx_color_togamma(float _a) {
+static inline SX_CONSTFN float sx_color_togamma(float _a)
+{
     const float lo = _a * 12.92f;
     const float hi = sx_pow(sx_abs(_a), 1.0f / 2.4f) * 1.055f - 0.055f;
     const float result = sx_lerp(hi, lo, _a <= 0.0031308f ? 1.0f : 0.0f);
@@ -1174,7 +1305,8 @@ static inline SX_CONSTFN float sx_color_togamma(float _a) {
 
 //
 static inline sx_mat3 sx_mat3f(float m11, float m12, float m13, float m21, float m22, float m23,
-                               float m31, float m32, float m33) {
+                               float m31, float m32, float m33)
+{
 #ifdef __cplusplus
     return { { m11, m21, m31, m12, m22, m32, m13, m23, m33 } };
 #else
@@ -1190,7 +1322,8 @@ static inline sx_mat3 sx_mat3f(float m11, float m12, float m13, float m21, float
 #endif
 }
 
-static inline sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float* _col3) {
+static inline sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float* _col3)
+{
 #ifdef __cplusplus
     return { { _col1[0], _col1[1], _col1[2], _col2[0], _col2[1], _col2[2], _col3[0], _col3[1],
                _col3[2] } };
@@ -1200,7 +1333,8 @@ static inline sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const fl
 #endif
 }
 
-static inline sx_mat3 sx_mat3v(const sx_vec3 _col1, const sx_vec3 _col2, const sx_vec3 _col3) {
+static inline sx_mat3 sx_mat3v(const sx_vec3 _col1, const sx_vec3 _col2, const sx_vec3 _col3)
+{
 #ifdef __cplusplus
     return { { _col1.f[0], _col1.f[1], _col1.f[2], _col2.f[0], _col2.f[1], _col2.f[2], _col3.f[0],
                _col3.f[1], _col3.f[2] } };
@@ -1209,37 +1343,44 @@ static inline sx_mat3 sx_mat3v(const sx_vec3 _col1, const sx_vec3 _col2, const s
 #endif
 }
 
-static inline sx_mat3 sx_mat3_ident() {
+static inline sx_mat3 sx_mat3_ident()
+{
     return sx_mat3f(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 /// multiply vector3 into 4x4 matrix that [x/w, y/w, z/w, 1], used for projections, etc...
-static inline sx_vec3 sx_mat3_mul_vec3(const sx_mat3* _mat, const sx_vec3 _vec) {
+static inline sx_vec3 sx_mat3_mul_vec3(const sx_mat3* _mat, const sx_vec3 _vec)
+{
     return sx_vec3f(_vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13,
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23,
                     _vec.x * _mat->m31 + _vec.y * _mat->m32 + _vec.z * _mat->m33);
 }
 
-static inline sx_vec2 sx_mat3_mul_vec2(const sx_mat3* _mat, const sx_vec2 _vec) {
+static inline sx_vec2 sx_mat3_mul_vec2(const sx_mat3* _mat, const sx_vec2 _vec)
+{
     return sx_vec2f(_vec.x * _mat->m11 + _vec.y * _mat->m12 + _mat->m13,
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _mat->m23);
 }
 
-static inline sx_mat3 sx_mat3_translate(float x, float y) {
+static inline sx_mat3 sx_mat3_translate(float x, float y)
+{
     return sx_mat3f(1.0f, 0.0f, x, 0.0f, 1.0f, y, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_rotate(float theta) {
+static inline sx_mat3 sx_mat3_rotate(float theta)
+{
     float c = sx_cos(theta);
     float s = sx_sin(theta);
     return sx_mat3f(c, -s, 0.0f, s, c, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_scale(float sx, float sy) {
+static inline sx_mat3 sx_mat3_scale(float sx, float sy)
+{
     return sx_mat3f(sx, 0.0f, 0.0f, 0.0f, sy, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, float ty) {
+static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, float ty)
+{
     // scale -> rotate -> translate
     // result of T(translate) * R(rotate) * S(scale)
     float c = sx_cos(angle);
@@ -1250,15 +1391,18 @@ static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, flo
                     0.0f,   0.0f,  1.0f);
     // clang-format on
 }
-static inline float sx_vec2_dot(const sx_vec2 _a, const sx_vec2 _b) {
+static inline float sx_vec2_dot(const sx_vec2 _a, const sx_vec2 _b)
+{
     return _a.x * _b.x + _a.y * _b.y;
 }
 
-static inline float sx_vec2_len(const sx_vec2 _a) {
+static inline float sx_vec2_len(const sx_vec2 _a)
+{
     return sx_sqrt(sx_vec2_dot(_a, _a));
 }
 
-static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a) {
+static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a)
+{
     const float len = sx_vec2_len(_a);
     if (len > 0.0f) {
         return sx_vec2f(_a.x / len, _a.y / len);
@@ -1268,7 +1412,8 @@ static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a) {
     }
 }
 
-static inline sx_vec2 sx_vec2_norm_len(const sx_vec2 _a, float* outlen) {
+static inline sx_vec2 sx_vec2_norm_len(const sx_vec2 _a, float* outlen)
+{
     const float len = sx_vec2_len(_a);
     if (len > 0.0f) {
         *outlen = len;
@@ -1279,67 +1424,83 @@ static inline sx_vec2 sx_vec2_norm_len(const sx_vec2 _a, float* outlen) {
     }
 }
 
-static inline sx_vec2 sx_vec2_min(const sx_vec2 _a, const sx_vec2 _b) {
+static inline sx_vec2 sx_vec2_min(const sx_vec2 _a, const sx_vec2 _b)
+{
     return sx_vec2f(sx_min(_a.x, _b.x), sx_min(_a.y, _b.y));
 }
 
-static inline sx_vec2 sx_vec2_max(const sx_vec2 _a, const sx_vec2 _b) {
+static inline sx_vec2 sx_vec2_max(const sx_vec2 _a, const sx_vec2 _b)
+{
     return sx_vec2f(sx_max(_a.x, _b.x), sx_max(_a.y, _b.y));
 }
 
-static inline sx_vec2 sx_vec2_lerp(const sx_vec2 _a, const sx_vec2 _b, float _t) {
+static inline sx_vec2 sx_vec2_lerp(const sx_vec2 _a, const sx_vec2 _b, float _t)
+{
     return sx_vec2f(sx_lerp(_a.x, _b.x, _t), sx_lerp(_a.y, _b.y, _t));
 }
 
-static inline sx_vec2 sx_vec2_abs(const sx_vec2 _a) {
+static inline sx_vec2 sx_vec2_abs(const sx_vec2 _a)
+{
     return sx_vec2f(sx_abs(_a.x), sx_abs(_a.y));
 }
 
-static inline sx_vec2 sx_vec2_neg(const sx_vec2 _a) {
+static inline sx_vec2 sx_vec2_neg(const sx_vec2 _a)
+{
     return sx_vec2f(-_a.x, -_a.y);
 }
 
-static inline sx_vec2 sx_vec2_add(const sx_vec2 _a, const sx_vec2 _b) {
+static inline sx_vec2 sx_vec2_add(const sx_vec2 _a, const sx_vec2 _b)
+{
     return sx_vec2f(_a.x + _b.x, _a.y + _b.y);
 }
 
-static inline sx_vec2 sx_vec2_addf(const sx_vec2 _a, float _b) {
+static inline sx_vec2 sx_vec2_addf(const sx_vec2 _a, float _b)
+{
     return sx_vec2f(_a.x + _b, _a.y + _b);
 }
 
-static inline sx_vec2 sx_vec2_sub(const sx_vec2 _a, const sx_vec2 _b) {
+static inline sx_vec2 sx_vec2_sub(const sx_vec2 _a, const sx_vec2 _b)
+{
     return sx_vec2f(_a.x - _b.x, _a.y - _b.y);
 }
 
-static inline sx_vec2 sx_vec2_subf(const sx_vec2 _a, float _b) {
+static inline sx_vec2 sx_vec2_subf(const sx_vec2 _a, float _b)
+{
     return sx_vec2f(_a.x - _b, _a.y - _b);
 }
 
-static inline sx_vec2 sx_vec2_mul(const sx_vec2 _a, const sx_vec2 _b) {
+static inline sx_vec2 sx_vec2_mul(const sx_vec2 _a, const sx_vec2 _b)
+{
     return sx_vec2f(_a.x * _b.x, _a.y * _b.y);
 }
 
-static inline sx_vec2 sx_vec2_mulf(const sx_vec2 _a, float _b) {
+static inline sx_vec2 sx_vec2_mulf(const sx_vec2 _a, float _b)
+{
     return sx_vec2f(_a.x * _b, _a.y * _b);
 }
 
-static inline sx_ivec2 sx_ivec2_add(const sx_ivec2 _a, const sx_ivec2 _b) {
+static inline sx_ivec2 sx_ivec2_add(const sx_ivec2 _a, const sx_ivec2 _b)
+{
     return sx_ivec2i(_a.x + _b.x, _a.y + _b.y);
 }
 
-static inline sx_ivec2 sx_ivec2_sub(const sx_ivec2 _a, const sx_ivec2 _b) {
+static inline sx_ivec2 sx_ivec2_sub(const sx_ivec2 _a, const sx_ivec2 _b)
+{
     return sx_ivec2i(_a.x - _b.x, _a.y - _b.y);
 }
 
-static inline sx_ivec2 sx_ivec2_min(const sx_ivec2 _a, const sx_ivec2 _b) {
+static inline sx_ivec2 sx_ivec2_min(const sx_ivec2 _a, const sx_ivec2 _b)
+{
     return sx_ivec2i(sx_min(_a.x, _b.x), sx_min(_a.y, _b.y));
 }
 
-static inline sx_ivec2 sx_ivec2_max(const sx_ivec2 _a, const sx_ivec2 _b) {
+static inline sx_ivec2 sx_ivec2_max(const sx_ivec2 _a, const sx_ivec2 _b)
+{
     return sx_ivec2i(sx_max(_a.x, _b.x), sx_max(_a.y, _b.y));
 }
 
-static inline sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _ymax) {
+static inline sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _ymax)
+{
 #ifdef __cplusplus
     return { { _xmin, _ymin, _xmax, _ymax } };
 #else
@@ -1347,11 +1508,13 @@ static inline sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _yma
 #endif
 }
 
-static inline sx_rect sx_rectwh(float _x, float _y, float _w, float _h) {
+static inline sx_rect sx_rectwh(float _x, float _y, float _w, float _h)
+{
     return sx_rectf(_x, _y, _x + _w, _y + _h);
 }
 
-static inline sx_rect sx_rectv(const sx_vec2 _min, const sx_vec2 _max) {
+static inline sx_rect sx_rectv(const sx_vec2 _min, const sx_vec2 _max)
+{
 #ifdef __cplusplus
     return { { _min.x, _min.y, _max.x, _max.y } };
 #else
@@ -1359,17 +1522,20 @@ static inline sx_rect sx_rectv(const sx_vec2 _min, const sx_vec2 _max) {
 #endif
 }
 
-static inline sx_rect sx_rect_expand(const sx_rect rc, const sx_vec2 expand) {
+static inline sx_rect sx_rect_expand(const sx_rect rc, const sx_vec2 expand)
+{
     return sx_rectf(rc.xmin - expand.x, rc.ymin - expand.y, rc.xmax + expand.x, rc.ymax + expand.y);
 }
 
-static inline bool sx_rect_test_point(const sx_rect rc, const sx_vec2 pt) {
+static inline bool sx_rect_test_point(const sx_rect rc, const sx_vec2 pt)
+{
     if (pt.x < rc.xmin || pt.y < rc.ymin || pt.x > rc.xmax || pt.y > rc.ymax)
         return false;
     return true;
 }
 
-static inline bool sx_rect_test_rect(const sx_rect rc1, const sx_rect rc2) {
+static inline bool sx_rect_test_rect(const sx_rect rc1, const sx_rect rc2)
+{
     if (rc1.xmax < rc2.xmin || rc1.xmin > rc2.xmax)
         return false;
     if (rc1.ymax < rc2.ymin || rc1.ymin > rc2.ymax)
@@ -1377,7 +1543,8 @@ static inline bool sx_rect_test_rect(const sx_rect rc1, const sx_rect rc2) {
     return true;
 }
 
-static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt) {
+static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt)
+{
     rc->vmin = sx_vec2_min(rc->vmin, pt);
     rc->vmax = sx_vec2_max(rc->vmax, pt);
 }
@@ -1393,23 +1560,28 @@ static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt) {
  *   -----------------
  *   0               1
  */
-static inline sx_vec2 sx_rect_corner(const sx_rect* rc, int index) {
+static inline sx_vec2 sx_rect_corner(const sx_rect* rc, int index)
+{
     return sx_vec2f((index & 1) ? rc->xmax : rc->xmin, (index & 2) ? rc->ymax : rc->ymin);
 }
 
-static inline void sx_rect_corners(sx_vec2 corners[4], const sx_rect* rc) {
+static inline void sx_rect_corners(sx_vec2 corners[4], const sx_rect* rc)
+{
     for (int i = 0; i < 4; i++) corners[0] = sx_rect_corner(rc, i);
 }
 
-static inline float sx_rect_width(const sx_rect rc) {
+static inline float sx_rect_width(const sx_rect rc)
+{
     return rc.xmax - rc.xmin;
 }
 
-static inline float sx_rect_height(const sx_rect rc) {
+static inline float sx_rect_height(const sx_rect rc)
+{
     return rc.ymax - rc.ymin;
 }
 
-static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax) {
+static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax)
+{
 #ifdef __cplusplus
     return { { _xmin, _ymin, _xmax, _ymax } };
 #else
@@ -1417,11 +1589,13 @@ static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax) {
 #endif
 }
 
-static inline sx_irect sx_irectwh(int _x, int _y, int _w, int _h) {
+static inline sx_irect sx_irectwh(int _x, int _y, int _w, int _h)
+{
     return sx_irecti(_x, _y, _x + _w, _y + _h);
 }
 
-static inline sx_irect sx_irectv(const sx_ivec2 _min, const sx_ivec2 _max) {
+static inline sx_irect sx_irectv(const sx_ivec2 _min, const sx_ivec2 _max)
+{
 #ifdef __cplusplus
     return { { _min.x, _min.y, _max.x, _max.y } };
 #else
@@ -1429,18 +1603,21 @@ static inline sx_irect sx_irectv(const sx_ivec2 _min, const sx_ivec2 _max) {
 #endif
 }
 
-static inline sx_irect sx_irect_expand(const sx_irect rc, const sx_ivec2 expand) {
+static inline sx_irect sx_irect_expand(const sx_irect rc, const sx_ivec2 expand)
+{
     return sx_irecti(rc.xmin - expand.x, rc.ymin - expand.y, rc.xmax + expand.x,
                      rc.ymax + expand.y);
 }
 
-static inline bool sx_irect_test_point(const sx_irect rc, const sx_ivec2 pt) {
+static inline bool sx_irect_test_point(const sx_irect rc, const sx_ivec2 pt)
+{
     if (pt.x < rc.xmin || pt.y < rc.ymin || pt.x > rc.xmax || pt.y > rc.ymax)
         return false;
     return true;
 }
 
-static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2) {
+static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2)
+{
     if (rc1.xmax < rc2.xmin || rc1.xmin > rc2.xmax)
         return false;
     if (rc1.ymax < rc2.ymin || rc1.ymin > rc2.ymax)
@@ -1448,16 +1625,19 @@ static inline bool sx_irect_test_rect(const sx_irect rc1, const sx_irect rc2) {
     return true;
 }
 
-static inline void sx_irect_add_point(sx_irect* rc, const sx_ivec2 pt) {
+static inline void sx_irect_add_point(sx_irect* rc, const sx_ivec2 pt)
+{
     rc->vmin = sx_ivec2_min(rc->vmin, pt);
     rc->vmax = sx_ivec2_max(rc->vmax, pt);
 }
 
-static inline int sx_irect_width(const sx_irect rc) {
+static inline int sx_irect_width(const sx_irect rc)
+{
     return rc.xmax - rc.xmin;
 }
 
-static inline int sx_irect_height(const sx_irect rc) {
+static inline int sx_irect_height(const sx_irect rc)
+{
     return rc.ymax - rc.ymin;
 }
 
@@ -1472,18 +1652,21 @@ static inline int sx_irect_height(const sx_irect rc) {
  *   -----------------
  *   0 (min)         1
  */
-static inline sx_ivec2 sx_irect_corner(const sx_irect* rc, int index) {
+static inline sx_ivec2 sx_irect_corner(const sx_irect* rc, int index)
+{
     return sx_ivec2i((index & 1) ? rc->xmax : rc->xmin, (index & 2) ? rc->ymax : rc->ymin);
 }
 
-static inline void sx_irect_corners(sx_ivec2 corners[4], const sx_irect* rc) {
+static inline void sx_irect_corners(sx_ivec2 corners[4], const sx_irect* rc)
+{
     for (int i = 0; i < 4; i++) corners[0] = sx_irect_corner(rc, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // AABB
 static inline sx_aabb sx_aabbf(float xmin, float ymin, float zmin, float xmax, float ymax,
-                               float zmax) {
+                               float zmax)
+{
 #ifdef __cplusplus
     return { { xmin, ymin, zmin, xmax, ymax, zmax } };
 #else
@@ -1493,7 +1676,8 @@ static inline sx_aabb sx_aabbf(float xmin, float ymin, float zmin, float xmax, f
 #endif
 }
 
-static inline sx_aabb sx_aabbv(const sx_vec3 vmin, const sx_vec3 vmax) {
+static inline sx_aabb sx_aabbv(const sx_vec3 vmin, const sx_vec3 vmax)
+{
 #ifdef __cplusplus
     return { { vmin.x, vmin.y, vmin.z, vmax.x, vmax.y, vmax.z } };
 #else
@@ -1501,24 +1685,28 @@ static inline sx_aabb sx_aabbv(const sx_vec3 vmin, const sx_vec3 vmax) {
 #endif
 }
 
-static inline sx_aabb sx_aabbwhd(float w, float h, float d) {
+static inline sx_aabb sx_aabbwhd(float w, float h, float d)
+{
     float hw = w * 0.5f;
     float hh = h * 0.5f;
     float hd = d * 0.5f;
     return sx_aabbf(-hw, -hh, -hd, hw, hh, hd);
 }
 
-static inline sx_aabb sx_aabb_empty() {
+static inline sx_aabb sx_aabb_empty()
+{
     return sx_aabbf(SX_FLOAT_MAX, SX_FLOAT_MAX, SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX,
                     -SX_FLOAT_MAX);
 }
 
-static inline void sx_aabb_add_point(sx_aabb* box, const sx_vec3 pt) {
+static inline void sx_aabb_add_point(sx_aabb* box, const sx_vec3 pt)
+{
     box->vmin = sx_vec3_min(box->vmin, pt);
     box->vmax = sx_vec3_max(box->vmax, pt);
 }
 
-static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt) {
+static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt)
+{
     if (box->xmax < pt.x || box->xmin > pt.x)
         return false;
     if (box->ymax < pt.y || box->ymin > pt.y)
@@ -1547,28 +1735,33 @@ static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt) {
  *   ------------------
  *  0                 1
  */
-static inline sx_vec3 sx_aabb_corner(const sx_aabb* box, int index) {
+static inline sx_vec3 sx_aabb_corner(const sx_aabb* box, int index)
+{
     sx_assert(index < 8);
     return sx_vec3f((index & 1) ? box->vmax.x : box->vmin.x,
                     (index & 2) ? box->vmax.y : box->vmin.y,
                     (index & 4) ? box->vmax.z : box->vmin.z);
 }
 
-static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* box) {
+static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* box)
+{
     for (int i = 0; i < 8; i++) corners[i] = sx_aabb_corner(box, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // easing
-static inline float sx_easein_quad(float t) {
+static inline float sx_easein_quad(float t)
+{
     return t * t;
 }
 
-static inline float sx_easeout_quad(float t) {
+static inline float sx_easeout_quad(float t)
+{
     return -(t * (t - 2.0f));
 }
 
-static inline float sx_easeinout_quad(float t) {
+static inline float sx_easeinout_quad(float t)
+{
     if (t < 0.5f) {
         return 2.0f * t * t;
     } else {
@@ -1576,16 +1769,19 @@ static inline float sx_easeinout_quad(float t) {
     }
 }
 
-static inline float sx_easein_cubic(float t) {
+static inline float sx_easein_cubic(float t)
+{
     return t * t * t;
 }
 
-static inline float sx_easeout_cubic(float t) {
+static inline float sx_easeout_cubic(float t)
+{
     float f = (t - 1.0f);
     return f * f * f + 1.0f;
 }
 
-static inline float sx_easeinout_cubic(float t) {
+static inline float sx_easeinout_cubic(float t)
+{
     if (t < 0.5f) {
         return 4.0f * t * t * t;
     } else {
@@ -1594,16 +1790,19 @@ static inline float sx_easeinout_cubic(float t) {
     }
 }
 
-static inline float sx_easein_quart(float t) {
+static inline float sx_easein_quart(float t)
+{
     return t * t * t * t;
 }
 
-static inline float sx_easeout_quart(float t) {
+static inline float sx_easeout_quart(float t)
+{
     float f = (t - 1.0f);
     return f * f * f * (1.0f - t) + 1.0f;
 }
 
-static inline float sx_easeinout_quart(float t) {
+static inline float sx_easeinout_quart(float t)
+{
     if (t < 0.5f) {
         return 8.0f * t * t * t * t;
     } else {
@@ -1612,16 +1811,19 @@ static inline float sx_easeinout_quart(float t) {
     }
 }
 
-static inline float sx_easein_quint(float t) {
+static inline float sx_easein_quint(float t)
+{
     return t * t * t * t * t;
 }
 
-static inline float sx_easeout_quint(float t) {
+static inline float sx_easeout_quint(float t)
+{
     float f = (t - 1.0f);
     return f * f * f * f * f + 1.0f;
 }
 
-static inline float sx_easeinout_quint(float t) {
+static inline float sx_easeinout_quint(float t)
+{
     if (t < 0.5f) {
         return 16.0f * t * t * t * t * t;
     } else {
@@ -1630,27 +1832,33 @@ static inline float sx_easeinout_quint(float t) {
     }
 }
 
-static inline float sx_easein_sine(float t) {
+static inline float sx_easein_sine(float t)
+{
     return sx_sin((t - 1) * SX_PI2) + 1.0f;
 }
 
-static inline float sx_easeout_sine(float t) {
+static inline float sx_easeout_sine(float t)
+{
     return sx_sin(t * SX_PI2);
 }
 
-static inline float sx_easeinout_sine(float t) {
+static inline float sx_easeinout_sine(float t)
+{
     return 0.5f * (1.0f - sx_cos(t * SX_PI));
 }
 
-static inline float sx_easein_circ(float t) {
+static inline float sx_easein_circ(float t)
+{
     return 1.0f - sx_sqrt(1.0f - (t * t));
 }
 
-static inline float sx_easeout_circ(float t) {
+static inline float sx_easeout_circ(float t)
+{
     return sx_sqrt((2.0f - t) * t);
 }
 
-static inline float sx_easeinout_circ(float t) {
+static inline float sx_easeinout_circ(float t)
+{
     if (t < 0.5f) {
         return 0.5f * (1.0f - sx_sqrt(1.0f - 4.0f * (t * t)));
     } else {
@@ -1658,15 +1866,18 @@ static inline float sx_easeinout_circ(float t) {
     }
 }
 
-static inline float sx_easein_expo(float t) {
+static inline float sx_easein_expo(float t)
+{
     return (t == 0.0f) ? t : sx_pow(2.0f, 10.0f * (t - 1.0f));
 }
 
-static inline float sx_easeout_expo(float t) {
+static inline float sx_easeout_expo(float t)
+{
     return (t == 1.0f) ? t : 1.0f - sx_pow(2.0f, -10.0f * t);
 }
 
-static inline float sx_easeinout_expo(float t) {
+static inline float sx_easeinout_expo(float t)
+{
     if (t == 0.0f || t == 1.0f)
         return t;
 
@@ -1677,15 +1888,18 @@ static inline float sx_easeinout_expo(float t) {
     }
 }
 
-static inline float sx_easein_elastic(float t) {
+static inline float sx_easein_elastic(float t)
+{
     return sx_sin(13.0f * SX_PI2 * t) * sx_pow(2.0f, 10.0f * (t - 1.0f));
 }
 
-static inline float sx_easeout_elastic(float t) {
+static inline float sx_easeout_elastic(float t)
+{
     return sx_sin(-13.0f * SX_PI2 * (t + 1.0f)) * sx_pow(2.0f, -10.0f * t) + 1.0f;
 }
 
-static inline float sx_easeinout_elastic(float t) {
+static inline float sx_easeinout_elastic(float t)
+{
     if (t < 0.5f) {
         return 0.5f * sx_sin(13.0f * SX_PI2 * (2.0f * t)) *
                sx_pow(2.0f, 10.0f * ((2.0f * t) - 1.0f));
@@ -1696,17 +1910,20 @@ static inline float sx_easeinout_elastic(float t) {
     }
 }
 
-static inline float sx_easein_back(float t) {
+static inline float sx_easein_back(float t)
+{
     const float s = 1.70158f;
     return t * t * ((s + 1.0f) * t - s);
 }
 
-static inline float sx_easeout_back(float t) {
+static inline float sx_easeout_back(float t)
+{
     const float s = 1.70158f;
     return --t, 1.0f * (t * t * ((s + 1.0f) * t + s) + 1.0f);
 }
 
-static inline float sx_easeinout_back(float t) {
+static inline float sx_easeinout_back(float t)
+{
     const float s = 2.5949095f;
     if (t < 0.5f) {
         return t *= 2.0f, 0.5f * t * t * (t * s + t - s);
@@ -1715,7 +1932,8 @@ static inline float sx_easeinout_back(float t) {
     }
 }
 
-static inline float sx_easeout_bounce(float t) {
+static inline float sx_easeout_bounce(float t)
+{
     static const float kSections[] = { 4.0f / 11.0f, 8.0f / 11.0f, 9 / 10.0f };
     static const float kA1 = 363.0f / 40.0f;
     static const float kA1_b = 99.0f / 10.0f;
@@ -1738,11 +1956,13 @@ static inline float sx_easeout_bounce(float t) {
     }
 }
 
-static inline float sx_easein_bounce(float t) {
+static inline float sx_easein_bounce(float t)
+{
     return 1.0f - sx_easeout_bounce(1.0f - t);
 }
 
-static inline float sx_easeinout_bounce(float t) {
+static inline float sx_easeinout_bounce(float t)
+{
     if (t < 0.5f) {
         return 0.5f * sx_easein_bounce(t * 2.0f);
     } else {
@@ -1753,59 +1973,73 @@ static inline float sx_easeinout_bounce(float t) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // cpp operators
 #ifdef __cplusplus
-static inline sx_vec2 operator+(const sx_vec2& a, const sx_vec2& b) {
+static inline sx_vec2 operator+(const sx_vec2& a, const sx_vec2& b)
+{
     return sx_vec2_add(a, b);
 }
 
-static inline sx_vec2 operator-(const sx_vec2& a, const sx_vec2& b) {
+static inline sx_vec2 operator-(const sx_vec2& a, const sx_vec2& b)
+{
     return sx_vec2_sub(a, b);
 }
 
-static inline sx_vec2 operator*(const sx_vec2& v, float k) {
+static inline sx_vec2 operator*(const sx_vec2& v, float k)
+{
     return sx_vec2_mulf(v, k);
 }
 
-static inline sx_vec2 operator*(float k, const sx_vec2& v) {
+static inline sx_vec2 operator*(float k, const sx_vec2& v)
+{
     return sx_vec2_mulf(v, k);
 }
 
-static inline sx_vec2 operator*(const sx_vec2& v0, const sx_vec2& v1) {
+static inline sx_vec2 operator*(const sx_vec2& v0, const sx_vec2& v1)
+{
     return sx_vec2_mul(v0, v1);
 }
 
-static inline sx_ivec2 operator+(const sx_ivec2& a, const sx_ivec2& b) {
+static inline sx_ivec2 operator+(const sx_ivec2& a, const sx_ivec2& b)
+{
     return sx_ivec2_add(a, b);
 }
 
-static inline sx_ivec2 operator-(const sx_ivec2& a, const sx_ivec2& b) {
+static inline sx_ivec2 operator-(const sx_ivec2& a, const sx_ivec2& b)
+{
     return sx_ivec2_sub(a, b);
 }
 
-static inline sx_vec3 operator+(const sx_vec3& v1, const sx_vec3& v2) {
+static inline sx_vec3 operator+(const sx_vec3& v1, const sx_vec3& v2)
+{
     return sx_vec3_add(v1, v2);
 }
 
-static inline sx_vec3 operator-(const sx_vec3& v1, const sx_vec3& v2) {
+static inline sx_vec3 operator-(const sx_vec3& v1, const sx_vec3& v2)
+{
     return sx_vec3_sub(v1, v2);
 }
 
-static inline sx_vec3 operator*(const sx_vec3& v, float k) {
+static inline sx_vec3 operator*(const sx_vec3& v, float k)
+{
     return sx_vec3_mulf(v, k);
 }
 
-static inline sx_vec3 operator*(float k, const sx_vec3& v) {
+static inline sx_vec3 operator*(float k, const sx_vec3& v)
+{
     return sx_vec3_mulf(v, k);
 }
 
-static inline sx_mat4 operator*(const sx_mat4& a, const sx_mat4& b) {
+static inline sx_mat4 operator*(const sx_mat4& a, const sx_mat4& b)
+{
     return sx_mat4_mul(&a, &b);
 }
 
-static inline sx_mat3 operator*(const sx_mat3& a, const sx_mat3& b) {
+static inline sx_mat3 operator*(const sx_mat3& a, const sx_mat3& b)
+{
     return sx_mat3_mul(&a, &b);
 }
 
-static inline sx_quat operator*(const sx_quat& a, const sx_quat& b) {
+static inline sx_quat operator*(const sx_quat& a, const sx_quat& b)
+{
     return sx_quat_mul(a, b);
 }
 #endif

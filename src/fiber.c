@@ -30,7 +30,8 @@
 SX_API sx_fiber_transfer jump_fcontext(sx_fiber_t const, void*);
 SX_API sx_fiber_t make_fcontext(void*, size_t, sx_fiber_cb*);
 
-bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size) {
+bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size)
+{
     if (size == 0)
         size = DEFAULT_STACK_SIZE;
     size = (uint32_t)sx_os_align_pagesz(size);
@@ -64,7 +65,8 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size) {
     return true;
 }
 
-void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size) {
+void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size)
+{
     int page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
     sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
@@ -73,7 +75,8 @@ void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int siz
     fstack->ssize = size;
 }
 
-void sx_fiber_stack_release(sx_fiber_stack* fstack) {
+void sx_fiber_stack_release(sx_fiber_stack* fstack)
+{
     sx_assert(fstack->sptr);
     void* ptr = (uint8_t*)fstack->sptr - fstack->ssize;
 
@@ -86,11 +89,13 @@ void sx_fiber_stack_release(sx_fiber_stack* fstack) {
 #endif
 }
 
-sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb) {
+sx_fiber_t sx_fiber_create(const sx_fiber_stack stack, sx_fiber_cb* fiber_cb)
+{
     return make_fcontext(stack.sptr, stack.ssize, fiber_cb);
 }
 
-sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user) {
+sx_fiber_transfer sx_fiber_switch(const sx_fiber_t to, void* user)
+{
     return jump_fcontext(to, user);
 }
 
@@ -104,15 +109,15 @@ typedef enum {
 
 typedef union {
     float tm;
-    int   n;
+    int n;
 } sx__coro_state_counter;
 
 typedef struct sx__coro_state {
-    sx_fiber_t             fiber;
-    sx_fiber_stack         stack_mem;
-    sx_fiber_cb*           callback;
-    void*                  user;
-    sx_coro_ret_type       ret_state;
+    sx_fiber_t fiber;
+    sx_fiber_stack stack_mem;
+    sx_fiber_cb* callback;
+    void* user;
+    sx_coro_ret_type ret_state;
     sx__coro_state_counter arg;
     sx__coro_state_counter counter;
     struct sx__coro_state* next;
@@ -120,15 +125,16 @@ typedef struct sx__coro_state {
 } sx__coro_state;
 
 typedef struct sx_coro_context {
-    sx_pool*        coro_pool;
+    sx_pool* coro_pool;
     sx__coro_state* run_list;
     sx__coro_state* run_list_last;
     sx__coro_state* cur_coro;
-    int             stack_sz;
+    int stack_sz;
 } sx_coro_context;
 
 static inline void sx__coro_add_list(sx__coro_state** pfirst, sx__coro_state** plast,
-                                     sx__coro_state* node) {
+                                     sx__coro_state* node)
+{
     // Add to the end of the list
     if (*plast) {
         (*plast)->next = node;
@@ -140,7 +146,8 @@ static inline void sx__coro_add_list(sx__coro_state** pfirst, sx__coro_state** p
 }
 
 static inline void sx__coro_remove_list(sx__coro_state** pfirst, sx__coro_state** plast,
-                                        sx__coro_state* node) {
+                                        sx__coro_state* node)
+{
     if (node->prev)
         node->prev->next = node->next;
     if (node->next)
@@ -152,7 +159,8 @@ static inline void sx__coro_remove_list(sx__coro_state** pfirst, sx__coro_state*
     node->prev = node->next = NULL;
 }
 
-sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz) {
+sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz)
+{
     sx_assert(max_fibers > 0);
     sx_assert(stack_sz >= sx_os_minstacksz() && "stack size too small");
 
@@ -174,7 +182,8 @@ sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, i
     return ctx;
 }
 
-void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc) {
+void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc)
+{
     sx_assert(ctx);
     if (ctx->coro_pool)
         sx_pool_destroy(ctx->coro_pool, alloc);
@@ -184,7 +193,8 @@ void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc) {
     sx_free(alloc, ctx);
 }
 
-void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user) {
+void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user)
+{
     sx__coro_state* fs = (sx__coro_state*)sx_pool_new(ctx->coro_pool);
 
     if (fs) {
@@ -206,7 +216,8 @@ void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user) {
     }
 }
 
-void sx_coro_update(sx_coro_context* ctx, float dt) {
+void sx_coro_update(sx_coro_context* ctx, float dt)
+{
     sx_assert(ctx->cur_coro == NULL);
 
     sx__coro_state* fs = ctx->run_list;
@@ -241,7 +252,8 @@ void sx_coro_update(sx_coro_context* ctx, float dt) {
 }
 
 bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
-                              sx_fiber_cb* new_callback) {
+                              sx_fiber_cb* new_callback)
+{
     sx_assert(callback);
     bool r = false;
 
@@ -265,7 +277,8 @@ bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
 }
 
 static inline void sx__coro_return(sx_coro_context* ctx, sx_fiber_t* pfrom, sx_coro_ret_type type,
-                                   int arg) {
+                                   int arg)
+{
     sx_assert(ctx->cur_coro &&
               "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
     sx_assert(type != CORO_RET_NONE && "Invalid enum for type");
@@ -289,14 +302,17 @@ static inline void sx__coro_return(sx_coro_context* ctx, sx_fiber_t* pfrom, sx_c
     *pfrom = sx_fiber_switch(*pfrom, NULL).from;
 }
 
-void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom) {
+void sx__coro_end(sx_coro_context* ctx, sx_fiber_t* pfrom)
+{
     sx__coro_return(ctx, pfrom, CORO_RET_END, 0);
 }
 
-void sx__coro_wait(sx_coro_context* ctx, sx_fiber_t* pfrom, int msecs) {
+void sx__coro_wait(sx_coro_context* ctx, sx_fiber_t* pfrom, int msecs)
+{
     sx__coro_return(ctx, pfrom, CORO_RET_WAIT, msecs);
 }
 
-void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates) {
+void sx__coro_yield(sx_coro_context* ctx, sx_fiber_t* pfrom, int nupdates)
+{
     sx__coro_return(ctx, pfrom, CORO_RET_YIELD, nupdates);
 }

@@ -1,22 +1,24 @@
+#include "sx/allocator.h"
 #include "sx/hash.h"
 #include "sx/rng.h"
-#include "sx/allocator.h"
 #include "sx/tlsf-alloc.h"
 
 #include <stdio.h>
 #include <time.h>
 
-static int  walk_counter = 0;
-static void tlsf_walk_fn(void* ptr, size_t size, int used, void* user) {
+static int walk_counter = 0;
+static void tlsf_walk_fn(void* ptr, size_t size, int used, void* user)
+{
     printf("%d) %p - %d bytes - used: %d\n", ++walk_counter, ptr, (int)size, used);
 }
 
-int main(int argc, char* argv[]) {
-    sx_alloc        tlsf;
+int main(int argc, char* argv[])
+{
+    sx_alloc tlsf;
     const sx_alloc* alloc = sx_alloc_malloc();
 
     const int pool_size = 4 * 1024 * 1024;
-    void*     mem = sx_malloc(alloc, pool_size);
+    void* mem = sx_malloc(alloc, pool_size);
     sx_assert(mem);
 
     sx_tlsfalloc_init(&tlsf, mem, pool_size);
@@ -25,7 +27,7 @@ int main(int argc, char* argv[]) {
     sx_rng_seed(&rng, (uint32_t)time(NULL));
 
     const int count = 1000;
-    void*     ptrs[1000];
+    void* ptrs[1000];
     for (int i = 0; i < count; i++) {
         int sz = sx_rng_gen_irange(&rng, 100, 4 * 1024);
         ptrs[i] = sx_malloc(&tlsf, sz);

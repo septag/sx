@@ -49,20 +49,21 @@ sx_vec4 SX_VEC4_UNITX = { 1.0f, 0.0f, 0.0f, 1.0f };
 sx_vec4 SX_VEC4_UNITY = { 0.0f, 1.0f, 0.0f, 1.0f };
 sx_vec4 SX_VEC4_UNITZ = { 0.0f, 0.0f, 1.0f, 1.0f };
 
-sx_color         SX_COLOR_WHITE = { 255, 255, 255, 255 };
-sx_color         SX_COLOR_BLACK = { 0, 0, 0, 255 };
-sx_color         SX_COLOR_RED = { 255, 0, 0, 255 };
-sx_color         SX_COLOR_YELLOW = { 255, 255, 0, 255 };
-sx_color         SX_COLOR_GREEN = { 0, 255, 0, 255 };
-sx_color         SX_COLOR_BLUE = { 0, 0, 255, 255 };
-sx_color         SX_COLOR_PURPLE = { 255, 0, 255, 255 };
+sx_color SX_COLOR_WHITE = { 255, 255, 255, 255 };
+sx_color SX_COLOR_BLACK = { 0, 0, 0, 255 };
+sx_color SX_COLOR_RED = { 255, 0, 0, 255 };
+sx_color SX_COLOR_YELLOW = { 255, 255, 0, 255 };
+sx_color SX_COLOR_GREEN = { 0, 255, 0, 255 };
+sx_color SX_COLOR_BLUE = { 0, 0, 255, 255 };
+sx_color SX_COLOR_PURPLE = { 255, 0, 255, 255 };
 #endif
 
 #define sx__square(_x) (_x * _x)
 #define sx__mad(_a, _b, _c) _a* _b + _c
 
 #if !SX_CONFIG_STDMATH
-SX_CONSTFN float sx_floor(float _a) {
+SX_CONSTFN float sx_floor(float _a)
+{
     if (_a < 0.0f) {
         const float fr = sx_fract(-_a);
         const float result = -_a - fr;
@@ -73,7 +74,8 @@ SX_CONSTFN float sx_floor(float _a) {
     return _a - sx_fract(_a);
 }
 
-SX_CONSTFN float sx_cos(float _a) {
+SX_CONSTFN float sx_cos(float _a)
+{
     static const float kSinC2 = -0.16666667163372039794921875f;
     static const float kSinC4 = 8.333347737789154052734375e-3f;
     static const float kSinC6 = -1.9842604524455964565277099609375e-4f;
@@ -86,9 +88,9 @@ SX_CONSTFN float sx_cos(float _a) {
     static const float kCosC8 = 2.47562347794882953166961669921875e-5f;
     static const float kCosC10 = -2.59630184018533327616751194000244140625e-7f;
 
-    const float   scaled = _a * 2.0f * SX_INVPI;
-    const float   real = sx_floor(scaled);
-    const float   xx = _a - real * SX_PIHALF;
+    const float scaled = _a * 2.0f * SX_INVPI;
+    const float real = sx_floor(scaled);
+    const float xx = _a - real * SX_PIHALF;
     const int32_t bits = (int32_t)real & 3;
 
     float c0, c2, c4, c6, c8, c10;
@@ -120,7 +122,8 @@ SX_CONSTFN float sx_cos(float _a) {
     return bits == 1 || bits == 2 ? -result : result;
 }
 
-SX_CONSTFN float sx_acos(float _a) {
+SX_CONSTFN float sx_acos(float _a)
+{
     static const float kAcosC0 = 1.5707288f;
     static const float kAcosC1 = -0.2121144f;
     static const float kAcosC2 = 0.0742610f;
@@ -138,15 +141,18 @@ SX_CONSTFN float sx_acos(float _a) {
     return result;
 }
 
-SX_CONSTFN float sx_sin(float _a) {
+SX_CONSTFN float sx_sin(float _a)
+{
     return sx_cos(_a - SX_PIHALF);
 }
 
-SX_CONSTFN float sx_asin(float _a) {
+SX_CONSTFN float sx_asin(float _a)
+{
     return SX_PIHALF - sx_acos(_a);
 }
 
-SX_CONSTFN float sx_atan2(float _y, float _x) {
+SX_CONSTFN float sx_atan2(float _y, float _x)
+{
     static const float kAtan2C0 = -0.013480470f;
     static const float kAtan2C1 = 0.057477314f;
     static const float kAtan2C2 = -0.121239071f;
@@ -179,7 +185,8 @@ SX_CONSTFN float sx_atan2(float _y, float _x) {
 }
 
 
-static float sx__ldexp(float _a, int32_t _b) {
+static float sx__ldexp(float _a, int32_t _b)
+{
     const uint32_t ftob = sx_ftob(_a);
     const uint32_t masked = ftob & UINT32_C(0xff800000);
     const uint32_t expsign0 = ((int32_t)masked) >> 23;
@@ -190,20 +197,22 @@ static float sx__ldexp(float _a, int32_t _b) {
     return sx_btof(bits);
 }
 
-static float sx__frexp(float _a, int32_t* _outExp) {
+static float sx__frexp(float _a, int32_t* _outExp)
+{
     const uint32_t ftob = sx_ftob(_a);
     const uint32_t masked0 = ftob & UINT32_C(0x7f800000);
     const uint32_t exp0 = masked0 >> 23;
     const uint32_t masked1 = ftob & UINT32_C(0x807fffff);
     const uint32_t bits = masked1 | UINT32_C(0x3f000000);
-    const float    result = sx_btof(bits);
+    const float result = sx_btof(bits);
 
     *_outExp = (int32_t)(exp0 - 0x7e);
 
     return result;
 }
 
-SX_CONSTFN float sx_exp(float _a) {
+SX_CONSTFN float sx_exp(float _a)
+{
     static const float kExpC0 = 1.66666666666666019037e-01f;
     static const float kExpC1 = -2.77777777770155933842e-03f;
     static const float kExpC2 = 6.61375632143793436117e-05f;
@@ -232,7 +241,8 @@ SX_CONSTFN float sx_exp(float _a) {
     return result;
 }
 
-SX_CONSTFN float sx_log(float _a) {
+SX_CONSTFN float sx_log(float _a)
+{
     static const float kLogC0 = 6.666666666666735130e-01f;
     static const float kLogC1 = 3.999999999940941908e-01f;
     static const float kLogC2 = 2.857142874366239149e-01f;
@@ -242,7 +252,7 @@ SX_CONSTFN float sx_log(float _a) {
     static const float kLogC6 = 1.479819860511658591e-01f;
 
     int32_t exp;
-    float   ff = sx__frexp(_a, &exp);
+    float ff = sx__frexp(_a, &exp);
     if (ff < SX_SQRT2 * 0.5f) {
         ff *= 2.0f;
         --exp;
@@ -273,9 +283,10 @@ SX_CONSTFN float sx_log(float _a) {
 }
 
 // Reference: http://en.wikipedia.org/wiki/Fast_inverse_square_root
-SX_CONSTFN float sx_rsqrt(float _a) {
+SX_CONSTFN float sx_rsqrt(float _a)
+{
     union {
-        float    f;
+        float f;
         uint32_t ui;
     } u = { _a };
     float y, r;
@@ -288,53 +299,65 @@ SX_CONSTFN float sx_rsqrt(float _a) {
     return r;
 }
 
-SX_CONSTFN float sx_sqrt(float _a) {
+SX_CONSTFN float sx_sqrt(float _a)
+{
     sx_assert(_a >= SX_NEAR_ZERO);
     return 1.0f / sx_rsqrt(_a);
 }
 #else
-SX_CONSTFN float sx_floor(float _f) {
+SX_CONSTFN float sx_floor(float _f)
+{
     return floorf(_f);
 }
 
-SX_CONSTFN float sx_cos(float _a) {
+SX_CONSTFN float sx_cos(float _a)
+{
     return cosf(_a);
 }
 
-SX_CONSTFN float sx_acos(float _a) {
+SX_CONSTFN float sx_acos(float _a)
+{
     return acosf(_a);
 }
 
-SX_CONSTFN float sx_sin(float _a) {
+SX_CONSTFN float sx_sin(float _a)
+{
     return sinf(_a);
 }
 
-SX_CONSTFN float sx_asin(float _a) {
+SX_CONSTFN float sx_asin(float _a)
+{
     return asinf(_a);
 }
 
-SX_CONSTFN float sx_atan2(float _y, float _x) {
+SX_CONSTFN float sx_atan2(float _y, float _x)
+{
     return atan2f(_y, _x);
 }
 
-SX_CONSTFN float sx_exp(float _a) {
+SX_CONSTFN float sx_exp(float _a)
+{
     return expf(_a);
 }
 
-SX_CONSTFN float sx_log(float _a) {
+SX_CONSTFN float sx_log(float _a)
+{
     return logf(_a);
 }
 
-SX_CONSTFN float sx_sqrt(float _a) {
+SX_CONSTFN float sx_sqrt(float _a)
+{
     return sqrtf(_a);
 }
 
-SX_CONSTFN float sx_rsqrt(float _a) {
+SX_CONSTFN float sx_rsqrt(float _a)
+{
     return 1.0f / sqrtf(_a);
 }
 #endif
 
-sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
+sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up)
+{
     sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(target, eye));
     sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(zaxis, up));
     sx_vec3 yaxis = sx_vec3_cross(xaxis, zaxis);
@@ -347,7 +370,8 @@ sx_mat4 sx_mat4_view_lookat(const sx_vec3 eye, const sx_vec3 target, const sx_ve
     // clang-format on
 }
 
-sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up) {
+sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_vec3 up)
+{
     sx_vec3 zaxis = sx_vec3_norm(sx_vec3_sub(target, eye));
     sx_vec3 xaxis = sx_vec3_norm(sx_vec3_cross(up, zaxis));
     sx_vec3 yaxis = sx_vec3_cross(zaxis, xaxis);
@@ -360,7 +384,8 @@ sx_mat4 sx_mat4_view_lookatLH(const sx_vec3 eye, const sx_vec3 target, const sx_
     // clang-format on
 }
 
-sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw) {
+sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw)
+{
     float cos_pitch = sx_cos(pitch);
     float sin_pitch = sx_sin(pitch);
     float cos_yaw = sx_cos(yaw);
@@ -375,7 +400,8 @@ sx_mat4 sx_mat4_view_FPS(const sx_vec3 eye, float pitch, float yaw) {
                     0, 0, 0, 1.0f);
 }
 
-sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot, const sx_vec3 target_pos) {
+sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot, const sx_vec3 target_pos)
+{
     // CameraMat = Tobj * Rcam * Tcam;      // move -> rotate around pivot pt -> move to object pos
     // ViewMat = CameraMat(inv) = Tobj(inv) * Rcam(inv) * Tobj(inv)
     sx_mat4 translate_inv = sx_mat4_translate(-move.x, -move.y, -move.z);
@@ -388,14 +414,16 @@ sx_mat4 sx_mat4_view_arcball(const sx_vec3 move, const sx_quat rot, const sx_vec
 // OGL NDC:(x = -1..1, y = -1..1, z = -1..1)
 // D3D NDC:(x = -1..1, y = -1..1, z =  0..1)
 // Metal NDC:(x = -1..1, y = -1..1, z = 0..1)
-sx_mat4 sx_mat4_perspective(float width, float height, float zn, float zf, bool ogl_ndc) {
+sx_mat4 sx_mat4_perspective(float width, float height, float zn, float zf, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
     return sx_mat4f(width, 0, 0, 0, 0, height, 0, 0, 0, 0, -aa, -bb, 0, 0, -1.0f, 0);
 }
 
-sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, bool ogl_ndc) {
+sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
@@ -403,7 +431,8 @@ sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, boo
 }
 
 sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float ymax, float zn,
-                                      float zf, bool ogl_ndc) {
+                                      float zf, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
@@ -413,7 +442,8 @@ sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float 
 }
 
 sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
-                                        float zf, bool ogl_ndc) {
+                                        float zf, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
@@ -422,19 +452,22 @@ sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, floa
     return sx_mat4f(width, 0, -xmin, 0, 0, height, -ymin, 0, 0, 0, aa, -bb, 0, 0, 1.0f, 0);
 }
 
-sx_mat4 sx_mat4_perspectiveFOV(float fov_y, float aspect, float zn, float zf, bool ogl_ndc) {
+sx_mat4 sx_mat4_perspectiveFOV(float fov_y, float aspect, float zn, float zf, bool ogl_ndc)
+{
     const float height = 1.0f / sx_tan(fov_y * 0.5f);
     const float width = height / aspect;
     return sx_mat4_perspective(width, height, zn, zf, ogl_ndc);
 }
 
-sx_mat4 sx_mat4_perspectiveFOV_LH(float fov_y, float aspect, float zn, float zf, bool ogl_ndc) {
+sx_mat4 sx_mat4_perspectiveFOV_LH(float fov_y, float aspect, float zn, float zf, bool ogl_ndc)
+{
     const float height = 1.0f / sx_tan(fov_y * 0.5f);
     const float width = height / aspect;
     return sx_mat4_perspectiveLH(width, height, zn, zf, ogl_ndc);
 }
 
-sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offset, bool ogl_ndc) {
+sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offset, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float cc = (ogl_ndc ? 2.0f : 1.0f) / d;
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
@@ -443,7 +476,8 @@ sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offse
                     1.0f);
 }
 
-sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float offset, bool ogl_ndc) {
+sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float offset, bool ogl_ndc)
+{
     const float d = zf - zn;
     const float cc = (ogl_ndc ? 2.0f : 1.0f) / d;
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
@@ -453,7 +487,8 @@ sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float off
 }
 
 sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, float zn, float zf,
-                                float offset, bool ogl_ndc) {
+                                float offset, bool ogl_ndc)
+{
     const float width = xmax - xmin;
     const float height = ymax - ymin;
     const float d = zf - zn;
@@ -467,7 +502,8 @@ sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, 
 }
 
 sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
-                                  float zf, float offset, bool ogl_ndc) {
+                                  float zf, float offset, bool ogl_ndc)
+{
     const float width = xmax - xmin;
     const float height = ymax - ymin;
     const float d = zf - zn;
@@ -481,7 +517,8 @@ sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax
 }
 
 sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx,
-                    float _ty, float _tz) {
+                    float _ty, float _tz)
+{
     float sx, cx, sy, cy, sz, cz;
 
     if (_ax != 0) {
@@ -516,7 +553,8 @@ sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float
                     _sz * -cx * sy, _sz * sx, _sz * cx * cy, _tz, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-sx_mat3 sx_mat3_inv(const sx_mat3* _a) {
+sx_mat3 sx_mat3_inv(const sx_mat3* _a)
+{
     float xx = _a->f[0];
     float xy = _a->f[3];
     float xz = _a->f[6];
@@ -541,7 +579,8 @@ sx_mat3 sx_mat3_inv(const sx_mat3* _a) {
                     +(xx * yy - xy * yx) * det_rcp);
 }
 
-sx_mat4 sx_mat4_inv(const sx_mat4* _a) {
+sx_mat4 sx_mat4_inv(const sx_mat4* _a)
+{
     float xx = _a->f[0];
     float xy = _a->m12;
     float xz = _a->m13;
@@ -590,7 +629,8 @@ sx_mat4 sx_mat4_inv(const sx_mat4* _a) {
             det_rcp);
 }
 
-sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num) {
+sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num)
+{
     float sumX = 0.0f;
     float sumY = 0.0f;
     float sumXX = 0.0f;
@@ -614,7 +654,8 @@ sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num) {
     return sx_vec2f((-sumX * sumY + _num * sumXY) * invDet, (sumXX * sumY - sumX * sumXY) * invDet);
 }
 
-sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num) {
+sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num)
+{
     float sumX = 0.0f;
     float sumY = 0.0f;
     float sumZ = 0.0f;
@@ -651,7 +692,8 @@ sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num) {
                     mat_inv.f[6] * sumXZ + mat_inv.f[7] * sumYZ + mat_inv.f[8] * sumZ);
 }
 
-void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]) {
+void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3])
+{
     const float rr = _rgb[0];
     const float gg = _rgb[1];
     const float bb = _rgb[2];
@@ -678,7 +720,8 @@ void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]) {
     _hsv[2] = qx;
 }
 
-void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]) {
+void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3])
+{
     const float hh = _hsv[0];
     const float ss = _hsv[1];
     const float vv = _hsv[2];
@@ -692,12 +735,14 @@ void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]) {
     _rgb[2] = vv * sx_lerp(1.0f, sx_saturate(pz - 1.0f), ss);
 }
 
-sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b) {
+sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b)
+{
     return sx_mat3fv(sx_mat3_mul_vec3(_a, _b->col1).f, sx_mat3_mul_vec3(_a, _b->col2).f,
                      sx_mat3_mul_vec3(_a, _b->col3).f);
 }
 
-sx_quat sx_mat4_quat(const sx_mat4* m) {
+sx_quat sx_mat4_quat(const sx_mat4* m)
+{
     float trace, r, rinv;
     sx_quat q;
 
@@ -739,7 +784,8 @@ sx_quat sx_mat4_quat(const sx_mat4* m) {
     return q;
 }
 
-sx_mat4 sx_mat4x_inv(const sx_mat4* _mat) {
+sx_mat4 sx_mat4x_inv(const sx_mat4* _mat)
+{
     float det = (_mat->f[0] * (_mat->f[5] * _mat->m33 - _mat->f[6] * _mat->f[9]) +
                  _mat->f[1] * (_mat->f[6] * _mat->f[8] - _mat->f[4] * _mat->m33) +
                  _mat->f[2] * (_mat->f[4] * _mat->f[9] - _mat->f[5] * _mat->f[8]));
@@ -766,7 +812,8 @@ sx_mat4 sx_mat4x_inv(const sx_mat4* _mat) {
     return r;
 }
 
-sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos) {
+sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _pos)
+{
     sx_vec3 tangent;
     sx_vec3 bitangent;
     sx_vec3_tangent(&tangent, &bitangent, _normal);
@@ -779,7 +826,8 @@ sx_mat4 sx_mat4_from_normal(const sx_vec3 _normal, float _scale, const sx_vec3 _
 }
 
 sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_vec3 _pos,
-                                  float _angle) {
+                                  float _angle)
+{
     sx_vec3 tangent;
     sx_vec3 bitangent;
     sx_vec3_tangent_angle(&tangent, &bitangent, _normal, _angle);
@@ -791,7 +839,8 @@ sx_mat4 sx_mat4_from_normal_angle(const sx_vec3 _normal, float _scale, const sx_
     return sx_mat4fv(row1.f, row2.f, row3.f, sx_vec4v3(_pos, 1.0f).f);
 }
 
-sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal) {
+sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal)
+{
     float xx = plane_normal.x * plane_normal.x;
     float yy = plane_normal.y * plane_normal.y;
     float zz = plane_normal.z * plane_normal.z;
@@ -808,7 +857,8 @@ sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal) {
 }
 
 
-sx_mat4 sx_quat_mat4(const sx_quat quat) {
+sx_mat4 sx_quat_mat4(const sx_quat quat)
+{
     float norm = sx_sqrt(sx_quat_dot(quat, quat));
     float s = norm > 0.0f ? (2.0f / norm) : 0.0f;
 
@@ -836,12 +886,14 @@ sx_mat4 sx_quat_mat4(const sx_quat quat) {
 }
 
 
-sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b) {
+sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b)
+{
     return sx_mat4fv(sx_mat4_mul_vec4(_a, _b->col1).f, sx_mat4_mul_vec4(_a, _b->col2).f,
                      sx_mat4_mul_vec4(_a, _b->col3).f, sx_mat4_mul_vec4(_a, _b->col4).f);
 }
 
-sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc) {
+sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
+{
     sx_vec3 ba = sx_vec3_sub(_vb, _va);
     sx_vec3 ca = sx_vec3_sub(_vc, _va);
     sx_vec3 baca = sx_vec3_cross(ba, ca);
@@ -849,7 +901,8 @@ sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 
     return sx_vec3_norm(baca);
 }
 
-sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc) {
+sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
+{
     sx_vec3 normal = sx_vec3_calc_normal(_va, _vb, _vc);
     return sx_vec4v3(normal, -sx_vec3_dot(normal, _va));
 }

@@ -2,14 +2,15 @@
 #include "sx/virtual-alloc.h"
 #include <stdio.h>
 
-int main(int argc, char* argv[]) {
-    const int    total_sz = 1024 * 1024 * 1024;
-    const int    commit_sz = 10 * 1024 * 1024;
+int main(int argc, char* argv[])
+{
+    const int total_sz = 1024 * 1024 * 1024;
+    const int commit_sz = 10 * 1024 * 1024;
     const size_t _1mb = 1024 * 1024;
 
     puts("Reserve 1 gb");
     void* mem = sx_virtual_reserve(total_sz);
-    int*  ptr = (int*)sx_virtual_commit(mem, commit_sz);
+    int* ptr = (int*)sx_virtual_commit(mem, commit_sz);
     printf("Process memory: %d mb\n", (int)(sx_os_processmem() / _1mb));
     sx_os_getch();
 
