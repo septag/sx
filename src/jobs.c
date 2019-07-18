@@ -191,6 +191,7 @@ static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid, u
                     (node->tags == 0 || (node->tags & tags))) {
                     r.job = node;
                     sx__job_remove_list(&ctx->waiting_list[pr], &ctx->waiting_list_last[pr], node);
+                    pr = SX_JOB_PRIORITY_COUNT; // break out of the outer loop
                     break;
                 }
             }
