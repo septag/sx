@@ -106,7 +106,7 @@ static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func,
 
     sx_os_path_basename(mi->file, sizeof(mi->file), file);
     sx_strcpy(mi->func, sizeof(mi->func), func);
-    sx_lock(&mi_lock);
+    sx_lock(&mi_lock, 1);
     mi->line = line;
     mi->next = mi_head;
     if (mi_head)
@@ -123,7 +123,7 @@ static void stb_leakcheck_free(void* ptr)
     if (ptr != NULL) {
         stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         mi->size = ~mi->size;
-        sx_lock(&mi_lock);
+        sx_lock(&mi_lock, 1);
 #ifndef STB_LEAKCHECK_SHOWALL
         if (mi->prev == NULL) {
             sx_assert(mi_head == mi);

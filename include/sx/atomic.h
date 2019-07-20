@@ -38,8 +38,10 @@
 #include <stdint.h>
 
 #if SX_PLATFORM_WINDOWS
-// FIXME: I got wierd compiler error on MSVC+Clang_c2, so I had to comment this out
-//        Every source must include <windows.h> before including atomic.h
+#    if SX_ARCH_32BIT && SX_CPU_X86
+#        include "x86intrin.h"
+#        include <emmintrin.h>    // _mm_xfence
+#    endif
 #    include <intrin.h>
 #    if SX_COMPILER_MSVC
 #        pragma intrinsic(_mm_pause)
@@ -56,16 +58,16 @@
 #        pragma intrinsic(_InterlockedCompareExchange)
 #        pragma intrinsic(_InterlockedExchangePointer)
 #        pragma intrinsic(_InterlockedCompareExchangePointer)
+#        pragma intrinsic(__rdtsc)
 #    endif
-#    if SX_ARCH_32BIT
-#        include <emmintrin.h>    // _mm_xfence
-#    endif
+#elif SX_PLATFORM_APPLE
+#    include <mach/mach_time.h>
 #endif
-
 
 typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
+
 
 SX_FORCE_INLINE void sx_yield_cpu()
 {
@@ -77,6 +79,46 @@ SX_FORCE_INLINE void sx_yield_cpu()
 #    elif SX_CPU_ARM && !SX_PLATFORM_RPI /* FIXME: didn't find a workaround for rpi */
     __asm__ __volatile__("yield");
 #    endif
+#endif
+}
+
+// https://github.com/google/benchmark/blob/v1.1.0/src/cycleclock.h
+SX_FORCE_INLINE int64_t sx_cycle_clock()
+{
+#if SX_PATFORM_APPLE
+    return mach_absolute_time();
+#elif SX_PLATFORM_WINDOWS && SX_COMPILER_MSVC
+#    if SX_ARCH_32BIT
+    _asm rdtsc
+#    else
+    return __rdtsc();
+#    endif
+#elif SX_CPU_ARM && SX_ARCH_64BIT
+    int64_t virtual_timer_value;
+    asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
+    return virtual_timer_value;
+#elif SX_CPU_ARM && (__ARM_ARCH >= 6)
+    uint32_t pmccntr;
+    uint32_t pmuseren;
+    uint32_t pmcntenset;
+    // Read the user mode perf monitor counter access permissions.
+    asm volatile("mrc p15, 0, %0, c9, c14, 0" : "=r"(pmuseren));
+    if (pmuseren & 1) {    // Allows reading perfmon counters for user mode code.
+        asm volatile("mrc p15, 0, %0, c9, c12, 1" : "=r"(pmcntenset));
+        if (pmcntenset & 0x80000000ul) {    // Is it counting?
+            asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(pmccntr));
+            // The counter is set up to count every 64th cycle
+            return static_cast<int64_t>(pmccntr) * 64;    // Should optimize to << 6
+        }
+    }
+#elif SX_CPU_X86 && SX_ARCH_32BIT
+    int64_t ret;
+    __asm__ volatile("rdtsc" : "=A"(ret));
+    return ret;
+#elif SX_CPU_X86 && SX_ARCH_64BIT
+    uint64_t low, high;
+    __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));
+    return (high << 32) | low;
 #endif
 }
 
@@ -283,29 +325,17 @@ typedef sx_atomic_int sx_atomic_size;
 #    define sx_atomic_cas_size sx_atomic_cas
 #endif    // SX_ARCH_64BIT
 
-#if !SX_PLATFORM_EMSCRIPTEN && (SX_COMPILER_GCC || SX_COMPILER_CLANG) && \
-    __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__) &&      \
-    (SX_COMPILER_CLANG || SX_COMPILER_GCC >= 40900)
-#    include <stdatomic.h>
-typedef atomic_flag sx_lock_t;
-SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
-{
-    return atomic_flag_test_and_set_explicit(lock, memory_order_acquire);
-}
+typedef sx_align_decl(64, sx_atomic_int) sx_lock_t;
 
-SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+// https://software.intel.com/en-us/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops
+SX_FORCE_INLINE void sx_spin_wait(uint32_t count)
 {
-    while (sx_trylock(lock)) {
+    int64_t prev = sx_cycle_clock();
+    do {
         sx_yield_cpu();
-    }
+    } while (sx_cycle_clock() - prev < count);
 }
 
-SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
-{
-    atomic_flag_clear_explicit(lock, memory_order_release);
-}
-#else
-typedef sx_atomic_int sx_lock_t;
 SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
 {
 #    if SX_PLATFORM_WINDOWS
@@ -324,11 +354,10 @@ SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
 #    endif
 }
 
-SX_FORCE_INLINE void sx_lock(sx_lock_t* lock)
+SX_FORCE_INLINE void sx_lock(sx_lock_t* lock, uint32_t spin_count sx_default(1))
 {
     while (sx_trylock(lock)) {
-        sx_yield_cpu();
+        sx_spin_wait(spin_count);
     }
 }
 
-#endif    // SX_COMPILER_GCC || SX_COMPILER_CLANG
