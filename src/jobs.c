@@ -169,7 +169,7 @@ static inline void sx__job_remove_list(sx__job** pfirst, sx__job** plast, sx__jo
     node->prev = node->next = NULL;
 }
 
-typedef struct sx__job_select_result {
+typedef struct sx__job_select_result {  
     sx__job* job;
     bool waiting_list_alive;
 } sx__job_select_result;
@@ -275,7 +275,7 @@ static void sx__job_selector_fn(sx_fiber_transfer transfer)
         } else if (r.waiting_list_alive) {
             // If we have a pending job, continue this loop one more time
             sx_semaphore_post(&ctx->sem, 1);
-            sx_spin_wait(1);
+            sx_yield_cpu();
         }
     }
 
@@ -394,6 +394,7 @@ static void sx__job_process_pending(sx_job_context* ctx)
 
 static void sx__job_process_pending_single(sx_job_context* ctx, int index)
 {
+    sx_lock(&ctx->job_lk, 1);
     // unlike sx__job_process_pending, only check the specific index to push into job-list
     sx__job_pending pending = ctx->pending[index];
     if (!sx_pool_fulln(ctx->job_pool, *pending.counter)) {
@@ -416,6 +417,7 @@ static void sx__job_process_pending_single(sx_job_context* ctx, int index)
         }
         sx_semaphore_post(&ctx->sem, count);
     }
+    sx_unlock(&ctx->job_lk);
 }
 
 void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
@@ -425,14 +427,12 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
     sx_compiler_read_barrier();
     while (*job > 0) {
         // check if the current job is the pending list
-        sx_lock(&ctx->job_lk, 1);
         for (int i = 0, c = sx_array_count(ctx->pending); i < c; i++) {
             if (ctx->pending[i].counter == job) {
                 sx__job_process_pending_single(ctx, i);
                 break;
             }
         }
-        sx_unlock(&ctx->job_lk);
 
         // If thread is running a job, make it slave to the thread so it can only be picked up by
         // this thread And push the job back to waiting_list
