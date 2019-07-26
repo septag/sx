@@ -45,7 +45,6 @@ This library currently contains these functionalities (listed by header files):
 	- Mutex
 	- Semaphore
 	- Signal
-	- Self-contained single-producer-single-consumer lockless queue
 - [timer.h](include/sx/timer.h): Portable high-res timer, wrapper over [sokol_time](https://github.com/floooh/sokol)
 - [virtual-alloc.h](include/sx/virtual-alloc.h): Portable virtual memory allocator and low-level portable virtual memory management functions
 - [math.h](include/sx/math.h): 
@@ -65,6 +64,8 @@ This library currently contains these functionalities (listed by header files):
 - [tlsf-alloc.h](include/sx/tlsf-alloc.h): Tlsf (Two-Level Segregated Fit memory) memory allocator. Wrapper over [Mathew Conte's implementation](http://tlsf.baisoku.org)
 - [simd.h](include/sx/simd.h): portable 128bit simd math intrinsics. currently there are two implementations: reference and SSE. ARM Neon will be added soon.
 - [ringbuffer.h](include/sx/ringbuffer.h): Basic ring-buffer (circular buffer)
+- [lockless.h](include/sx/lockless.h): lockless data structures. 
+  - Self-contained single-producer-single-consumer queue
 
 ## Build
 ### Current supported platforms
