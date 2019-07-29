@@ -5,7 +5,7 @@
 // timer.h - v1.1 - portable high resolution timer
 //                  Implementation is sokol_time, just a thin wrapper
 //
-//    void sx_tm_now();
+//    void sx_tm_init();
 //        Call once before any other functions to initialize sokol_time
 //        (this calls for instance QueryPerformanceFrequency on Windows)
 //
