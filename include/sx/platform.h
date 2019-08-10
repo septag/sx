@@ -140,6 +140,11 @@
 #if defined(_DURANGO) || defined(_XBOX_ONE)
 #    undef SX_PLATFORM_XBOXONE
 #    define SX_PLATFORM_XBOXONE 1
+#elif defined(__ANDROID__) || defined(ANDROID)
+// Android compiler defines __linux__
+#    include <sys/cdefs.h>    // Defines __BIONIC__ and includes android/api-level.h
+#    undef SX_PLATFORM_ANDROID
+#    define SX_PLATFORM_ANDROID __ANDROID_API__
 #elif defined(_WIN32) || defined(_WIN64)
 // http://msdn.microsoft.com/en-us/library/6sehtctf.aspx
 #    ifndef NOMINMAX
@@ -167,11 +172,6 @@
 #        undef SX_PLATFORM_WINRT
 #        define SX_PLATFORM_WINRT 1
 #    endif
-#elif defined(__ANDROID__)
-// Android compiler defines __linux__
-#    include <sys/cdefs.h>    // Defines __BIONIC__ and includes android/api-level.h
-#    undef SX_PLATFORM_ANDROID
-#    define SX_PLATFORM_ANDROID __ANDROID_API__
 #elif defined(__STEAMLINK__)
 // SteamLink compiler defines __linux__
 #    undef SX_PLATFORM_STEAMLINK

@@ -37,8 +37,15 @@ endfunction()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(SX_BUILD_TESTS "Build test executables" ON)
-option(SX_SHARED_LIB "Build shared library (.so/.dll/.dylib)" OFF)
+if (NOT IOS AND NOT ANDROID)
+    option(SX_BUILD_TESTS "Build test executables" ON)
+    option(SX_SHARED_LIB "Build shared library (.so/.dll/.dylib)" OFF)
+else()
+    option(SX_BUILD_TESTS "Build test executables" OFF)
+    option(SX_SHARED_LIB "Build shared library (.so/.dll/.dylib)" ON)
+endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Enable Assembler
 if (MSVC)
@@ -214,7 +221,7 @@ target_include_directories(sx PUBLIC
 if (ANDROID)
     include(AndroidNdkModules)
     android_ndk_import_module_cpufeatures()
-    target_link_libraries(sx PUBLIC dl m PRIVATE cpufeatures)
+    target_link_libraries(sx PUBLIC dl m PRIVATE cpufeatures log)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(sx PUBLIC dl pthread m)
 elseif (WIN32)
@@ -226,24 +233,20 @@ if (SX_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-install(
-    TARGETS sx
-    EXPORT sx-config
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (NOT ANDROID AND NOT IOS)
+	install(
+		TARGETS sx
+		EXPORT sx-config
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(
-    EXPORT sx-config
-    NAMESPACE sx::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sx)
+	install(
+		EXPORT sx-config
+		NAMESPACE sx::
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sx)
 
-install(
-    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/sx
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# copy compile_commands.json from build/ to parent in order for clangd to work properly
-if (CMAKE_EXPORT_COMPILE_COMMANDS) 
-    add_custom_target(compile_commands COMMAND ${CMAKE_COMMAND} -E 
-        copy ${CMAKE_CURRENT_SOURCE_DIR}/build/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR})
+	install(
+		DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/sx
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()

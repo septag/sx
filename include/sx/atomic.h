@@ -64,6 +64,10 @@
 #    include <mach/mach_time.h>
 #endif
 
+#if !SX_PLATFORM_WINDOWS
+#   include <sys/time.h>
+#endif
+
 typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
@@ -97,7 +101,8 @@ SX_FORCE_INLINE int64_t sx_cycle_clock()
     int64_t virtual_timer_value;
     asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
     return virtual_timer_value;
-#elif SX_CPU_ARM && (__ARM_ARCH >= 6)
+#elif SX_CPU_ARM
+#   if (__ARM_ARCH >= 6)
     uint32_t pmccntr;
     uint32_t pmuseren;
     uint32_t pmcntenset;
@@ -108,9 +113,13 @@ SX_FORCE_INLINE int64_t sx_cycle_clock()
         if (pmcntenset & 0x80000000ul) {    // Is it counting?
             asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(pmccntr));
             // The counter is set up to count every 64th cycle
-            return static_cast<int64_t>(pmccntr) * 64;    // Should optimize to << 6
+            return (int64_t)pmccntr * 64;    // Should optimize to << 6
         }
     }
+#   endif // (__ARM_ARCH >= 6)
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
 #elif SX_CPU_X86 && SX_ARCH_32BIT
     int64_t ret;
     __asm__ volatile("rdtsc" : "=A"(ret));
