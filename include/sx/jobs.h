@@ -133,7 +133,7 @@ SX_API sx_job_context* sx_job_create_context(const sx_alloc* alloc,
 SX_API void sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc);
 
 SX_API sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, void* user,
-                                sx_job_priority priority sx_default(SX_JOB_PRIORITY_HIGH),
+                                sx_job_priority priority sx_default(SX_JOB_PRIORITY_NORMAL),
                                 unsigned int tags sx_default(0));
 SX_API void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job);
 SX_API bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job);

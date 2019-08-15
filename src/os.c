@@ -361,6 +361,7 @@ char* sx_os_path_exepath(char* dst, int size)
     sx_unused(dst);
     sx_unused(size);
     sx_assert(0 && "not implemented");
+    return NULL;
 #endif
 }
 
