@@ -67,7 +67,7 @@ static inline sx__pool_page* sx__pool_create_page(sx_pool* pool, const sx_alloc*
     page->buff = buff;
     page->next = NULL;
     for (int i = 0; i < capacity; i++) {
-        page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+        page->ptrs[capacity - i - 1] = page->buff + (size_t)i * (size_t)item_sz;
     }
 
     return page;
@@ -99,7 +99,7 @@ static inline sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int ca
     page->buff = buff;
     page->next = NULL;
     for (int i = 0; i < capacity; i++) {
-        page->ptrs[capacity - i - 1] = page->buff + i * item_sz;
+        page->ptrs[capacity - i - 1] = page->buff + (size_t)i * (size_t)item_sz;
     }
 
     return pool;
@@ -125,7 +125,8 @@ static inline void sx_pool_destroy(sx_pool* pool, const sx_alloc* alloc)
 static inline void* sx_pool_new(sx_pool* pool)
 {
     sx__pool_page* page = pool->pages;
-    while (page->iter == 0 && page->next) page = page->next;
+    while (page->iter == 0 && page->next)
+        page = page->next;
 
     if (page->iter > 0) {
         return page->ptrs[--page->iter];
@@ -140,7 +141,8 @@ static inline bool sx_pool_grow(sx_pool* pool, const sx_alloc* alloc)
     sx__pool_page* page = sx__pool_create_page(pool, alloc);
     if (page) {
         sx__pool_page* last = pool->pages;
-        while (last->next) last = last->next;
+        while (last->next)
+            last = last->next;
         last->next = page;
         return true;
     } else {
@@ -178,8 +180,8 @@ static inline bool sx_pool_valid_ptr(const sx_pool* pool, void* ptr)
     int item_sz = pool->item_sz;
     int capacity = pool->capacity;
     while (page) {
-        bool inbuf =
-            uptr >= (uintptr_t)page->buff && uptr < (uintptr_t)(page->buff + capacity * item_sz);
+        bool inbuf = uptr >= (uintptr_t)page->buff &&
+                     uptr < (uintptr_t)(page->buff + (size_t)capacity * (size_t)item_sz);
         if (inbuf)
             return (uintptr_t)((uint8_t*)ptr - page->buff) % item_sz == 0;
 
@@ -196,7 +198,8 @@ static inline void sx_pool_del(sx_pool* pool, void* ptr)
     int capacity = pool->capacity;
 
     while (page) {
-        if (uptr >= (uintptr_t)page->buff && uptr < (uintptr_t)(page->buff + capacity * item_sz)) {
+        if (uptr >= (uintptr_t)page->buff &&
+            uptr < (uintptr_t)(page->buff + (size_t)capacity * (size_t)item_sz)) {
             sx_assert((uintptr_t)((uint8_t*)ptr - page->buff) % item_sz == 0 &&
                       "ptr is not aligned to items, probably invalid");
             sx_assert(page->iter != capacity &&

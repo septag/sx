@@ -579,8 +579,8 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
     sx_memset(ctx->job_pool->pages->buff, 0x0, sizeof(sx__job) * max_fibers);
 
     // keep tags in an array for evaluating num_jobs
-    ctx->tags = sx_malloc(alloc, sizeof(uint32_t) * (ctx->num_threads + 1));
-    sx_memset(ctx->tags, 0xff, sizeof(uint32_t) * (ctx->num_threads + 1));
+    ctx->tags = sx_malloc(alloc, sizeof(uint32_t) * ((size_t)ctx->num_threads + 1));
+    sx_memset(ctx->tags, 0xff, sizeof(uint32_t) * ((size_t)ctx->num_threads + 1));
 
     // Worker threads
     if (ctx->num_threads > 0) {

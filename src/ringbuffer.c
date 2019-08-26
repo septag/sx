@@ -36,7 +36,7 @@ void sx_ringbuffer_write(sx_ringbuffer* rb, const void* data, int size)
         sx_memcpy(&buff[rb->end], udata, size);
     } else {
         sx_memcpy(&buff[rb->end], udata, remain);
-        sx_memcpy(buff, &udata[remain], size - remain);
+        sx_memcpy(buff, &udata[remain], (size_t)size - remain);
     }
 
     rb->end = (rb->end + size) % rb->capacity;
@@ -59,7 +59,7 @@ int sx_ringbuffer_read(sx_ringbuffer* rb, void* data, int size)
         sx_memcpy(udata, &buff[rb->start], size);
     } else {
         sx_memcpy(udata, &buff[rb->start], remain);
-        sx_memcpy(&udata[remain], buff, size - remain);
+        sx_memcpy(&udata[remain], buff, (size_t)size - (size_t)remain);
     }
 
     rb->start = (rb->start + size) % rb->capacity;

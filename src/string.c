@@ -377,12 +377,14 @@ bool sx_strstr_wildcard(const char* str, const char* pattern)
         if (!*str) {
             if (!*pattern)
                 return true;
+            sx_assert(s);
             if (!*s)
                 return false;
             str = s++;
             pattern = w;
             continue;
         } else {
+            sx_assert(pattern);
             if (*pattern != *str) {
                 if ('*' == *pattern) {
                     w = ++pattern;

@@ -606,7 +606,7 @@ char* sx_os_path_relpath(char* dst, int size, const char* path, const char* star
         if (path != dst)
             sx_strcpy(dst, size, sub + len);
         else
-            sx_memmove(dst, sub + len, sx_strlen(sub + len) + 1);
+            sx_memmove(dst, sub + len, (size_t)sx_strlen(sub + len) + 1);
         return dst;
     }
     return NULL;
