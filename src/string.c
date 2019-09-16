@@ -725,7 +725,7 @@ int sx_toint(const char* str)
 
 uint32_t sx_touint(const char* str)
 {
-    return strtoul(str, NULL, 10);
+    return (uint32_t)strtoul(str, NULL, 10);
 }
 
 float sx_tofloat(const char* str)

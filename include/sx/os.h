@@ -36,9 +36,9 @@ typedef struct sx_pinfo {
     void* win_thread_handle;
 } sx_pinfo;
 
-SX_API int sx_os_minstacksz();
-SX_API int sx_os_maxstacksz();
-SX_API int sx_os_pagesz();
+SX_API size_t sx_os_minstacksz();
+SX_API size_t sx_os_maxstacksz();
+SX_API size_t sx_os_pagesz();
 SX_API size_t sx_os_align_pagesz(size_t size);
 SX_API char sx_os_getch();
 SX_API size_t sx_os_processmem();

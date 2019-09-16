@@ -59,18 +59,18 @@ static const char* k_path_sep = "\\";
 static const char* k_path_sep = "/";
 #endif
 
-int sx_os_pagesz()
+size_t sx_os_pagesz()
 {
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO si;
     GetSystemInfo(&si);
-    return (int)si.dwPageSize;
+    return (size_t)si.dwPageSize;
 #elif SX_PLATFORM_POSIX
-    return sysconf(_SC_PAGESIZE);
+    return (size_t)sysconf(_SC_PAGESIZE);
 #endif
 }
 
-int sx_os_maxstacksz()
+size_t sx_os_maxstacksz()
 {
 #if SX_PLATFORM_WINDOWS
     return 1073741824;    // 1gb
@@ -81,7 +81,7 @@ int sx_os_maxstacksz()
 #endif
 }
 
-int sx_os_minstacksz()
+size_t sx_os_minstacksz()
 {
     return 32768;    // 32kb
 }
@@ -109,7 +109,7 @@ char sx_os_getch()
 size_t sx_os_align_pagesz(size_t size)
 {
     sx_assert(size > 0);
-    int page_sz = sx_os_pagesz();
+    size_t page_sz = sx_os_pagesz();
     size_t page_cnt = (size + page_sz - 1) / page_sz;
     return page_cnt * page_sz;
 }
@@ -277,7 +277,7 @@ sx_pinfo sx_os_exec(const char* const* argv)
 #else
     sx_unused(argv);
     sx_assert(0 && "not implemented");
-    return (sx_pinfo){ 0 };
+    return (sx_pinfo){ {0}, 0 };
 #endif    // SX_PLATFORM_
 }
 

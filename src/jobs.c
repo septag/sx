@@ -499,7 +499,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
     tdata->tags = 0xffffffff;
     tdata->main_thrd = main_thrd;
 
-    bool r = sx_fiber_stack_init(&tdata->selector_stack, sx_os_minstacksz());
+    bool r = sx_fiber_stack_init(&tdata->selector_stack, (int)sx_os_minstacksz());
     sx_assert(r && "Not enough memory for temp stacks");
     sx_unused(r);
 
@@ -590,7 +590,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
         for (int i = 0; i < ctx->num_threads; i++) {
             char name[32];
             sx_snprintf(name, sizeof(name), "sx_job_thread(%d)", i + 1);
-            ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, sx_os_minstacksz(),
+            ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, (int)sx_os_minstacksz(),
                                                name, (void*)(intptr_t)i);
             sx_assert(ctx->threads[i] && "sx_thread_create failed!");
         }

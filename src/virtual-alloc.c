@@ -50,7 +50,7 @@ void sx_virtual_protect(void* ptr, size_t sz)
 
 void* sx_virtual_commit(void* addr, size_t sz)
 {
-    int page_sz = sx_os_pagesz();
+    size_t page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)addr % page_sz == 0);
     sx_assert(sz % page_sz == 0);
 
@@ -63,7 +63,7 @@ void* sx_virtual_commit(void* addr, size_t sz)
 
 void sx_virtual_decommit(void* addr, size_t sz)
 {
-    int page_sz = sx_os_pagesz();
+    size_t page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)addr % page_sz == 0);
     sx_assert(sz % page_sz == 0);
 
