@@ -659,7 +659,6 @@ int sx_os_numcores()
     if (sysctlbyname("hw.logicalcpu", &ncpu, &ncpu_len, NULL, 0) == 0)
         return ncpu;
     return 1;
-
 #elif SX_PLATFORM_BSD
     int ctlarg[2], ncpu;
     size_t len;
