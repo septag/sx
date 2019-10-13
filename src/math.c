@@ -801,28 +801,28 @@ sx_quat sx_mat4_quat(const sx_mat4* m)
 
 sx_mat4 sx_mat4x_inv(const sx_mat4* _mat)
 {
-    float det = (_mat->f[0] * (_mat->f[5] * _mat->m33 - _mat->f[6] * _mat->f[9]) +
-                 _mat->f[1] * (_mat->f[6] * _mat->f[8] - _mat->f[4] * _mat->m33) +
-                 _mat->f[2] * (_mat->f[4] * _mat->f[9] - _mat->f[5] * _mat->f[8]));
+    float det = (_mat->m11 * (_mat->m22 * _mat->m33 - _mat->m23 * _mat->m32) +
+                 _mat->m12 * (_mat->m23 * _mat->m31 - _mat->m21 * _mat->m33) +
+                 _mat->m13 * (_mat->m21 * _mat->m32 - _mat->m22 * _mat->m31));
     float det_rcp = 1.0f / det;
-    float tx = _mat->f[12];
-    float ty = _mat->f[13];
-    float tz = _mat->f[14];
+    float tx = _mat->m14;
+    float ty = _mat->m24;
+    float tz = _mat->m34;
 
-    sx_mat4 r = sx_mat4f((_mat->f[5] * _mat->f[10] - _mat->f[6] * _mat->f[9]) * det_rcp,
-                         (_mat->f[2] * _mat->f[9] - _mat->f[1] * _mat->f[10]) * det_rcp,
-                         (_mat->f[1] * _mat->f[6] - _mat->f[2] * _mat->f[5]) * det_rcp, 0.0f,
-                         (_mat->f[6] * _mat->f[8] - _mat->f[4] * _mat->f[10]) * det_rcp,
-                         (_mat->f[0] * _mat->f[10] - _mat->f[2] * _mat->f[8]) * det_rcp,
-                         (_mat->f[2] * _mat->f[4] - _mat->f[0] * _mat->f[6]) * det_rcp, 0,
-                         (_mat->f[4] * _mat->f[9] - _mat->f[5] * _mat->f[8]) * det_rcp,
-                         (_mat->f[1] * _mat->f[8] - _mat->f[0] * _mat->f[9]) * det_rcp,
-                         (_mat->f[0] * _mat->f[5] - _mat->f[1] * _mat->f[4]) * det_rcp, 0, 0.0f,
+    sx_mat4 r = sx_mat4f((_mat->m22 * _mat->m33 - _mat->m23 * _mat->m32) * det_rcp,
+                         (_mat->m13 * _mat->m32 - _mat->m12 * _mat->m33) * det_rcp,
+                         (_mat->m12 * _mat->m23 - _mat->m13 * _mat->m22) * det_rcp, 0.0f,
+                         (_mat->m23 * _mat->m31 - _mat->m21 * _mat->m33) * det_rcp,
+                         (_mat->m11 * _mat->m33 - _mat->m13 * _mat->m31) * det_rcp,
+                         (_mat->m13 * _mat->m21 - _mat->m11 * _mat->m23) * det_rcp, 0,
+                         (_mat->m21 * _mat->m32 - _mat->m22 * _mat->m31) * det_rcp,
+                         (_mat->m12 * _mat->m31 - _mat->m11 * _mat->m32) * det_rcp,
+                         (_mat->m11 * _mat->m22 - _mat->m12 * _mat->m21) * det_rcp, 0, 0.0f,
                          0.0f, 0.0f, 1.0f);
 
-    r.f[12] = -(tx * r.f[0] + ty * r.f[4] + tz * r.f[8]);
-    r.f[13] = -(tx * r.f[1] + ty * r.f[5] + tz * r.f[9]);
-    r.f[14] = -(tx * r.f[2] + ty * r.f[6] + tz * r.f[10]);
+    r.f[12] = -(tx * r.m11 + ty * r.m12 + tz * r.m13);
+    r.f[13] = -(tx * r.m21 + ty * r.m22 + tz * r.m23);
+    r.f[14] = -(tx * r.m31 + ty * r.m32 + tz * r.m33);
     return r;
 }
 
