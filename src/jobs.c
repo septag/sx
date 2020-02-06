@@ -520,6 +520,7 @@ static int sx__job_thread_fn(void* user1, void* user2)
     uint32_t thread_id = sx_thread_tid();
 
     // Create thread data
+    // note: thread index #0 is reserved for main thread
     sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, index + 1, false);
     if (!tdata) {
         sx_assert(tdata && "ThreadData create failed!");

@@ -66,6 +66,7 @@ This library currently contains these functionalities (listed by header files):
 - [ringbuffer.h](include/sx/ringbuffer.h): Basic ring-buffer (circular buffer)
 - [lockless.h](include/sx/lockless.h): lockless data structures. 
   - Self-contained single-producer-single-consumer queue
+- [linear-buffer.h](include/sx/linear-buffer.h): Helper custom memory allocator useful for allocating structures with arrays of data in a single allocation call
 
 ## Build
 ### Current supported platforms
