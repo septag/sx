@@ -74,6 +74,10 @@
 #    define SX_CONFIG_SIMD_DISABLE 0
 #endif
 
+#ifndef SX_CONFIG_ARRAY_INIT_SIZE
+#   define SX_CONFIG_ARRAY_INIT_SIZE 8
+#endif
+
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor,

@@ -4,19 +4,19 @@
 //
 // linear-buffer.h - helper custom memory allocator useful for allocating structures with
 //                   data arrays in a single allocation call, supports memory alignment
-//                   you start by initialization a structure type and then adding array fields 
+//                   you start by initialization a structure type and then adding array fields
 //                   in the end, you allocate memory in a single call, instead of multiple mallocs
 // NOTE: use provided macros instead of internal sx__ functions
 //
 // Example. allocate structure my_data_t with 100 array items of array_of_ints and array_of_floats
-//  
+//
 //      typedef struct my_data_t {
 //          int count;
 //          int* array_of_ints;
 //          float* array_of_floats;
 //      };
 //      bool* arbitary_data;
-//      
+//
 //      sx_linear_buffer buff;
 //      sx_linear_buffer_init(&buff, my_data_t, 0);
 //      sx_linear_buffer_addtype(&buff, my_data_t, int, array_of_ints, 100, 0);
@@ -97,7 +97,7 @@ static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int
 #define sx_linear_buffer_init(_buf, _struct, _align) \
     sx__linear_buffer_init((_buf), #_struct, sizeof(_struct), (_align))
 #define sx_linear_buffer_addtype(_buf, _struct, _type, _name, _count, _align) \
-    sx_assert(sx_strequal((_buf)->parent_type, #_struct));                      \
+    sx_assert(sx_strequal((_buf)->parent_type, #_struct));                    \
     sx__linear_buffer_add((_buf), sizeof(_type) * (_count),                   \
                           (int)(uintptr_t) & (((_struct*)0)->_name), NULL, (_align))
 #define sx_linear_buffer_addptr(_buf, _pptr, _type, _count, _align) \
