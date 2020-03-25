@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// Copyright 2020 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 // linear-buffer.h - helper custom memory allocator useful for allocating structures with

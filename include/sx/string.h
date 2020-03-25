@@ -22,10 +22,15 @@ SX_API int sx_vsnprintf(char* str, int size, const char* fmt, va_list args);
 SX_API char* sx_snprintf_alloc(const sx_alloc* alloc, const char* fmt, ...);
 SX_API char* sx_vsnprintf_alloc(const sx_alloc* alloc, const char* fmt, va_list args);
 
+// strcpy, strncpy, strcat, strncat returns the pointer to the end of the string (str + len)
 SX_API char* sx_strcpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src);
 SX_API char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num);
 SX_API char* sx_strcat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src);
 SX_API char* sx_strncat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num);
+
+// use this macro to estimate remaining string size when using return pointers from strcat/strcpy
+#define sx_strsize(_str, _ptr) sizeof(_str) - (int)(uintptr_t)(_ptr - _str)
+
 SX_API int sx_strlen(const char* str);
 SX_API bool sx_strequal(const char* SX_RESTRICT a, const char* SX_RESTRICT b);
 SX_API bool sx_strequalnocase(const char* SX_RESTRICT a, const char* SX_RESTRICT b);
