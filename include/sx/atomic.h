@@ -89,7 +89,7 @@ SX_FORCE_INLINE void sx_yield_cpu()
 // https://github.com/google/benchmark/blob/v1.1.0/src/cycleclock.h
 SX_FORCE_INLINE int64_t sx_cycle_clock()
 {
-#if SX_PATFORM_APPLE
+#if SX_PLATFORM_APPLE
     return mach_absolute_time();
 #elif SX_PLATFORM_WINDOWS && SX_COMPILER_MSVC
 #    if SX_ARCH_32BIT

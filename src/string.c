@@ -91,10 +91,12 @@ char* sx_strcpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src)
     const int len = sx_strlen(src);
     const int32_t max = dst_sz - 1;
     const int32_t num = (len < max ? len : max);
-    sx_memcpy(dst, src, num);
+    if (num > 0) {
+        sx_memcpy(dst, src, num);
+    }
     dst[num] = '\0';
 
-    return dst;
+    return &dst[num];
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strlen.c
@@ -214,10 +216,12 @@ char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src,
     const int len = sx__strnlen(src, _num);
     const int32_t max = dst_sz - 1;
     const int32_t num = (len < max ? len : max);
-    sx_memcpy(dst, src, num);
+    if (num > 0) {
+        sx_memcpy(dst, src, num);
+    }
     dst[num] = '\0';
 
-    return dst;
+    return &dst[num];
 }
 
 char* sx_strcat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src)
@@ -242,10 +246,7 @@ char* sx_strncat(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src,
 
 bool sx_isspace(char ch)
 {
-    return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' /* ||
-                                                     ch == '\v' ||
-                                                     ch == '\f'*/
-        ;
+    return (uint32_t)(ch - 1) < 32 && ((0x80001F00 >> (uint32_t)(ch - 1)) & 1) == 1;
 }
 
 // https://github.com/lattera/glibc/blob/master/string/strrchr.c
@@ -725,7 +726,7 @@ int sx_toint(const char* str)
 
 uint32_t sx_touint(const char* str)
 {
-    return strtoul(str, NULL, 10);
+    return (uint32_t)strtoul(str, NULL, 10);
 }
 
 float sx_tofloat(const char* str)

@@ -117,9 +117,8 @@ typedef enum sx_job_priority {
 } sx_job_priority;
 
 typedef struct sx_job_context_desc {
-    int num_threads;    // number of worker threads to spawn (default: num_cpu_cores-1)
-    int max_fibers;     // maximum fibers that are allowed to be active at the same time (default:
-                        // 64)
+    int num_threads;    // number of worker threads to spawn,exclude main (default: num_cpu_cores-1)
+    int max_fibers;     // maximum fibers that are can be running at the same time (default: 64)
     int fiber_stack_sz;                               // fiber stack size (default: 1mb)
     sx_job_thread_init_cb* thread_init_cb;            // callback function that will be called on
                                                       // initiaslization of each worker thread

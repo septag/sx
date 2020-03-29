@@ -105,7 +105,9 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/tlsf-alloc.h
                   include/sx/simd.h
                   include/sx/ringbuffer.h
-                  include/sx/lockless.h)
+                  include/sx/lockless.h 
+                  include/sx/linear-buffer.h 
+                  include/sx/bitarray.h)
 
 # Remove fiber functions for now on emscripten
 if (EMSCRIPTEN)

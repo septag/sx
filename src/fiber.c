@@ -67,7 +67,7 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size)
 
 void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size)
 {
-    int page_sz = sx_os_pagesz();
+    size_t page_sz = sx_os_pagesz();
     sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
     sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
 
@@ -162,7 +162,7 @@ static inline void sx__coro_remove_list(sx__coro_state** pfirst, sx__coro_state*
 sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz)
 {
     sx_assert(max_fibers > 0);
-    sx_assert(stack_sz >= sx_os_minstacksz() && "stack size too small");
+    sx_assert((size_t)stack_sz >= sx_os_minstacksz() && "stack size too small");
 
     sx_coro_context* ctx = (sx_coro_context*)sx_malloc(alloc, sizeof(sx_coro_context));
     if (!ctx) {

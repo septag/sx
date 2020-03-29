@@ -202,7 +202,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     thrd->callback = callback;
     thrd->user_data1 = user_data1;
     thrd->user_data2 = user_data2;
-    thrd->stack_sz = sx_max(stack_sz, sx_os_minstacksz());
+    thrd->stack_sz = sx_max(stack_sz, (int)sx_os_minstacksz());
     thrd->running = true;
 
     pthread_attr_t attr;
@@ -625,7 +625,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     thrd->callback = callback;
     thrd->user_data1 = user_data1;
     thrd->user_data2 = user_data2;
-    thrd->stack_sz = sx_max(stack_sz, sx_os_minstacksz());
+    thrd->stack_sz = sx_max(stack_sz, (int)sx_os_minstacksz());
     thrd->running = true;
 
     thrd->handle =
