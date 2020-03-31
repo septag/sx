@@ -72,7 +72,6 @@ typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
 
-
 SX_FORCE_INLINE void sx_yield_cpu()
 {
 #if SX_PLATFORM_WINDOWS
@@ -87,7 +86,7 @@ SX_FORCE_INLINE void sx_yield_cpu()
 }
 
 // https://github.com/google/benchmark/blob/v1.1.0/src/cycleclock.h
-SX_FORCE_INLINE int64_t sx_cycle_clock()
+SX_FORCE_INLINE uint64_t sx_cycle_clock()
 {
 #if SX_PLATFORM_APPLE
     return mach_absolute_time();
@@ -98,7 +97,7 @@ SX_FORCE_INLINE int64_t sx_cycle_clock()
     return __rdtsc();
 #    endif
 #elif SX_CPU_ARM && SX_ARCH_64BIT
-    int64_t virtual_timer_value;
+    uint64_t virtual_timer_value;
     asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
     return virtual_timer_value;
 #elif SX_CPU_ARM
@@ -334,39 +333,4 @@ typedef sx_atomic_int sx_atomic_size;
 #    define sx_atomic_cas_size sx_atomic_cas
 #endif    // SX_ARCH_64BIT
 
-typedef sx_align_decl(64, sx_atomic_int) sx_lock_t;
-
-// https://software.intel.com/en-us/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops
-SX_FORCE_INLINE void sx_spin_wait(uint32_t count)
-{
-    int64_t prev = sx_cycle_clock();
-    do {
-        sx_yield_cpu();
-    } while (sx_cycle_clock() - prev < count);
-}
-
-SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
-{
-#    if SX_PLATFORM_WINDOWS
-    sx_atomic_xchg(lock, 0);
-#    else
-    __sync_lock_release(lock);
-#    endif
-}
-
-SX_FORCE_INLINE int sx_trylock(sx_lock_t* lock)
-{
-#    if SX_PLATFORM_WINDOWS
-    return *lock || sx_atomic_xchg(lock, 1);
-#    else
-    return *lock || __sync_lock_test_and_set(lock, 1);
-#    endif
-}
-
-SX_FORCE_INLINE void sx_lock(sx_lock_t* lock, uint32_t spin_count sx_default(1))
-{
-    while (sx_trylock(lock)) {
-        sx_spin_wait(spin_count);
-    }
-}
 
