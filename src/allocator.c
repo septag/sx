@@ -5,6 +5,7 @@
 #include "sx/allocator.h"
 
 #include <malloc.h>
+#include <stdlib.h>
 
 #include "sx/threads.h"
 #include "sx/os.h"
