@@ -40,12 +40,7 @@
 
 // Define anything here, for out of memory exceptions (exit/assert/...)
 #ifndef sx_out_of_memory
-#    include <stdlib.h>
-#    define sx_out_of_memory()                    \
-        do {                                      \
-            sx_assert_rel(0 && "Out of memory!"); \
-            exit(-1);                             \
-        } while (0)
+#    define sx_out_of_memory()  sx_assert_rel(0 && "Out of memory!")
 #endif
 
 #if SX_CONFIG_DEBUG_ALLOCATOR

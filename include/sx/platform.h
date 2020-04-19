@@ -20,6 +20,7 @@
 // Compiler
 #define SX_COMPILER_CLANG 0
 #define SX_COMPILER_CLANG_ANALYZER 0
+#define SX_COMPILER_CLANG_CL 0
 #define SX_COMPILER_GCC 0
 #define SX_COMPILER_MSVC 0
 
@@ -82,6 +83,12 @@
 #        undef SX_COMPILER_CLANG_ANALYZER
 #        define SX_COMPILER_CLANG_ANALYZER 1
 #    endif    // defined(__clang_analyzer__)
+#    if defined(_MSC_VER)
+#        undef SX_COMPILER_MSVC
+#        define SX_COMPILER_MSVC _MSC_VER
+#        undef SX_COMPILER_CLANG_CL
+#        define SX_COMPILER_CLANG_CL SX_COMPILER_CLANG
+#    endif
 #elif defined(_MSC_VER)
 #    undef SX_COMPILER_MSVC
 #    define SX_COMPILER_MSVC _MSC_VER

@@ -1367,6 +1367,11 @@ static inline sx_mat3 sx_mat3_translate(float x, float y)
     return sx_mat3f(1.0f, 0.0f, x, 0.0f, 1.0f, y, 0.0f, 0.0f, 1.0f);
 }
 
+static inline sx_mat3 sx_mat3_translatev(const sx_vec2 p)
+{
+    return sx_mat3_translate(p.x, p.y);
+}
+
 static inline sx_mat3 sx_mat3_rotate(float theta)
 {
     float c = sx_cos(theta);
@@ -1567,7 +1572,8 @@ static inline sx_vec2 sx_rect_corner(const sx_rect* rc, int index)
 
 static inline void sx_rect_corners(sx_vec2 corners[4], const sx_rect* rc)
 {
-    for (int i = 0; i < 4; i++) corners[0] = sx_rect_corner(rc, i);
+    for (int i = 0; i < 4; i++)
+        corners[0] = sx_rect_corner(rc, i);
 }
 
 static inline float sx_rect_width(const sx_rect rc)
@@ -1578,6 +1584,11 @@ static inline float sx_rect_width(const sx_rect rc)
 static inline float sx_rect_height(const sx_rect rc)
 {
     return rc.ymax - rc.ymin;
+}
+
+static inline sx_rect sx_rect_move(const sx_rect rc, const sx_vec2 pos) 
+{
+    return sx_rectv(sx_vec2_add(pos, rc.vmin), sx_vec2_add(pos, rc.vmax));
 }
 
 static inline sx_irect sx_irecti(int _xmin, int _ymin, int _xmax, int _ymax)
@@ -1659,7 +1670,8 @@ static inline sx_ivec2 sx_irect_corner(const sx_irect* rc, int index)
 
 static inline void sx_irect_corners(sx_ivec2 corners[4], const sx_irect* rc)
 {
-    for (int i = 0; i < 4; i++) corners[0] = sx_irect_corner(rc, i);
+    for (int i = 0; i < 4; i++)
+        corners[0] = sx_irect_corner(rc, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1745,7 +1757,8 @@ static inline sx_vec3 sx_aabb_corner(const sx_aabb* box, int index)
 
 static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* box)
 {
-    for (int i = 0; i < 8; i++) corners[i] = sx_aabb_corner(box, i);
+    for (int i = 0; i < 8; i++)
+        corners[i] = sx_aabb_corner(box, i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -68,6 +68,9 @@
 #   include <sys/time.h>
 #endif
 
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-declarations")
+
 typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
@@ -333,4 +336,4 @@ typedef sx_atomic_int sx_atomic_size;
 #    define sx_atomic_cas_size sx_atomic_cas
 #endif    // SX_ARCH_64BIT
 
-
+SX_PRAGMA_DIAGNOSTIC_POP()
