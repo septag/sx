@@ -29,14 +29,16 @@
 typedef struct sx_linalloc {
     sx_alloc alloc;
     uint8_t* ptr;
-    int last_ptr_offset;
-    int offset;
-    int size;
-    int peak;
+    size_t last_ptr_offset;
+    size_t offset;
+    size_t size;
+    size_t peak;
 } sx_linalloc;
 
-SX_API void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size);
+SX_API void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, size_t size);
 SX_API void sx_linalloc_reset(sx_linalloc* linalloc);
+
+SX_API size_t sx_linalloc_real_alloc_size(size_t size, uint32_t align);
 
 #define sx_define_linalloc_onstack(_name, _size) \
     uint8_t _name##_buff_[(_size)];              \

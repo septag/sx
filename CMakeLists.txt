@@ -69,12 +69,11 @@ set(SOURCE_FILES src/sx.c
                  src/timer.c
                  src/rng.c
                  src/ini.c
-                 src/virtual-alloc.c
+                 src/vmem.c
                  src/fiber.c
                  src/math.c 
                  src/jobs.c
                  src/bheap.c
-                 src/tlsf-alloc.c
                  src/ringbuffer.c
                  src/lockless.c)
 set(INCLUDE_FILES include/sx/allocator.h
@@ -97,12 +96,11 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/timer.h
                   include/sx/rng.h
                   include/sx/ini.h
-                  include/sx/virtual-alloc.h 
+                  include/sx/vmem.h 
                   include/sx/fiber.h
                   include/sx/math.h
                   include/sx/jobs.h
                   include/sx/bheap.h
-                  include/sx/tlsf-alloc.h
                   include/sx/simd.h
                   include/sx/ringbuffer.h
                   include/sx/lockless.h 

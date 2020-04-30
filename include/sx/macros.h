@@ -60,6 +60,8 @@
 #    define SX_NO_RETURN __attribute__((noreturn))
 #    define SX_CONSTFN __attribute__((const))
 #    define SX_RESTRICT __restrict__
+// https://awesomekling.github.io/Smarter-C++-inlining-with-attribute-flatten/
+#    define SX_FLATTEN __attribute__((flatten))     // inline everything in the function body
 #    if SX_CRT_MSVC
 #        define __stdcall
 #    endif    // SX_CRT_MSVC
@@ -72,6 +74,7 @@
 #    define SX_NO_RETURN
 #    define SX_CONSTFN __declspec(noalias)
 #    define SX_RESTRICT __restrict
+#    define SX_FLATTEN 
 #else
 #    error "Unknown SX_COMPILER_?"
 #endif

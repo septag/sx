@@ -27,21 +27,28 @@
 //
 #pragma once
 
-#include "allocator.h"
+#include "sx.h"
 
-typedef struct sx_virtualalloc {
-    sx_alloc alloc;
-    uint8_t* ptr;    // Pointer to reserved memory address
-    size_t offset;
-    size_t reserved_sz;    // Total memory that is reserved (mapped) on init
-} sx_virtualalloc;
+typedef enum sx_vmem_flag {
+    SX_VMEM_WATCH = 0x1
+} sx_vmem_flag;
+typedef uint32_t sx_vmem_flags;
 
-SX_API bool sx_virtualalloc_init(sx_virtualalloc* valloc, size_t reserve_sz);
-SX_API void sx_virtualalloc_release(sx_virtualalloc* valloc);
+typedef struct sx_vmem_context {
+    void* ptr;
+    int num_pages;
+    int page_size;
+    int max_pages;
+} sx_vmem_context;
 
-// low-level virtual memory api
-SX_API void* sx_virtual_reserve(size_t reserve_sz);
-SX_API void sx_virtual_release(void* ptr, size_t sz);
-SX_API void sx_virtual_protect(void* ptr, size_t sz);
-SX_API void* sx_virtual_commit(void* addr, size_t sz);
-SX_API void sx_virtual_decommit(void* addr, size_t sz);
+SX_API size_t sx_vmem_get_bytes(int num_pages);
+SX_API int sx_vmem_get_needed_pages(size_t bytes);
+
+SX_API bool sx_vmem_init(sx_vmem_context* vmem, sx_vmem_flags flags, int max_pages);
+SX_API void sx_vmem_release(sx_vmem_context* vmem);
+SX_API void* sx_vmem_commit_page(sx_vmem_context* vmem, int page_id);
+SX_API void sx_vmem_free_page(sx_vmem_context* vmem, int page_id);
+SX_API void* sx_vmem_commit_pages(sx_vmem_context* vmem, int start_page_id, int num_pages);
+SX_API void sx_vmem_free_pages(sx_vmem_context* vmem, int start_page_id, int num_pages);
+SX_API void* sx_vmem_get_page(sx_vmem_context* vmem, int page_id);
+SX_API size_t sx_vmem_commit_size(sx_vmem_context* vmem);

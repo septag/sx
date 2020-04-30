@@ -59,7 +59,7 @@ static const char* k_path_sep = "\\";
 static const char* k_path_sep = "/";
 #endif
 
-size_t sx_os_pagesz()
+size_t sx_os_pagesz(void)
 {
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO si;
@@ -70,7 +70,7 @@ size_t sx_os_pagesz()
 #endif
 }
 
-size_t sx_os_maxstacksz()
+size_t sx_os_maxstacksz(void)
 {
 #if SX_PLATFORM_WINDOWS
     return 1073741824;    // 1gb
@@ -81,12 +81,12 @@ size_t sx_os_maxstacksz()
 #endif
 }
 
-size_t sx_os_minstacksz()
+size_t sx_os_minstacksz(void)
 {
     return 32768;    // 32kb
 }
 
-char sx_os_getch()
+char sx_os_getch(void)
 {
 #if SX_PLATFORM_WINDOWS
     return getchar();
@@ -114,7 +114,7 @@ size_t sx_os_align_pagesz(size_t size)
     return page_cnt * page_sz;
 }
 
-size_t sx_os_processmem()
+size_t sx_os_processmem(void)
 {
 #if SX_PLATFORM_ANDROID
     struct mallinfo mi = mallinfo();
@@ -192,7 +192,7 @@ void* sx_os_dlsym(void* handle, const char* symbol)
 #endif
 }
 
-const char* sx_os_dlerr()
+const char* sx_os_dlerr(void)
 {
 #if SX_PLATFORM_WINDOWS
     return "";
@@ -390,7 +390,7 @@ sx_file_info sx_os_stat(const char* filepath)
     tm.HighPart = fad.ftLastWriteTime.dwHighDateTime;
     tm.LowPart = fad.ftLastWriteTime.dwLowDateTime;
     info.last_modified = (uint64_t)(tm.QuadPart / 10000000 - 11644473600LL);
-#else
+#else // if SX_PLATFORM_WINDOWS
     struct stat st;
     int32_t result = stat(filepath, &st);
     if (0 != result)
@@ -406,7 +406,7 @@ sx_file_info sx_os_stat(const char* filepath)
 #    else
     info.last_modified = st.st_mtim.tv_sec;
 #    endif
-#endif    // SX_COMPILER_MSVC
+#endif    // else SX_PLATFORM_WINDOWS
 
     return info;
 }

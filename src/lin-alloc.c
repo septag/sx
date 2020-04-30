@@ -5,8 +5,8 @@
 #include "sx/lin-alloc.h"
 
 typedef struct sx__linalloc_hdr_s {
-    int size;       // size of buffer that requested upon allocation
-    int padding;    // number of bytes that is padded before the pointer
+    uint32_t size;       // size of buffer that requested upon allocation
+    uint32_t padding;    // number of bytes that is padded before the pointer
 } sx__linalloc_hdr;
 
 static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align)
@@ -23,10 +23,10 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align
 
     // Fill header info
     sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)aligned - 1;
-    hdr->size = (int)size;
-    hdr->padding = (int)(aligned - ptr);
+    hdr->size = (uint32_t)size;
+    hdr->padding = (uint32_t)(aligned - ptr);
 
-    alloc->offset += (int)total;
+    alloc->offset += total;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
 
     return aligned;
@@ -43,21 +43,22 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
     sx_linalloc* linalloc = (sx_linalloc*)user_data;
     void* last_ptr = linalloc->ptr + linalloc->last_ptr_offset;
     if (size > 0) {
+        sx_assert(size < UINT32_MAX);
         if (ptr == NULL) {
             // malloc
             void* new_ptr = sx__linalloc_malloc(linalloc, size, align);
-            linalloc->last_ptr_offset = (int)(intptr_t)((uint8_t*)new_ptr - linalloc->ptr);
+            linalloc->last_ptr_offset = (uintptr_t)((uint8_t*)new_ptr - linalloc->ptr);
             return new_ptr;
         } else if (ptr == last_ptr) {
             // Realloc: special case, the memory is continous so we can just grow the buffer without
             // any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant
             //          between reallocs
-            if ((linalloc->offset + size) > (size_t)linalloc->size) {
+            if ((linalloc->offset + size) > linalloc->size) {
                 sx_out_of_memory();
                 return NULL;
             }
-            linalloc->offset += (int)size;
+            linalloc->offset += size;
             return ptr;    // Input pointer does not change
         } else {
             // Realloc: generic, create new allocation and sx_memcpy the previous data into the
@@ -65,8 +66,8 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
             void* new_ptr = sx__linalloc_malloc(linalloc, size, align);
             if (new_ptr) {
                 sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)ptr - 1;
-                sx_memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
-                linalloc->last_ptr_offset = (int)(intptr_t)((uint8_t*)new_ptr - linalloc->ptr);
+                sx_memcpy(new_ptr, ptr, sx_min((uint32_t)size, hdr->size));
+                linalloc->last_ptr_offset = (uintptr_t)((uint8_t*)new_ptr - linalloc->ptr);
             }
             return new_ptr;
         }
@@ -76,7 +77,7 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
     return NULL;
 }
 
-void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, int size)
+void sx_linalloc_init(sx_linalloc* linalloc, void* ptr, size_t size)
 {
     sx_assert(linalloc);
     sx_assert(ptr);
@@ -94,4 +95,10 @@ void sx_linalloc_reset(sx_linalloc* linalloc)
 {
     linalloc->last_ptr_offset = 0;
     linalloc->offset = 0;
+}
+
+size_t sx_linalloc_real_alloc_size(size_t size, uint32_t align)
+{
+    align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
+    return sizeof(sx__linalloc_hdr) + size + align;
 }

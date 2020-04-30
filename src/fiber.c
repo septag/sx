@@ -68,6 +68,7 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size)
 void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size)
 {
     size_t page_sz = sx_os_pagesz();
+    sx_unused(page_sz);
     sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
     sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
 

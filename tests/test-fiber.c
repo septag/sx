@@ -2,6 +2,7 @@
 #include "sx/fiber.h"
 #include "sx/os.h"
 #include "sx/timer.h"
+#include "sx/string.h"
 #include <stdio.h>
 
 void fiber1_fn(sx_fiber_transfer transfer)
@@ -43,6 +44,7 @@ sx_coro_declare(yield_test)
     puts("fiber_pass_fn: End");
     sx_coro_end(ctx);    // Always call this !
 }
+
 
 int main(int argc, char* argv[])
 {

@@ -70,27 +70,22 @@ typedef struct sx_alloc sx_alloc;
 
 typedef enum sx_whence { SX_WHENCE_BEGIN = 0, SX_WHENCE_CURRENT, SX_WHENCE_END } sx_whence;
 
-typedef enum sx_file_open_flag {
-    SX_FILE_OPEN_APPEND = 0x1    // Used for writing to file only
-} sx_file_open_flag;
-typedef uint32_t sx_file_open_flags;
-
 // sx_mem_block
 typedef struct sx_mem_block {
     const sx_alloc* alloc;
     void* data;
-    int size;
+    int64_t size;
     int align;
 } sx_mem_block;
 
-SX_API sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int size,
+SX_API sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size,
                                          const void* data sx_default(NULL),
                                          int align sx_default(0));
-SX_API sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int size, void* data);
+SX_API sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int64_t size, void* data);
 SX_API void sx_mem_destroy_block(sx_mem_block* mem);
 
-SX_API void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int size);
-SX_API bool sx_mem_grow(sx_mem_block** pmem, int size);
+SX_API void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int64_t size);
+SX_API bool sx_mem_grow(sx_mem_block** pmem, int64_t size);
 
 #define sx_define_mem_block_onstack(_name, _size) \
     uint8_t _name##_buff_[(_size)];               \
@@ -129,7 +124,52 @@ SX_API int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset,
                             sx_whence whence sx_default(SX_WHENCE_CURRENT));
 #define sx_mem_read_var(r, v) sx_mem_read((r), &(v), sizeof(v))
 
-// sx_file_writer
+typedef struct sx_file {
+    sx_align_decl(16, uint8_t) data[32];
+} sx_file;
+
+// for proper file buffering (SX_FILE_NOCACHE) alignment requirements under win32, visit:
+// https://docs.microsoft.com/en-us/windows/win32/fileio/file-buffering
+// as a general rule, if you use SX_FILE_NOCACHE flag, use page aligned memory buffers 
+// obtained from sx_os_pagesz(), or allocate memory with virtual memory (virtual-alloc.h)
+typedef enum sx_file_open_flag {
+    SX_FILE_READ = 0x01,            // open for reading
+    SX_FILE_WRITE = 0x02,           // open for writing
+    SX_FILE_APPEND = 0x04,          // append to the end of the file (write mode only)
+    SX_FILE_NOCACHE = 0x08,         // disable cache
+    SX_FILE_WRITE_THROUGH = 0x10,   // write-through
+    SX_FILE_SEQ_SCAN = 0x20,        // optimize cache for sequential scan (not used in NOCACHE)
+    SX_FILE_RANDOM_ACCESS = 0x40,   // optimize cache for random access (not used in NOCACHE)
+    SX_FILE_TEMP = 0x80
+} sx_file_open_flag;
+typedef uint32_t sx_file_open_flags;
+
+SX_API bool sx_file_open(sx_file* file, const char* filepath, sx_file_open_flags flags);
+SX_API void sx_file_close(sx_file* file);
+
+SX_API int64_t sx_file_read(sx_file* file, void* data, int64_t size);
+SX_API int64_t sx_file_write(sx_file* file, const void* data, int64_t size);
+SX_API int64_t sx_file_seek(sx_file* file, int64_t offset, sx_whence whence);
+SX_API int64_t sx_file_size(const sx_file* file);
+
+SX_API sx_mem_block* sx_file_load_text(const sx_alloc* alloc, const char* filepath);
+SX_API sx_mem_block* sx_file_load_bin(const sx_alloc* alloc, const char* filepath);
+
+#define sx_file_write_var(w, v) sx_file_write((w), &(v), sizeof(v))
+#define sx_file_write_text(w, s) sx_file_write((w), (s), sx_strlen(s))
+#define sx_file_read_var(w, v) sx_file_read((w), &(v), sizeof(v))
+
+typedef struct sx_iff_chunk {
+    int64_t pos;
+    uint32_t size;
+    uint32_t fourcc;
+    int parent_id;
+} sx_iff_chunk;
+
+SX_API sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc);
+
+
+#if 0
 typedef struct sx_file_writer {
     sx_align_decl(16, uint8_t) data[16];
 } sx_file_writer;
@@ -195,4 +235,4 @@ SX_API int sx_iff_get_chunk(sx_iff_reader* reader, uint32_t fourcc, int parent_c
 SX_API int sx_iff_get_next_chunk(sx_iff_reader* reader, int chunk_id, int prev_chunk);
 SX_API bool sx_iff_read_chunk();
 
-SX_API sx_iff_chunk sx_mem_get_iff_chunk(sx_mem_reader* reader, int64_t size, uint32_t fourcc);
+#endif

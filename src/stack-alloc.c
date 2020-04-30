@@ -5,10 +5,10 @@
 #include "sx/stack-alloc.h"
 
 typedef struct stackalloc_hdr_s {
-    int size;             // size of buffer that requested upon allocation
-    int padding;          // number of bytes that is padded before the pointer
-    int internal_size;    // actual size that is allocated (with headers and alignment)
-    int prev_offset;
+    uint32_t size;             // size of buffer that requested upon allocation
+    uint32_t padding;          // number of bytes that is padded before the pointer
+    uint32_t internal_size;    // actual size that is allocated (with headers and alignment)
+    uint32_t prev_offset;
 } sx__stackalloc_hdr;
 
 static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, uint32_t align)
@@ -25,12 +25,12 @@ static void* sx__stackalloc_malloc(sx_stackalloc* alloc, size_t size, uint32_t a
 
     // Fill header info
     sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)aligned - 1;
-    hdr->size = (int)size;
-    hdr->padding = (int)(aligned - ptr);
-    hdr->internal_size = (int)total;
-    hdr->prev_offset = alloc->last_ptr_offset;
+    hdr->size = (uint32_t)size;
+    hdr->padding = (uint32_t)(aligned - ptr);
+    hdr->internal_size = (uint32_t)total;
+    hdr->prev_offset = (uint32_t)alloc->last_ptr_offset;    // TODO: unsafe
 
-    alloc->offset += (int)total;
+    alloc->offset += total;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
 
     return aligned;
@@ -46,21 +46,23 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
     sx_stackalloc* stackalloc = (sx_stackalloc*)user_data;
     void* last_ptr = stackalloc->ptr + stackalloc->last_ptr_offset;
     if (size > 0) {
+        sx_assert_rel(size < UINT32_MAX);
+
         if (ptr == NULL) {
             // malloc
             void* new_ptr = sx__stackalloc_malloc(stackalloc, size, align);
-            stackalloc->last_ptr_offset = (int)(intptr_t)((uint8_t*)new_ptr - stackalloc->ptr);
+            stackalloc->last_ptr_offset = (uintptr_t)((uint8_t*)new_ptr - stackalloc->ptr);
             return new_ptr;
         } else if (ptr == last_ptr) {
             // Realloc: special case, the memory is continous so we can just grow the buffer without
             // any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant
             //          between reallocs
-            if (stackalloc->offset + size > (size_t)stackalloc->size) {
+            if (stackalloc->offset + size > stackalloc->size) {
                 sx_out_of_memory();
                 return NULL;
             }
-            stackalloc->offset += (int)size;
+            stackalloc->offset += size;
             return ptr;    // Input pointer does not change
         } else {
             // Realloc: generic, create new allocation and sx_memcpy the previous data into the
@@ -68,8 +70,8 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
             void* new_ptr = sx__stackalloc_malloc(stackalloc, size, align);
             if (new_ptr) {
                 sx__stackalloc_hdr* hdr = (sx__stackalloc_hdr*)ptr - 1;
-                sx_memcpy(new_ptr, ptr, sx_min((int)size, hdr->size));
-                stackalloc->last_ptr_offset = (int)(intptr_t)((uint8_t*)new_ptr - stackalloc->ptr);
+                sx_memcpy(new_ptr, ptr, sx_min((uint32_t)size, hdr->size));
+                stackalloc->last_ptr_offset = (uintptr_t)((uint8_t*)new_ptr - stackalloc->ptr);
             }
             return new_ptr;
         }
@@ -94,7 +96,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
     return NULL;
 }
 
-void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size)
+void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, size_t size)
 {
     sx_assert(stackalloc);
     sx_assert(ptr);
@@ -113,4 +115,10 @@ void sx_stackalloc_reset(sx_stackalloc* stackalloc)
     sx_assert(stackalloc);
     stackalloc->last_ptr_offset = 0;
     stackalloc->offset = 0;
+}
+
+size_t sx_stackalloc_real_alloc_size(size_t size, uint32_t align)
+{
+    align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
+    return sizeof(sx__stackalloc_hdr) + align + size;
 }

@@ -38,14 +38,16 @@
 typedef struct sx_stackalloc {
     sx_alloc alloc;
     uint8_t* ptr;
-    int last_ptr_offset;
-    int offset;
-    int size;
-    int peak;
+    size_t last_ptr_offset;
+    size_t offset;
+    size_t size;
+    size_t peak;
 } sx_stackalloc;
 
-SX_API void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, int size);
+SX_API void sx_stackalloc_init(sx_stackalloc* stackalloc, void* ptr, size_t size);
 SX_API void sx_stackalloc_reset(sx_stackalloc* stackalloc);
+
+SX_API size_t sx_stackalloc_real_alloc_size(size_t size, uint32_t align);
 
 #define sx_define_stackalloc_onstack(_name, _size) \
     uint8_t _name##_buff_[(_size)];                \
