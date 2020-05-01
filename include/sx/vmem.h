@@ -1,30 +1,32 @@
 //
-// Copyright 2018 Sepehr Taghdisian (septag@github). All rights reserved.
+// Copyright 2020 Sepehr Taghdisian (septag@github). All rights reserved.
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
-// virtual-alloc.h - v1.0 - Virtual memory allocator
+// vmem.h - v1.0 - Virtual memory page allocator
 //
 // Uses OS specific virtual memory functions
+// the vmem set of functions can be used to reserve and commit protected pages of virtual memory 
+// from the system. It works by reserving maximum number of pages. So the pointer range will be 
+// reserved, but not actually mapped to physical memory.
+// After init, you can use commit_page/commit_pages functions to start using specific pages. 
+// Pages are defined by their index. So, if you have for example, 4096 maximum pages. You can commit
+// and free pages from 0..4095, and you should keep track of free/allocated pages in your program.
+// Page memory size is OS/System dependent. You can actually get it's size with `sx_os_pagesz` 
 //
-// virtualalloc: standard sequential virtual memory allocator
-//               Virtual memory can be reserved in large sizes and commited later on demand
-//               Very useful for large buffer allocations, instead of allocating directly from heap
-//               Memory is only allocate sequentially and will not be reused
-//               so the limitation is not to hit the 'reserve_sz' max
-//
-//      sx_virtualalloc_init        Initialize and reserves virtual memory for the allocator
-//                                  Reserved size will not be commited until it's alloacated and
-//                                  touched 'reserved_sz' value will grow to OS-specific aligned
-//                                  page size
-//
-//      sx_virtualalloc_release     Releases memory commited and reserved by virtual-allocator
-//
-// NOTE: When you use the sx_alloc object for allocating, the memory will be commited and you will
-//       get a valid pointer. But still the memory is not allocated from heap until you touch the
-//       contents of the memory block.
-//       Also the allocation sizes will grow to OS-specific aligned page size (for example 4k),
-//       .. so try to allocate in larger chunks from this type of allocator
-//
+//  Functions: 
+//      sx_vmem_get_bytes(num_pages)        returns number of bytes allocated for N pages
+//      sx_vmem_get_needed_pages(bytes)     returns number of needed pages to N bytes
+//                                          you can pass the return value to sx_vmem_init function
+//      sx_vmem_init                        initialize the vmem context and reserve `max_pages`
+//      sx_vmem_release                     Releases the vmem context and frees all memory
+//      sx_vmem_commit_page/pages           Commits `num_pages` that you need to actually allocate 
+//                                          and use. Returns the pointer to the start of pages
+//                                          start_page_id: Zero based index of the page you want
+//                                          num_pages: Number of pages starting from `start_page_id`
+//      sx_vmem_free_page/pages             Free a single or a range of pages to be used later again
+//                                          Parameters are same as commit functions
+//      sx_vmem_commit_size                 Returns total commited bytes. 
+//                                          Basically num_pages*page_size
 #pragma once
 
 #include "sx.h"

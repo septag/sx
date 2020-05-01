@@ -46,7 +46,7 @@ This library currently contains these functionalities (listed by header files):
 	- Semaphore
 	- Signal
 - [timer.h](include/sx/timer.h): Portable high-res timer, wrapper over [sokol_time](https://github.com/floooh/sokol)
-- [virtual-alloc.h](include/sx/virtual-alloc.h): Portable virtual memory allocator and low-level portable virtual memory management functions
+- [vmem.h](include/sx/vmem.h): Page based virtual memory allocator
 - [math.h](include/sx/math.h): 
 	- Standard floating-point
 	- Vector (2,3,4)
@@ -61,13 +61,17 @@ This library currently contains these functionalities (listed by header files):
 	- Basic file operations
 	- Path manipulation functions (c-string)
 - [bheap.h](include/sx/bheap.h): Binary heap implementation
-- [tlsf-alloc.h](include/sx/tlsf-alloc.h): Tlsf (Two-Level Segregated Fit memory) memory allocator. Wrapper over [Mathew Conte's implementation](http://tlsf.baisoku.org)
 - [simd.h](include/sx/simd.h): portable 128bit simd math intrinsics. currently there are two implementations: reference and SSE. ARM Neon will be added soon.
 - [ringbuffer.h](include/sx/ringbuffer.h): Basic ring-buffer (circular buffer)
 - [lockless.h](include/sx/lockless.h): lockless data structures. 
   - Self-contained single-producer-single-consumer queue
 - [linear-buffer.h](include/sx/linear-buffer.h): Helper custom memory allocator useful for allocating structures with arrays of data in a single allocation call
 - [bitarray.h](include/sx/bitarray.h): utility data structure to hold arbitary number of bits
+
+## Changes
+### v1.0.0 (May 2020)
+- [BREAKING]: Removed `virtual-alloc.h` and replaced it with the new `vmem.h`. virtual-alloc was not Suitable for general memory allocator. So I ditched it completely and replaced with a cleaner, better virtual memory allocation scheme. which is page based
+- [BREAKING]: Removed `tlsf-alloc` and all of it's dependencies. In order to cut the maintainable code and reduce repo size. I decided to remove this and leave it for the user to use the open-source [tlsf allocator](https://github.com/mattconte/tlsf). 
 
 ## Build
 ### Current supported platforms
