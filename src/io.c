@@ -25,7 +25,7 @@
 #    endif
 #endif    // SX_
 
-#define RIFF_SIGN sx_makefourcc('R', 'I', 'F', 'F')
+#define SIFF_SIGN sx_makefourcc('S', 'I', 'F', 'F')
 
 sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size, const void* data, int align)
 {
@@ -213,6 +213,7 @@ int64_t sx_mem_seekr(sx_mem_reader* reader, int64_t offset, sx_whence whence)
 
 typedef struct sx__file_win32 {
     HANDLE handle;
+    sx_file_open_flags flags;
     int64_t size;
 } sx__file_win32;
 
@@ -264,6 +265,7 @@ bool sx_file_open(sx_file* file, const char* filepath, sx_file_open_flags flags)
     }
 
     f->handle = hfile;
+    f->flags = flags;
     if (flags & (SX_FILE_READ|SX_FILE_APPEND)) {
         LARGE_INTEGER llsize;
         GetFileSizeEx(hfile, &llsize);
@@ -292,6 +294,14 @@ int64_t sx_file_read(sx_file* file, void* data, int64_t size)
 
     sx_assert(f->handle && f->handle != INVALID_HANDLE_VALUE);
     sx_assert_rel(size < UINT32_MAX);
+
+    if (f->flags & SX_FILE_NOCACHE) {
+        static size_t pagesz = 0;
+        if (pagesz == 0) {
+            pagesz = sx_os_pagesz();
+        }
+        sx_assert_rel((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
+    }
 
     DWORD bytes_read;
     if (!ReadFile(f->handle, data, (DWORD)size, &bytes_read, NULL)) {
@@ -361,6 +371,7 @@ int64_t sx_file_size(const sx_file* file)
 
 typedef struct sx__file_posix {
     int id;
+    uint32_t flags;
     int64_t size;
 } sx__file_posix;
 
@@ -413,6 +424,7 @@ bool sx_file_open(sx_file* file, const char* filepath, sx_file_open_flags flags)
         return false;
     }
     f->id = file_id;
+    f->flags = flags;
     f->size = (int64_t)_stat.st_size;
     return true;
 }
@@ -431,8 +443,15 @@ int64_t sx_file_read(sx_file* file, void* data, int64_t size)
 {
     sx_assert(file);
     sx__file_posix* f = (sx__file_posix*)file;
-
     sx_assert(f->id && f->id != -1);
+    
+    if (f->flags & SX_FILE_NOCACHE) {
+        static size_t pagesz = 0;
+        if (pagesz == 0) {
+            pagesz = sx_os_pagesz();
+        }
+        sx_assert_rel((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
+    }
     return read(f->id, data, (size_t)size);
 }
 
@@ -528,6 +547,7 @@ static inline int64_t sx__iff_read(sx_iff_file* iff, void* data, int64_t size)
     case SX_IFFTYPE_MEM_READER:
         return sx_mem_read(iff->mread, data, size);
     case SX_IFFTYPE_DISK_READER:
+    case SX_IFFTYPE_DISK_WRITER:
         return sx_file_read(iff->disk, data, size);
     default:
         sx_assert(0);
@@ -602,7 +622,7 @@ bool sx_iff_init_from_file_reader(sx_iff_file* iff, sx_file* file, sx_iff_flags 
     // read first chunk
     sx_iff_chunk first_chunk;
     sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
-    if (first_chunk.fourcc != RIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
+    if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
         sx_assert(0 && "invalid IFF file format");
         return false;
     }
@@ -634,8 +654,9 @@ bool sx_iff_init_from_file_writer(sx_iff_file* iff, sx_file* file, sx_iff_flags 
         // read first chunk (validate)
         sx__iff_seek(iff, 0, SX_WHENCE_BEGIN);
         sx_iff_chunk first_chunk;
-        sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
-        if (first_chunk.fourcc != RIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
+        int bytes_read = sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
+        if (bytes_read != sizeof(first_chunk) || first_chunk.fourcc != SIFF_SIGN || 
+            first_chunk.parent_id != -1 || first_chunk.size) {
             sx_assert(0 && "invalid IFF file format");
             return false;
         }
@@ -650,7 +671,7 @@ bool sx_iff_init_from_file_writer(sx_iff_file* iff, sx_file* file, sx_iff_flags 
     } else {
         // write first chunk
         sx_iff_chunk chunk = {
-            .fourcc = RIFF_SIGN,
+            .fourcc = SIFF_SIGN,
             .parent_id = -1
         };
         sx__iff_write(iff, &chunk, sizeof(chunk));
@@ -675,7 +696,7 @@ bool sx_iff_init_from_mem_reader(sx_iff_file* iff, sx_mem_reader* mread, sx_iff_
     // read first chunk
     sx_iff_chunk first_chunk;
     sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
-    if (first_chunk.fourcc != RIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
+    if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
         sx_assert(0 && "invalid IFF file format");
         return false;
     }
@@ -708,7 +729,7 @@ bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff
         sx__iff_seek(iff, 0, SX_WHENCE_BEGIN);
         sx_iff_chunk first_chunk;
         sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
-        if (first_chunk.fourcc != RIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
+        if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
             sx_assert(0 && "invalid IFF file format");
             return false;
         }
@@ -723,7 +744,7 @@ bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff
     } else {
         // write first chunk
         sx_iff_chunk chunk = {
-            .fourcc = RIFF_SIGN,
+            .fourcc = SIFF_SIGN,
             .parent_id = -1
         };
         sx__iff_write(iff, &chunk, sizeof(chunk));
@@ -751,6 +772,7 @@ int sx_iff_get_chunk(sx_iff_file* iff, uint32_t fourcc, int parent_id)
             int64_t r = sx__iff_read(iff, &chunk, sizeof(chunk));
             if (r < (int64_t)sizeof(chunk)) {
                 sx_assert_rel(r == 0 && "file is probably corrupt");
+                iff->read_all = true;
                 break;  // EOF
             }
 
@@ -762,15 +784,13 @@ int sx_iff_get_chunk(sx_iff_file* iff, uint32_t fourcc, int parent_id)
 
             sx_array_push(iff->alloc, iff->chunks, chunk);
             if (chunk.fourcc == fourcc && parent_id == chunk.parent_id) {
-                iff->cur_chunk_id = sx_array_count(iff->chunks) - 1;
-                return iff->cur_chunk_id;
+                return sx_array_count(iff->chunks) - 1;
             } 
         }
     } else {
         // search in existing chunks
         for (int i = 0, c = sx_array_count(iff->chunks); i < c; i++) {
             if (iff->chunks[i].fourcc == fourcc && iff->chunks[i].parent_id == parent_id) {
-                iff->cur_chunk_id = i;
                 return i;
             }
         }
@@ -803,23 +823,20 @@ bool sx_iff_read_chunk(sx_iff_file* iff, int chunk_id, void* chunk_data, int64_t
     return true;
 }
 
-int sx_iff_get_next_chunk(sx_iff_file* iff)
+int sx_iff_get_next_chunk(sx_iff_file* iff, int start_chunk_id)
 {
     sx_assert(iff);
+    sx_assert(sx_array_count(iff->chunks) > start_chunk_id);
 
-    int cur_chunk_id = iff->cur_chunk_id;
-    sx_assert(sx_array_count(iff->chunks) > cur_chunk_id);
-
-    sx_iff_chunk* chunk = &iff->chunks[cur_chunk_id];
+    sx_iff_chunk* chunk = &iff->chunks[start_chunk_id];
     int parent_id = chunk->parent_id;
 
     if (!iff->read_all) {
         return sx_iff_get_chunk(iff, chunk->fourcc, parent_id);
     } else {
-        for (int i = cur_chunk_id + 1, c = sx_array_count(iff->chunks); i < c; i++) {
+        for (int i = start_chunk_id + 1, c = sx_array_count(iff->chunks); i < c; i++) {
             const sx_iff_chunk* test_chunk = &iff->chunks[i];
             if (test_chunk->fourcc == chunk->fourcc && test_chunk->parent_id == parent_id) {
-                iff->cur_chunk_id = i;
                 return i;
             }
         }
@@ -846,6 +863,6 @@ int sx_iff_put_chunk(sx_iff_file* iff, int parent_id, uint32_t fourcc, const voi
     sx__iff_write(iff, &chunk, sizeof(chunk));
     sx__iff_write(iff, chunk_data, size);
     sx_array_push(iff->alloc, iff->chunks, chunk);
-    return 0;
+    return sx_array_count(iff->chunks) - 1;
 }
 

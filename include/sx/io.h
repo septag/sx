@@ -75,7 +75,7 @@
 //                                              int chunk = sx_iff_get_chunk(iff, fourcc, parent_id);
 //                                              while (chunk != -1) {
 //                                                  sx_iff_read_chunk(chunk, data, ..);
-//                                                  chunk = sx_iff_get_next_chunk(iff);
+//                                                  chunk = sx_iff_get_next_chunk(iff, chunk);
 //                                              }
 //          sx_iff_read_chunk:            Read chunk data. You should provide the chunk_id returned 
 //                                        by get_chunk family of functions
@@ -226,7 +226,6 @@ typedef struct sx_iff_file {
         sx_mem_writer* mwrite;
         sx_file* disk;
     };
-    int cur_chunk_id;
     bool read_all;
 } sx_iff_file;
 #pragma pack(pop)
@@ -242,7 +241,7 @@ SX_API bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite,
 SX_API void sx_iff_release(sx_iff_file* iff);
 
 SX_API int sx_iff_get_chunk(sx_iff_file* iff, uint32_t fourcc, int parent_id);
-SX_API int sx_iff_get_next_chunk(sx_iff_file* iff);
+SX_API int sx_iff_get_next_chunk(sx_iff_file* iff, int start_chunk_id);
 SX_API bool sx_iff_read_chunk(sx_iff_file* iff, int chunk_id, void* chunk_data, int64_t size);
 
 SX_API int sx_iff_put_chunk(sx_iff_file* iff, int parent_id, uint32_t fourcc,
