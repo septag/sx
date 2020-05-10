@@ -45,7 +45,7 @@ typedef struct sx_linear_buffer_field {
 typedef struct sx_linear_buffer {
     const char* parent_type;
     sx_linear_buffer_field fields[SX_MAX_BUFFER_FIELDS];
-    size_t size;
+    size_t size;                // total size of the buffer (bytes)
     uint32_t parent_align;
     int num_fields;
 } sx_linear_buffer;

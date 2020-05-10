@@ -10,7 +10,7 @@ sx_ringbuffer* sx_ringbuffer_create(const sx_alloc* alloc, int capacity)
 {
     sx_ringbuffer* rb = sx_aligned_malloc(alloc, sizeof(sx_ringbuffer) + sx_align_16(capacity), 16);
     rb->capacity = capacity;
-    rb->size = rb->start = rb->start = 0;
+    rb->size = rb->end = rb->start = 0;
     return rb;
 }
 
@@ -52,17 +52,44 @@ int sx_ringbuffer_read(sx_ringbuffer* rb, void* data, int size)
         return 0;
     }
 
-    uint8_t* buff = (uint8_t*)(rb + 1);
-    uint8_t* udata = (uint8_t*)data;
-    int remain = rb->capacity - rb->start;
-    if (remain >= size) {
-        sx_memcpy(udata, &buff[rb->start], size);
-    } else {
-        sx_memcpy(udata, &buff[rb->start], remain);
-        sx_memcpy(&udata[remain], buff, (size_t)size - (size_t)remain);
+    if (data) {
+        uint8_t* buff = (uint8_t*)(rb + 1);
+        uint8_t* udata = (uint8_t*)data;
+        int remain = rb->capacity - rb->start;
+        if (remain >= size) {
+            sx_memcpy(udata, &buff[rb->start], size);
+        } else {
+            sx_memcpy(udata, &buff[rb->start], remain);
+            sx_memcpy(&udata[remain], buff, (size_t)size - (size_t)remain);
+        }
     }
 
     rb->start = (rb->start + size) % rb->capacity;
     rb->size -= size;
+    return size;
+}
+
+int sx_ringbuffer_read_noadvance(sx_ringbuffer* rb, void* data, int size, int* offset)
+{
+    sx_assert(size > 0);
+
+    size = sx_min(size, rb->size);
+    if (size == 0) {
+        return 0;
+    }
+
+    sx_assert(data);
+    uint8_t* buff = (uint8_t*)(rb + 1);
+    uint8_t* udata = (uint8_t*)data;
+    int _offset = *offset;
+    int remain = rb->capacity - _offset;
+    if (remain >= size) {
+        sx_memcpy(udata, &buff[_offset], size);
+    } else {
+        sx_memcpy(udata, &buff[_offset], remain);
+        sx_memcpy(&udata[remain], buff, (size_t)size - (size_t)remain);
+    }
+
+    *offset = (*offset + size) % rb->capacity;
     return size;
 }

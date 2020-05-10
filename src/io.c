@@ -654,7 +654,7 @@ bool sx_iff_init_from_file_writer(sx_iff_file* iff, sx_file* file, sx_iff_flags 
         // read first chunk (validate)
         sx__iff_seek(iff, 0, SX_WHENCE_BEGIN);
         sx_iff_chunk first_chunk;
-        int bytes_read = sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
+        int64_t bytes_read = sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
         if (bytes_read != sizeof(first_chunk) || first_chunk.fourcc != SIFF_SIGN || 
             first_chunk.parent_id != -1 || first_chunk.size) {
             sx_assert(0 && "invalid IFF file format");
