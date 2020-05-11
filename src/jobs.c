@@ -233,7 +233,8 @@ static void sx__job_selector_main_thrd(sx_fiber_transfer transfer)
         }
     }
 
-    tdata->selector_fiber = sx_fiber_create(tdata->selector_stack, sx__job_selector_main_thrd);
+    // before returning, set selector to NULL, so we know that we have to recreate the fiber
+    tdata->selector_fiber = NULL;       
     sx_fiber_switch(transfer.from, transfer.user);
 }
 
@@ -422,6 +423,7 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
 {
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
 
+    uint64_t prev_tm = sx_cycle_clock();
     sx_compiler_read_barrier();
     while (*job > 0) {
         // check if the current job is the pending list
@@ -451,7 +453,16 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
 
         sx_fiber_switch(tdata->selector_fiber, ctx);    // Switch to selector loop
 
-        sx_yield_cpu();
+        if (!tdata->selector_fiber) {
+            tdata->selector_fiber = sx_fiber_create(tdata->selector_stack, sx__job_selector_main_thrd);
+        }
+
+        uint64_t now_tm = sx_cycle_clock();
+        uint64_t diff = now_tm - prev_tm;
+        prev_tm = now_tm;
+        if (diff < SX__LOCK_MAXTIME) {
+            sx_yield_cpu();
+        }
     }
 
     // All jobs are done, Delete the counter
