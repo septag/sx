@@ -35,6 +35,11 @@ uint64_t sx_tm_laptime(uint64_t* last_ticks)
     return stm_laptime(last_ticks);
 }
 
+uint64_t sx_tm_round_to_common_refresh_rate(uint64_t duration)
+{
+    return stm_round_to_common_refresh_rate(duration);
+}
+
 double sx_tm_sec(uint64_t ticks)
 {
     return stm_sec(ticks);

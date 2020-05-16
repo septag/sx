@@ -31,6 +31,15 @@
 //        the return value will be zero (this usually happens on the
 //        very first call).
 //
+//    uint64_t sx_tm_round_to_common_refresh_rate(uint64_t duration)
+//      This oddly named function takes a measured frame time and
+//      returns the closest "nearby" common display refresh rate frame duration
+//      in ticks. If the input duration isn't close to any common display
+//      refresh rate, the input duration will be returned unchanged as a fallback.
+//      The main purpose of this function is to remove jitter/inaccuracies from
+//      measured frame times, and instead use the display refresh rate as
+//      frame duration.
+//
 //    Use the following functions to convert a duration in ticks into
 //    useful time units:
 
@@ -54,15 +63,16 @@ SX_API uint64_t sx_tm_now();
 SX_API uint64_t sx_tm_diff(uint64_t new_ticks, uint64_t old_ticks);
 SX_API uint64_t sx_tm_since(uint64_t start_ticks);
 SX_API uint64_t sx_tm_laptime(uint64_t* last_ticks);
+SX_API uint64_t sx_tm_round_to_common_refresh_rate(uint64_t duration);
 
 SX_API double sx_tm_sec(uint64_t ticks);
 SX_API double sx_tm_ms(uint64_t ticks);
 SX_API double sx_tm_us(uint64_t ticks);
 SX_API double sx_tm_ns(uint64_t ticks);
 
-
 // Version history
 // 1.0      initial release
 // 1.1      renamed sx_tm_init to sx_tm_now
 //          moved sokol_time.h to the .C file and wraped the functions
+// 1.2      Added sx_tm_round_to_common_refresh_rate
 //
