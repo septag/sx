@@ -23,7 +23,7 @@
 //      sx_linear_buffer_addtype(&buff, my_data_t, float, array_of_floats, 100, 0);
 //      sx_linear_buffer_addptr(&buff, &arbitary_data, bool, 100, 0); // arbitary_data is no-member
 //      // data is allocated in one _malloc_ call instead of 4, all of the pointers will be valid
-//      my_data_t* data = sx_linear_buffer_alloc(&buff, heap_alloc);
+//      my_data_t* data = sx_linear_buffer_calloc(&buff, heap_alloc);
 //      ... // do work
 //      sx_free(heap_alloc, data);
 //
@@ -80,7 +80,10 @@ static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int
     align = align < SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT ? SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
                                                           : align;
     size = sx_align_mask(size, align - 1);
-    size_t offset = sx_align_mask(buf->size, align - 1);
+    size_t offset = buf->size;
+    if (offset % align != 0) {
+        offset = sx_align_mask(offset, align - 1);
+    }
 
     buf->fields[index] = (sx_linear_buffer_field){
         .pptr = pptr,                           //
@@ -88,7 +91,7 @@ static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int
         .offset_in_parent = offset_in_struct    //
     };
 
-    buf->size += size;
+    buf->size = offset + size;
     ++buf->num_fields;
 }
 // internal
@@ -103,7 +106,7 @@ static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int
 #define sx_linear_buffer_addptr(_buf, _pptr, _type, _count, _align) \
     sx__linear_buffer_add((_buf), sizeof(_type) * (_count), -1, (void**)(_pptr), (_align))
 
-static inline void* sx_linear_buffer_alloc(const sx_linear_buffer* buf, const sx_alloc* alloc)
+static inline void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_alloc* alloc)
 {
     void* mem = buf->parent_align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
                     ? sx_malloc(alloc, buf->size)
@@ -119,8 +122,7 @@ static inline void* sx_linear_buffer_alloc(const sx_linear_buffer* buf, const sx
     for (int i = 1, c = buf->num_fields; i < c; i++) {
         if (buf->fields[i].offset_in_parent != -1) {
             sx_assert(buf->fields[i].pptr == NULL);
-            *((void**)(tmp_mem + buf->fields[i].offset_in_parent)) =
-                tmp_mem + buf->fields[i].offset;
+            *((void**)(tmp_mem + buf->fields[i].offset_in_parent)) = tmp_mem + buf->fields[i].offset;
         } else {
             sx_assert(buf->fields[i].offset_in_parent == -1);
             *buf->fields[i].pptr = tmp_mem + buf->fields[i].offset;

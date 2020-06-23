@@ -30,14 +30,14 @@
 sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size, const void* data, int align)
 {
     align = sx_max(align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
-    sx_mem_block* mem = (sx_mem_block*)sx_malloc(alloc, size + sizeof(sx_mem_block) + align);
+    sx_mem_block* mem = (sx_mem_block*)sx_malloc(alloc, (size_t)size + sizeof(sx_mem_block) + align);
     if (mem) {
         mem->alloc = alloc;
         mem->data = sx_align_ptr(mem + 1, 0, align);
         mem->size = size;
         mem->align = align;
         if (data)
-            sx_memcpy(mem->data, data, size);
+            sx_memcpy(mem->data, data, (size_t)size);
         return mem;
     } else {
         sx_out_of_memory();
@@ -86,7 +86,7 @@ bool sx_mem_grow(sx_mem_block** pmem, int64_t size)
 
     int align = mem->align;
     const sx_alloc* alloc = mem->alloc;
-    mem = (sx_mem_block*)sx_realloc(alloc, mem, size + sizeof(sx_mem_block) + align);
+    mem = (sx_mem_block*)sx_realloc(alloc, mem, (size_t)size + sizeof(sx_mem_block) + align);
     if (mem) {
         mem->data = sx_align_ptr(mem + 1, 0, align);
         mem->size = size;
@@ -144,7 +144,7 @@ int64_t sx_mem_write(sx_mem_writer* writer, const void* data, int64_t size)
         }
     }
 
-    sx_memcpy(&writer->data[writer->pos], data, size);
+    sx_memcpy(&writer->data[writer->pos], data, (size_t)size);
     writer->pos += size;
     writer->top = sx_max(writer->top, writer->pos);
 
@@ -186,7 +186,7 @@ int64_t sx_mem_read(sx_mem_reader* reader, void* data, int64_t size)
         size = remain;
         sx_data_truncate();
     }
-    sx_memcpy(data, &reader->data[reader->pos], size);
+    sx_memcpy(data, &reader->data[reader->pos], (size_t)size);
     reader->pos += size;
     return size;
 }
