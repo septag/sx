@@ -49,6 +49,7 @@ static sx__queue_spsc_bin* sx__queue_spsc_create_bin(const sx_alloc* alloc, int 
     bin->ptrs = (sx__queue_spsc_node**)buff;
     buff += sizeof(sx__queue_spsc_node*) * capacity;
     bin->buff = buff;
+    bin->next = NULL;
 
     bin->iter = capacity;
 
