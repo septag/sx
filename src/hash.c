@@ -404,3 +404,140 @@ void sx_hashtbl_clear(sx_hashtbl* tbl)
     sx_memset(tbl->keys, 0x0, sizeof(uint32_t) * tbl->capacity);
     tbl->count = 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+sx_hashtbl_tval* sx_hashtbltval_create(const sx_alloc* alloc, int capacity, int value_stride)
+{
+    sx_assert(capacity > 0);
+
+    capacity = sx__nearest_pow2(capacity);
+    sx_hashtbl_tval* tbl = (sx_hashtbl_tval*)sx_malloc(
+        alloc, sizeof(sx_hashtbl_tval) + capacity * (sizeof(uint32_t) + value_stride) +
+                   SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
+    if (!tbl) {
+        sx_out_of_memory();
+        return NULL;
+    }
+
+    tbl->keys = (uint32_t*)sx_align_ptr(tbl + 1, 0, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
+    tbl->values = (uint8_t*)(tbl->keys + capacity);     // always 8 byte aligned (sizeof(uint32_t)*pow2)
+    tbl->_bitshift = sx__calc_bitshift(capacity);
+    tbl->value_stride = value_stride;
+    tbl->count = 0;
+    tbl->capacity = capacity;
+#if SX_CONFIG_HASHTBL_DEBUG
+    tbl->_miss_cnt = 0;
+    tbl->_probe_cnt = 0;
+#endif
+
+    // Reset keys
+    sx_memset(tbl->keys, 0x0, sizeof(uint32_t) * capacity);
+
+    return tbl;
+}
+
+void sx_hashtbltval_destroy(sx_hashtbl_tval* tbl, const sx_alloc* alloc)
+{
+    sx_assert(tbl);
+    tbl->count = tbl->capacity = 0;
+    sx_free(alloc, tbl);
+}
+
+bool sx_hashtbltval_grow(sx_hashtbl_tval** ptbl, const sx_alloc* alloc)
+{
+    sx_hashtbl_tval* tbl = *ptbl;
+    // Create a new table (double the size), repopulate it and replace previous one
+    sx_hashtbl_tval* new_tbl = sx_hashtbltval_create(alloc, tbl->capacity << 1, tbl->value_stride);
+    if (!new_tbl) {
+        return false;
+    }
+
+    for (int i = 0, c = tbl->capacity; i < c; i++) {
+        if (tbl->keys[i] > 0) {
+            sx_hashtbltval_add(new_tbl, tbl->keys[i], tbl->values + i*tbl->value_stride);
+        }
+    }
+
+    sx_hashtbltval_destroy(tbl, alloc);
+    *ptbl = new_tbl;
+    return true;
+}
+
+void sx_hashtbltval_init(sx_hashtbl_tval* tbl, int capacity, int value_stride, uint32_t* keys_ptr, void* values_ptr)
+{
+    sx_assert(sx__ispow2(capacity) &&
+              "Table size must be power of 2, get it from sx_hashtbltval_valid_capacity");
+
+    sx_memset(keys_ptr, 0x0, capacity * sizeof(uint32_t));
+    sx_memset(values_ptr, 0x0, capacity * value_stride);
+
+    tbl->keys = keys_ptr;
+    tbl->values = values_ptr;
+    tbl->_bitshift = sx__calc_bitshift(capacity);
+    tbl->value_stride = value_stride;
+    tbl->capacity = capacity;
+    tbl->count = 0;
+#if SX_CONFIG_HASHTBL_DEBUG
+    tbl->_miss_cnt = 0;
+    tbl->_probe_cnt = 0;
+#endif
+}
+
+int sx_hashtbltval_fixed_size(int capacity, int value_stride)
+{
+    int cap = sx_hashtbltval_valid_capacity(capacity);
+    return cap * (sizeof(uint32_t) + value_stride);
+}
+
+int sx_hashtbltval_valid_capacity(int capacity)
+{
+    return sx__nearest_pow2(capacity);
+}
+
+int sx_hashtbltval_add(sx_hashtbl_tval* tbl, uint32_t key, const void* value)
+{
+    sx_assert(tbl->count < tbl->capacity);
+
+    uint32_t h = sx__fib_hash(key, tbl->_bitshift);
+    uint32_t cnt = (uint32_t)tbl->capacity;
+    while (tbl->keys[h] != 0) {
+        h = (h + 1) % cnt;
+    }
+
+    sx_assert(tbl->keys[h] == 0);    // something went wrong!
+    tbl->keys[h] = key;
+    sx_memcpy(tbl->values + tbl->value_stride*h, value, tbl->value_stride);
+    ++tbl->count;
+    return h;
+}
+
+int sx_hashtbltval_find(const sx_hashtbl_tval* tbl, uint32_t key)
+{
+    uint32_t h = sx__fib_hash(key, tbl->_bitshift);
+    uint32_t cnt = (uint32_t)tbl->capacity;
+    if (tbl->keys[h] == key) {
+        return h;
+    } else {
+#if SX_CONFIG_HASHTBL_DEBUG
+        sx_hashtbl_tval* _tbl = (sx_hashtbl_tval*)tbl;
+        ++_tbl->_miss_cnt;
+#endif
+        // probe lineary in the keys array
+        for (uint32_t i = 1; i < cnt; i++) {
+            int idx = (h + i) % cnt;
+#if SX_CONFIG_HASHTBL_DEBUG
+            ++_tbl->_probe_cnt;
+#endif
+            if (tbl->keys[idx] == key)
+                return idx;
+        }
+
+        return -1;    // Worst case: Not found!
+    }
+}
+
+void sx_hashtbltval_clear(sx_hashtbl_tval* tbl)
+{
+    sx_memset(tbl->keys, 0x0, sizeof(uint32_t) * tbl->capacity);
+    tbl->count = 0;
+}

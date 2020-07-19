@@ -210,7 +210,7 @@ int sx_os_chdir(const char* path)
     sx_unused(path);
     return -1;
 #elif SX_PLATFORM_WINDOWS
-    return SetCurrentDirectory(path);
+    return SetCurrentDirectoryA(path);
 #else
     return chdir(path);
 #endif    // SX_COMPILER_

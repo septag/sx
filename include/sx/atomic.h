@@ -39,8 +39,10 @@
 
 #if SX_PLATFORM_WINDOWS
 #    if SX_ARCH_32BIT && SX_CPU_X86
-#        include "x86intrin.h"
-#        include <emmintrin.h>    // _mm_xfence
+#       if !SX_COMPILER_MSVC
+#          include <x86intrin.h>
+#       endif
+#       include <emmintrin.h>    // _mm_xfence
 #    endif
 #    include <intrin.h>
 #    if SX_COMPILER_MSVC

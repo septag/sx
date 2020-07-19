@@ -6,13 +6,18 @@
 
 typedef struct sx__linalloc_hdr_s {
     uint32_t size;       // size of buffer that requested upon allocation
-    uint32_t padding;    // number of bytes that is padded before the pointer
 } sx__linalloc_hdr;
 
 static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align)
 {
     align = sx_max((int)align, SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
-    size_t total = size + sizeof(sx__linalloc_hdr) + align;
+    size_t total = size + sizeof(sx__linalloc_hdr);
+    size_t new_offset = alloc->offset + sizeof(sx__linalloc_hdr);
+    if (new_offset % align != 0) {
+        size_t aligned_offset = sx_align_mask(new_offset, (size_t)align-1);
+        total += (aligned_offset - new_offset);
+    }
+
     if ((alloc->offset + total) > (size_t)alloc->size) {
         sx_out_of_memory();
         return NULL;
@@ -20,11 +25,11 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align
 
     uint8_t* ptr = alloc->ptr + alloc->offset;
     uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(sx__linalloc_hdr), align);
+    sx_assert((uintptr_t)aligned % align == 0);
 
     // Fill header info
     sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)aligned - 1;
     hdr->size = (uint32_t)size;
-    hdr->padding = (uint32_t)(aligned - ptr);
 
     alloc->offset += total;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
@@ -38,7 +43,6 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
     sx_unused(file);
     sx_unused(func);
     sx_unused(line);
-
 
     sx_linalloc* linalloc = (sx_linalloc*)user_data;
     void* last_ptr = linalloc->ptr + linalloc->last_ptr_offset;

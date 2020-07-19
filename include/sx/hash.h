@@ -66,6 +66,11 @@
 //                                   on key returns the parameter 'not_found_val' if key is not
 //                                   found in table
 //      sx_hashtbl_clear             clears the table
+// 
+// sx_hashtbl_tval: hash-table based on fibonacci mult hashing, but with arbitary value types
+//                  the difference between this and norml sx_hashtbl is that the 'value' type is not
+//                  integer anymore. It can be any POD type. you just define the size of your type
+//      The function are pretty much the same as sx_hashtbl, but with `sx_hashtbltval_` prefix.
 //
 #pragma once
 
@@ -136,6 +141,11 @@ SX_API int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
 SX_API int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
 SX_API void sx_hashtbl_clear(sx_hashtbl* tbl);
 
+static inline int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
+{
+    sx_assert(index >= 0 && index < tbl->capacity);
+    return tbl->values[index];
+}
 
 static inline int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
 {
@@ -164,12 +174,72 @@ static inline bool sx_hashtbl_full(const sx_hashtbl* tbl)
     return tbl->capacity == tbl->count;
 }
 
-static inline int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
-{
-    sx_assert(index >= 0 && index < tbl->capacity);
-    return tbl->values[index];
-}
-
 #define sx_hashtbl_add_and_grow(_tbl, _key, _value, _alloc)        \
     (sx_hashtbl_full(_tbl) ? sx_hashtbl_grow(&(_tbl), _alloc) : 0, \
      sx_hashtbl_add(_tbl, _key, _value))
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Hash table
+typedef struct sx_hashtbl_tval {
+    uint32_t* keys;
+    uint8_t* values;
+    int _bitshift;
+    int value_stride;
+    int count;
+    int capacity;
+#if SX_CONFIG_HASHTBL_DEBUG
+    int _miss_cnt;
+    int _probe_cnt;
+#endif
+} sx_hashtbl_tval;
+
+SX_API sx_hashtbl_tval* sx_hashtbltval_create(const sx_alloc* alloc, int capacity, int value_stride);
+SX_API void sx_hashtbltval_destroy(sx_hashtbl_tval* tbl, const sx_alloc* alloc);
+SX_API bool sx_hashtbltval_grow(sx_hashtbl_tval** ptbl, const sx_alloc* alloc);
+
+SX_API void sx_hashtbltval_init(sx_hashtbl_tval* tbl, int capacity, int value_stride, uint32_t* keys_ptr, void* values_ptr);
+SX_API int sx_hashtbltval_valid_capacity(int capacity);
+SX_API int sx_hashtbltval_fixed_size(int capacity, int value_stride);
+
+SX_API int sx_hashtbltval_add(sx_hashtbl_tval* tbl, uint32_t key, const void* value);
+SX_API int sx_hashtbltval_find(const sx_hashtbl_tval* tbl, uint32_t key);
+SX_API void sx_hashtbltval_clear(sx_hashtbl_tval* tbl);
+
+static inline const void* sx_hashtbltval_get(const sx_hashtbl_tval* tbl, int index) 
+{
+    sx_assert(index >= 0);
+    sx_assert(index < tbl->capacity);
+
+    return (const void*)(tbl->values + index*tbl->value_stride);
+}
+
+static inline const void* sx_hashtbltval_find_get(const sx_hashtbl_tval* tbl, uint32_t key, const void* not_found_val)
+{
+    int index = sx_hashtbltval_find(tbl, key);
+    return index != -1 ? (const void*)(tbl->values + tbl->value_stride*index) : not_found_val;
+}
+
+static inline void sx_hashtbltval_remove(sx_hashtbl_tval* tbl, int index)
+{
+    sx_assert(index >= 0 && index < tbl->capacity);
+
+    tbl->keys[index] = 0;
+    --tbl->count;
+}
+
+static inline void sx_hashtbltval_remove_if_found(sx_hashtbl_tval* tbl, uint32_t key)
+{
+    int index = sx_hashtbltval_find(tbl, key);
+    if (index != -1) {
+        sx_hashtbltval_remove(tbl, index);
+    }
+}
+
+static inline bool sx_hashtbltval_full(const sx_hashtbl_tval* tbl)
+{
+    return tbl->capacity == tbl->count;
+}
+
+#define sx_hashtbltval_add_and_grow(_tbl, _key, _value, _alloc)        \
+    (sx_hashtbltval_full(_tbl) ? sx_hashtbltval_grow(&(_tbl), _alloc) : 0, \
+     sx_hashtbltval_add(_tbl, _key, _value))

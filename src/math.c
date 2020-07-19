@@ -709,30 +709,27 @@ sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num)
 
 void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3])
 {
-    const float rr = _rgb[0];
-    const float gg = _rgb[1];
-    const float bb = _rgb[2];
+    float K = 0.f;
+    float r = _rgb[0];
+    float g = _rgb[1];
+    float b = _rgb[2];
 
-    const float s0 = sx_step(bb, gg);
+    if (g < b)
+    {
+        sx_swap(g, b, float);
+        K = -1.f;
+    }
 
-    const float px = sx_lerp(bb, gg, s0);
-    const float py = sx_lerp(gg, bb, s0);
-    const float pz = sx_lerp(-1.0f, 0.0f, s0);
-    const float pw = sx_lerp(2.0f / 3.0f, -1.0f / 3.0f, s0);
+    if (r < g)
+    {
+        sx_swap(r, g, float);
+        K = -2.f / 6.f - K;
+    }
 
-    const float s1 = sx_step(px, rr);
-
-    const float qx = sx_lerp(px, rr, s1);
-    const float qy = py;
-    const float qz = sx_lerp(pw, pz, s1);
-    const float qw = sx_lerp(rr, px, s1);
-
-    const float dd = qx - sx_min(qw, qy);
-    const float ee = 1.0e-10f;
-
-    _hsv[0] = sx_abs(qz + (qw - qy) / (6.0f * dd + ee));
-    _hsv[1] = dd / (qx + ee);
-    _hsv[2] = qx;
+    float chroma = r - sx_min(g, b);
+    _hsv[0] = sx_abs(K + (g - b) / (6.f * chroma + 1e-20f));
+    _hsv[1] = chroma / (r + 1e-20f);
+    _hsv[2] = r;
 }
 
 void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3])
@@ -870,6 +867,32 @@ sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal)
     // clang-format on
 }
 
+sx_mat3 sx_quad_mat3(const sx_quat quat)
+{
+    float norm = sx_sqrt(sx_quat_dot(quat, quat));
+    float s = norm > 0.0f ? (2.0f / norm) : 0.0f;
+
+    float x = quat.x;
+    float y = quat.y;
+    float z = quat.z;
+    float w = quat.w;
+
+    float xx = s * x * x;
+    float xy = s * x * y;
+    float wx = s * w * x;
+    float yy = s * y * y;
+    float yz = s * y * z;
+    float wy = s * w * y;
+    float zz = s * z * z;
+    float xz = s * x * z;
+    float wz = s * w * z;
+
+    // clang-format off
+    return sx_mat3f(1.0f - yy - zz,     xy - wz,            xz + wy,
+                    xy + wz,            1.0f - xx - zz,     yz - wx,
+                    xz - wy,            yz + wx,            1.0f - xx - yy);
+    // clang-format on
+}
 
 sx_mat4 sx_quat_mat4(const sx_quat quat)
 {
@@ -906,7 +929,7 @@ sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b)
                      sx_mat4_mul_vec4(_a, _b->col3).f, sx_mat4_mul_vec4(_a, _b->col4).f);
 }
 
-sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
+sx_vec3 sx_plane_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
 {
     sx_vec3 ba = sx_vec3_sub(_vb, _va);
     sx_vec3 ca = sx_vec3_sub(_vc, _va);
@@ -915,8 +938,115 @@ sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 
     return sx_vec3_norm(baca);
 }
 
-sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
+sx_plane sx_plane3p(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
 {
-    sx_vec3 normal = sx_vec3_calc_normal(_va, _vb, _vc);
-    return sx_vec4v3(normal, -sx_vec3_dot(normal, _va));
+    sx_vec3 normal = sx_plane_normal(_va, _vb, _vc);
+    return sx_planev(normal, -sx_vec3_dot(normal, _va));
+}
+
+sx_plane sx_planenp(const sx_vec3 _normal, const sx_vec3 _p)
+{
+    sx_vec3 normal = sx_vec3_norm(_normal);
+    float d = sx_vec3_dot(_normal, _p);
+    return sx_planev(normal, -d);
+}
+
+float sx_plane_distance(const sx_plane _plane, const sx_vec3 _p)
+{
+    return sx_vec3_dot(_plane.normal, _p) + _plane.dist;
+}
+
+sx_vec3 sx_plane_project_point(const sx_plane _plane, const sx_vec3 _p)
+{
+    return sx_vec3_sub(_p, sx_vec3_mulf(_plane.normal, sx_plane_distance(_plane, _p)));
+}
+
+sx_vec3 sx_plane_origin(const sx_plane _plane)
+{
+    return sx_vec3_mulf(_plane.normal, -_plane.dist);
+}
+
+sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat)
+{
+    sx_vec3 minpt;
+    sx_vec3 maxpt;
+    sx_vec3 t = sx_vec3fv(mat->col4.f);
+
+    minpt.x = maxpt.x = t.x;
+    minpt.y = maxpt.y = t.y;
+    minpt.z = maxpt.z = t.z;
+
+    if (mat->m11 > 0.0f) {
+        minpt.x += mat->m11 * aabb->xmin;
+        maxpt.x += mat->m11 * aabb->xmax;
+    }    else    {
+        minpt.x += mat->m11 * aabb->xmax;
+        maxpt.x += mat->m11 * aabb->xmin;
+    }
+
+    if (mat->m21 > 0.0f) {
+        minpt.y += mat->m21 * aabb->xmin;
+        maxpt.y += mat->m21 * aabb->xmax;
+    }    else     {
+        minpt.y += mat->m21 * aabb->xmax;
+        maxpt.y += mat->m21 * aabb->xmin;
+    }
+
+    if (mat->m31 > 0.0f)    {
+        minpt.z += mat->m31 * aabb->xmin;
+        maxpt.z += mat->m31 * aabb->xmax;
+    }    else    {
+        minpt.z += mat->m31 * aabb->xmax;
+        maxpt.z += mat->m31 * aabb->xmin;
+    }
+
+    if (mat->m12 > 0.0f) {
+        minpt.x += mat->m12 * aabb->ymin;
+        maxpt.x += mat->m12 * aabb->ymax;
+    }    else     {
+        minpt.x += mat->m12 * aabb->ymax;
+        maxpt.x += mat->m12 * aabb->ymin;
+    }
+
+    if (mat->m22 > 0.0f) {
+        minpt.y += mat->m22 * aabb->ymin;
+        maxpt.y += mat->m22 * aabb->ymax;
+    }    else    {
+        minpt.y += mat->m22 * aabb->ymax;
+        maxpt.y += mat->m22 * aabb->ymin;
+    }
+
+    if (mat->m32 > 0.0f) {
+        minpt.z += mat->m32 * aabb->ymin;
+        maxpt.z += mat->m32 * aabb->ymax;
+    }    else    {
+        minpt.z += mat->m32 * aabb->ymax;
+        maxpt.z += mat->m32 * aabb->ymin;
+    }
+
+    if (mat->m13 > 0.0f) {
+        minpt.x += mat->m13 * aabb->zmin;
+        maxpt.x += mat->m13 * aabb->zmax;
+    }    else     {
+        minpt.x += mat->m13 * aabb->zmax;
+        maxpt.x += mat->m13 * aabb->zmin;
+    }
+
+    if (mat->m23 > 0.0f) {
+        minpt.y += mat->m23 * aabb->zmin;
+        maxpt.y += mat->m23 * aabb->zmax;
+    }    else     {
+        minpt.y += mat->m23 * aabb->zmax;
+        maxpt.y += mat->m23 * aabb->zmin;
+    }
+
+    if (mat->m33 > 0.0f) {
+        minpt.z += mat->m33 * aabb->zmin;
+        maxpt.z += mat->m33 * aabb->zmax;
+    }    else     {
+        minpt.z += mat->m33 * aabb->zmax;
+        maxpt.z += mat->m33 * aabb->zmin;
+    }
+
+    return sx_aabbv(minpt, maxpt);
 }

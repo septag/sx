@@ -7,10 +7,9 @@
 // License: https://github.com/bkaradzic/bx#license-bsd-2-clause
 //
 //
-// math.h - 1.2.1  Scalar and Vector math functions
-//                 Contains vector primitives and vector/fpu math functions, event functions
-//                 implemented in libm
-//                 Many functions are from bx library (https://github.com/bkaradzic/bx)
+// math.h - 1.3    Scalar and Vector math functions
+//                 Contains vector primitives and vector/fpu math functions, event functions implemented in libm
+//                 Many functions are taken from bx library (https://github.com/bkaradzic/bx)
 // Easings:
 //      Reference: https://easings.net/
 //                 https://github.com/r-lyeh-archived/tween
@@ -22,6 +21,7 @@
 //      Matrices are Column-Major, but the representation is row-major, which means:
 //          mat->m[r][c] -> which R is the row, and C is column index
 //          transform vector (v) by matrix (M) = M.v
+//          matrix transforms are multiplied in reverse: Scale->Rotation->Translate = TxRxS
 //
 //
 #pragma once
@@ -197,6 +197,31 @@ typedef union sx_aabb {
     float f[6];
 } sx_aabb;
 
+// 3d plane: a*nx + b*ny + c*nz + d = 0
+typedef union sx_plane {
+    sx_vec4 p;
+
+    struct {
+        sx_vec3 normal;
+        float dist;
+    };
+
+    float f[4];
+} sx_plane;
+
+// Simplified 3D transform. by position and rotation
+typedef struct sx_tx3d {
+    sx_vec3 pos;
+    sx_mat3 rot;
+} sx_tx3d;
+
+// Box is a 3d primitive (cube), that extents in each X,Y,Z direction and has arbitary transform
+// This is different from AABB (sx_aabb) where it is axis-aligned and defined by min/max points
+typedef struct sx_box {
+    sx_tx3d tx;   // transform (pos = origin of the box, rot = rotation of the box)
+    sx_vec3 he;   // half-extent from the origin (0.5*width, 0.5*height, 0.5f*depth)
+} sx_box;
+
 SX_API SX_CONSTFN float sx_floor(float _f);
 SX_API SX_CONSTFN float sx_cos(float _a);
 SX_API SX_CONSTFN float sx_acos(float _a);
@@ -208,8 +233,13 @@ SX_API SX_CONSTFN float sx_log(float _a);
 SX_API SX_CONSTFN float sx_sqrt(float _a);
 SX_API SX_CONSTFN float sx_rsqrt(float _a);
 
-SX_API sx_vec3 sx_vec3_calc_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
-SX_API sx_vec4 sx_vec3_calc_plane(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+SX_API sx_vec3 sx_plane_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+SX_API sx_plane sx_plane3p(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc);
+SX_API sx_plane sx_planenp(const sx_vec3 _normal, const sx_vec3 _p);
+SX_API float sx_plane_distance(const sx_plane _plane, const sx_vec3 _p);
+SX_API sx_vec3 sx_plane_project_point(const sx_plane _plane, const sx_vec3 _p);
+SX_API sx_vec3 sx_plane_origin(const sx_plane _plane);
+
 SX_API sx_vec2 sx_vec2_calc_linearfit2D(const sx_vec2* _points, int _num);
 SX_API sx_vec3 sx_vec3_calc_linearfit3D(const sx_vec3* _points, int _num);
 
@@ -252,10 +282,13 @@ SX_API sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal);
 SX_API sx_mat3 sx_mat3_inv(const sx_mat3* _a);
 SX_API sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
 
+SX_API sx_mat3 sx_quad_mat3(const sx_quat quat);
 SX_API sx_mat4 sx_quat_mat4(const sx_quat quat);
 
 SX_API void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
 SX_API void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
+
+SX_API sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat);
 
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -728,7 +761,7 @@ static inline sx_quat sx_quat4f(float _x, float _y, float _z, float _w)
 #endif
 }
 
-static inline sx_quat sx_quatfv(const float* _f)
+static inline sx_quat sx_quat4fv(const float* _f)
 {
 #ifdef __cplusplus
     return { { _f[0], _f[1], _f[2], _f[3] } };
@@ -1087,14 +1120,18 @@ static inline sx_vec4 sx_mat4_row4(const sx_mat4* m)
 
 static inline sx_mat4 sx_mat4_translate(float _tx, float _ty, float _tz)
 {
-    return sx_mat4f(1.0f, 0.0f, 0.0f, _tx, 0.0f, 1.0f, 0.0f, _ty, 0.0f, 0.0f, 1.0f, _tz, 0.0f, 0.0f,
-                    0.0f, 1.0f);
+    return sx_mat4f(1.0f, 0.0f, 0.0f, _tx, 
+                    0.0f, 1.0f, 0.0f, _ty, 
+                    0.0f, 0.0f, 1.0f, _tz, 
+                    0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 static inline sx_mat4 sx_mat4_scale(float _sx, float _sy, float _sz)
 {
-    return sx_mat4f(_sx, 0.0f, 0.0f, 0.0f, 0.0f, _sy, 0.0f, 0.0f, 0.0f, 0.0f, _sz, 0.0f, 0.0f, 0.0f,
-                    0.0f, 1.0f);
+    return sx_mat4f(_sx, 0.0f, 0.0f, 0.0f, 
+                    0.0f, _sy, 0.0f, 0.0f, 
+                    0.0f, 0.0f, _sz, 0.0f, 
+                    0.0f, 0.0f,0.0f, 1.0f);
 }
 
 static inline sx_mat4 sx_mat4_scalef(float _scale)
@@ -1396,6 +1433,15 @@ static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, flo
                     0.0f,   0.0f,  1.0f);
     // clang-format on
 }
+
+static inline sx_mat3 sx_mat3_transpose(const sx_mat3* _a)
+{
+    return sx_mat3f(_a->m11, _a->m21, _a->m31, 
+                    _a->m12, _a->m22, _a->m32, 
+                    _a->m13, _a->m23, _a->m33);
+}
+
+//
 static inline float sx_vec2_dot(const sx_vec2 _a, const sx_vec2 _b)
 {
     return _a.x * _b.x + _a.y * _b.y;
@@ -1652,6 +1698,25 @@ static inline int sx_irect_height(const sx_irect rc)
     return rc.ymax - rc.ymin;
 }
 
+// 
+static inline sx_plane sx_planef(float _nx, float _ny, float _nz, float _d)
+{
+#ifdef __cplusplus
+    return { {{_nx, _ny, _nz, _d }} };
+#else
+    return (sx_plane){ .p = {.x = _nx, .y = _ny, .z = _nz, .w = _d} };
+#endif    
+}
+
+static inline sx_plane sx_planev(const sx_vec3 _normal, float _d)
+{
+#ifdef __cplusplus
+    return { {{_normal.x, _normal.y, _normal.z, _d }} };
+#else
+    return (sx_plane){ .p = {.x = _normal.x, .y = _normal.y, .z = _normal.z, .w = _d} };
+#endif    
+}
+
 /*
  *   2               3 (max)
  *   -----------------
@@ -1707,25 +1772,49 @@ static inline sx_aabb sx_aabbwhd(float w, float h, float d)
 
 static inline sx_aabb sx_aabb_empty()
 {
-    return sx_aabbf(SX_FLOAT_MAX, SX_FLOAT_MAX, SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX,
-                    -SX_FLOAT_MAX);
+    return sx_aabbf(SX_FLOAT_MAX, SX_FLOAT_MAX, SX_FLOAT_MAX, 
+                    -SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX);
 }
 
-static inline void sx_aabb_add_point(sx_aabb* box, const sx_vec3 pt)
+static inline bool sx_aabb_isempty(const sx_aabb* aabb)
 {
-    box->vmin = sx_vec3_min(box->vmin, pt);
-    box->vmax = sx_vec3_max(box->vmax, pt);
+    return aabb->xmin >= aabb->xmax || aabb->ymin >= aabb->ymax || aabb->zmin >= aabb->zmax;
 }
 
-static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt)
+static inline void sx_aabb_add_point(sx_aabb* aabb, const sx_vec3 pt)
 {
-    if (box->xmax < pt.x || box->xmin > pt.x)
+    aabb->vmin = sx_vec3_min(aabb->vmin, pt);
+    aabb->vmax = sx_vec3_max(aabb->vmax, pt);
+}
+
+static inline sx_aabb sx_aabb_add(const sx_aabb* aabb1, const sx_aabb* aabb2)
+{
+    sx_aabb r = *aabb1;
+    sx_aabb_add_point(&r, aabb2->vmin);
+    sx_aabb_add_point(&r, aabb2->vmax);
+    return r;
+}
+
+static inline bool sx_aabb_test_point(const sx_aabb* aabb, const sx_vec3 pt)
+{
+    if (aabb->xmax < pt.x || aabb->xmin > pt.x)
         return false;
-    if (box->ymax < pt.y || box->ymin > pt.y)
+    if (aabb->ymax < pt.y || aabb->ymin > pt.y)
         return false;
-    if (box->zmax < pt.z || box->zmin > pt.z)
+    if (aabb->zmax < pt.z || aabb->zmin > pt.z)
         return false;
     return true;
+}
+
+static inline bool sx_aabb_test(const sx_aabb* aabb1, const sx_aabb* aabb2)
+{
+    if (aabb1->xmax < aabb2->xmin || aabb1->xmin > aabb2->xmax)
+        return false;
+    if (aabb1->ymax < aabb2->ymin || aabb1->ymin > aabb2->ymax)
+        return false;
+    if (aabb1->zmax < aabb2->zmin || aabb1->zmin > aabb2->zmax)
+        return false;
+    return true;    
 }
 
 /*
@@ -1737,28 +1826,156 @@ static inline bool sx_aabb_test_point(const sx_aabb* box, const sx_vec3 pt)
  *  2 /   |          3 /   |
  *   /----------------/    |
  *   |    |           |    |
- *   |    |           |    |      +Y
+ *   |    |           |    |      +Z
  *   |    |           |    |
  *   |    |-----------|----|     |
- *   |   / 4          |   / 5    |  / +Z
+ *   |   / 4          |   / 5    |  / +Y
  *   |  /             |  /       | /
  *   | /              | /        |/
  *   |/               |/         --------- +X
  *   ------------------
  *  0                 1
  */
-static inline sx_vec3 sx_aabb_corner(const sx_aabb* box, int index)
+static inline sx_vec3 sx_aabb_corner(const sx_aabb* aabb, int index)
 {
     sx_assert(index < 8);
-    return sx_vec3f((index & 1) ? box->vmax.x : box->vmin.x,
-                    (index & 2) ? box->vmax.y : box->vmin.y,
-                    (index & 4) ? box->vmax.z : box->vmin.z);
+    return sx_vec3f((index & 1) ? aabb->vmax.x : aabb->vmin.x,
+                    (index & 4) ? aabb->vmax.y : aabb->vmin.y,
+                    (index & 2) ? aabb->vmax.z : aabb->vmin.z);
 }
 
-static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* box)
+static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* aabb)
 {
     for (int i = 0; i < 8; i++)
-        corners[i] = sx_aabb_corner(box, i);
+        corners[i] = sx_aabb_corner(aabb, i);
+}
+
+static inline sx_vec3 sx_aabb_extents(const sx_aabb* aabb)
+{
+    return sx_vec3f(aabb->vmax.x - aabb->vmin.x, aabb->vmax.y - aabb->vmin.y, aabb->vmax.z - aabb->vmin.z);
+}
+
+static inline sx_vec3 sx_aabb_center(const sx_aabb* aabb)
+{
+    return sx_vec3_mulf(sx_vec3_add(aabb->vmin, aabb->vmax), 0.5f);
+}
+
+static inline sx_aabb sx_aabb_translate(const sx_aabb* aabb, const sx_vec3 offset)
+{
+    return sx_aabbv(sx_vec3_add(aabb->vmin, offset), sx_vec3_add(aabb->vmax, offset));
+}
+
+static inline sx_aabb sx_aabb_setpos(const sx_aabb* aabb, const sx_vec3 pos)
+{
+    sx_vec3 e = sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f);
+    return sx_aabbf(pos.x - e.x, pos.y - e.y, pos.z - e.z, 
+                    pos.x + e.x, pos.y + e.y, pos.z + e.z);
+}
+
+static inline sx_aabb sx_aabb_expand(const sx_aabb* aabb, const sx_vec3 expand)
+{
+    sx_vec3 p = sx_aabb_center(aabb);
+    sx_vec3 e = sx_vec3_add(sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f), expand);
+    return sx_aabbf(p.x - e.x, p.y - e.y, p.z - e.z, 
+                    p.x + e.x, p.y + e.y, p.z + e.z);
+}
+
+static inline sx_aabb sx_aabb_scale(const sx_aabb* aabb, const sx_vec3 scale)
+{
+    sx_vec3 p = sx_aabb_center(aabb);
+    sx_vec3 e = sx_vec3_mul(sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f), scale);
+    return sx_aabbf(p.x - e.x, p.y - e.y, p.z - e.z, 
+                    p.x + e.x, p.y + e.y, p.z + e.z);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+static inline sx_tx3d sx_tx3d_set(const sx_vec3 _pos, const sx_mat3 _rot)
+{
+#ifdef __cplusplus
+    return {_pos, _rot};
+#else
+    return (sx_tx3d) {.pos = _pos, .rot = _rot};
+#endif
+}
+
+
+static inline sx_tx3d sx_tx3d_setf(float x, float y, float z, float rx, float ry, float rz)
+{
+    sx_mat4 rot = sx_mat4_rotateXYZ(rx, ry, rz);
+    return sx_tx3d_set(sx_vec3f(x, y, z), sx_mat3fv(rot.rc1, rot.rc2, rot.rc3));
+}
+
+static inline sx_tx3d sx_tx3d_ident(void)
+{
+    return sx_tx3d_set(sx_vec3splat(0), sx_mat3_ident());
+}
+
+static inline sx_tx3d sx_tx3d_mul(const sx_tx3d* txa, const sx_tx3d* txb)
+{
+    return sx_tx3d_set(sx_vec3_add(sx_mat3_mul_vec3(&txa->rot, txb->pos), txa->pos),
+                       sx_mat3_mul(&txa->rot, &txb->rot));
+}
+
+static inline sx_vec3 sx_tx3d_mul_vec3(const sx_tx3d* tx, sx_vec3 v)
+{
+    return sx_vec3_add(sx_mat3_mul_vec3(&tx->rot, v), tx->pos);
+}   
+
+static inline sx_vec3 sx_tx3d_mul_vec3_scale(const sx_tx3d* tx, sx_vec3 scale, sx_vec3 v)
+{
+    return sx_vec3_add(sx_mat3_mul_vec3(&tx->rot, sx_vec3_mul(v, scale)), tx->pos);
+}
+
+static inline sx_tx3d sx_tx3d_inverse(const sx_tx3d* tx)
+{   
+    sx_mat3 rot_inv = sx_mat3_transpose(&tx->rot);
+    return sx_tx3d_set(sx_mat3_mul_vec3(&rot_inv, sx_vec3_mulf(tx->pos, -1.0f)), rot_inv);
+}
+
+static inline sx_mat4 sx_tx3d_mat4(const sx_tx3d* tx)
+{
+    return sx_mat4v(sx_vec4v3(tx->rot.col1, 0.0f),
+                    sx_vec4v3(tx->rot.col2, 0.0f),
+                    sx_vec4v3(tx->rot.col3, 0.0f),
+                    sx_vec4v3(tx->pos,      1.0f));
+}
+
+static inline sx_tx3d sx_mat4_tx3d(const sx_mat4* mat)
+{
+    return sx_tx3d_set(sx_vec3fv(mat->col4.f),  sx_mat3fv(mat->col1.f, mat->col2.f, mat->col3.f));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+static inline sx_box sx_box_set(const sx_tx3d tx, sx_vec3 extents)
+{
+    sx_vec3 he = sx_vec3_mulf(extents, 0.5f);
+#ifdef __cplusplus
+    return {tx, he};
+#else
+    return (sx_box) {.tx = tx, .he = he};
+#endif    
+}
+
+static inline sx_box sx_box_setpne(const sx_vec3 pos, const sx_vec3 extents)
+{
+    sx_tx3d tx = sx_tx3d_set(pos, sx_mat3_ident());
+    return sx_box_set(tx, extents);
+}
+
+static inline sx_vec3 sx_box_pos(const sx_box* box)
+{
+    return box->tx.pos;
+}
+
+static inline sx_mat3 sx_box_rot(const sx_box* box)
+{
+    return box->tx.rot;
+}
+
+static inline sx_vec3 sx_box_extents(const sx_box* box)
+{
+    return sx_vec3_mulf(box->he, 2.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2089,4 +2306,4 @@ SX_API sx_color SX_COLOR_PURPLE;
 //      v1.1.1      Fixed through the whole API for RH proj and view calculations
 //      v1.2.0      Added new primitives like color and rect
 //      v1.2.1      Moved std-math.h to C unit
-//
+//      v1.3        Added tx3d (transform), box and plane primitives

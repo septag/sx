@@ -100,15 +100,15 @@ SX_API void sx__break_program(const char* text);
                 var__v = var__v < var__max ? var__v : var__max; \
                 var__v > var__min ? var__v : var__min;          \
             })
-#    elif SX_COMPILER_MSVC
+#    elif SX_COMPILER_MSVC 
 // NOTE: Because we have some features lacking in MSVC+C compiler, the max,min,clamp macros does not
 // pre-evaluate the expressions So in performance critical code, make sure you pre-evaluate the
-// sx_max, sx_min, sx_clamp paramters before passing them to the macros in critical code
+// sx_max, sx_min, sx_clamp paramters before passing them to the macros
 #        define sx_max(a, b) ((a) > (b) ? (a) : (b))
 #        define sx_min(a, b) ((a) < (b) ? (a) : (b))
 #        define sx_clamp(v, min_, max_) sx_max(sx_min((v), (max_)), (min_))
 #    endif    // SX_COMPILER_GCC||SX_COMPILER_CLANG
-#else
+#else // __cplusplus
 template <typename T>
 T sx_max(T a, T b);
 template <typename T>
