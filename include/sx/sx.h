@@ -80,7 +80,7 @@ SX_API void sx__break_program(const char* text);
                 typeof(a) var__a = (a);       \
                 typeof(b) var__b = (b);       \
                 (void)(&var__a == &var__b);   \
-                var__a > b ? var__a : var__b; \
+                var__a > var__b ? var__a : var__b; \
             })
 
 #        define sx_min(a, b)                  \
@@ -88,7 +88,7 @@ SX_API void sx__break_program(const char* text);
                 typeof(a) var__a = (a);       \
                 typeof(b) var__b = (b);       \
                 (void)(&var__a == &var__b);   \
-                var__a < b ? var__a : var__b; \
+                var__a < var__b ? var__a : var__b; \
             })
 
 #        define sx_clamp(v_, min_, max_)                        \

@@ -844,6 +844,28 @@ static inline sx_vec3 sx_quat_toeuler(const sx_quat _quat)
                     sx_asin(2.0f * (x * y + z * w)));
 }
 
+static inline sx_quat sx_quat_fromeular(const sx_vec3 _vec3)
+{
+    float yaw = _vec3.z;
+    float pitch = _vec3.y;
+    float roll = _vec3.x;
+
+    float cy = sx_cos(yaw * 0.5f);
+    float sy = sx_sin(yaw * 0.5f);
+    float cp = sx_cos(pitch * 0.5f);
+    float sp = sx_sin(pitch * 0.5f);
+    float cr = sx_cos(roll * 0.5f);
+    float sr = sx_sin(roll * 0.5f);
+
+    sx_quat q;
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
+}
+
 static inline sx_quat sx_quat_rotateaxis(const sx_vec3 _axis, float _angle)
 {
     const float ha = _angle * 0.5f;

@@ -4,6 +4,7 @@
 //
 #include "sx/io.h"
 #include "sx/allocator.h"
+#include "sx/atomic.h"
 #include "sx/os.h"
 #include "sx/array.h"
 
@@ -36,6 +37,7 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size, const voi
         mem->data = sx_align_ptr(mem + 1, 0, align);
         mem->size = size;
         mem->align = align;
+        mem->refcount = 1;
         if (data)
             sx_memcpy(mem->data, data, (size_t)size);
         return mem;
@@ -53,6 +55,7 @@ sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int64_t size, void* data)
         mem->data = data;
         mem->size = size;
         mem->align = 0;
+        mem->refcount = 1;
         return mem;
     } else {
         sx_out_of_memory();
@@ -64,10 +67,21 @@ void sx_mem_destroy_block(sx_mem_block* mem)
 {
     sx_assert(mem);
 
-    if (mem->alloc) {
-        sx_free(mem->alloc, mem);
+    if (sx_atomic_decr(&mem->refcount) == 0) {
+        if (mem->alloc) {
+            sx_free(mem->alloc, mem);
+            mem->alloc = NULL;
+        }
     }
+
+    sx_assert(mem->refcount >= 0);
 }
+
+void sx_mem_addref(sx_mem_block* mem)
+{
+    sx_atomic_incr(&mem->refcount);
+}
+
 
 void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int64_t size)
 {
