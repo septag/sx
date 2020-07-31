@@ -31,7 +31,7 @@
 //                                                          if not, pushes the element into the array
 // Usage:
 //       NOTE: include "allocator.h" before array.h to prevent warnings and errors
-//       SomeStruct *arr = NULL;
+//       sx_array_declare(SomeStruct) = NULL; // SomeStruct *arr = NULL;
 //       while (something)
 //       {
 //          SomeStruct new_one;
@@ -53,6 +53,7 @@
 
 typedef struct sx_alloc sx_alloc;
 
+#define sx_array_declare(_type) _type*
 #define sx_array_free(_alloc, a) ((a) ? sx_free(_alloc, sx__sbraw(a)), 0 : 0)
 #define sx_array_push(_alloc, a, v) (sx__sbmaybegrow(_alloc, a, 1), (a)[sx__sbn(a)++] = (v))
 #define sx_array_count(a) ((a) ? sx__sbn(a) : 0)
