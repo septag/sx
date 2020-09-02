@@ -53,7 +53,6 @@
 
 typedef struct sx_alloc sx_alloc;
 
-#define sx_array_declare(_type) _type*
 #define sx_array_free(_alloc, a) ((a) ? sx_free(_alloc, sx__sbraw(a)), 0 : 0)
 #define sx_array_push(_alloc, a, v) (sx__sbmaybegrow(_alloc, a, 1), (a)[sx__sbn(a)++] = (v))
 #define sx_array_count(a) ((a) ? sx__sbn(a) : 0)
@@ -91,11 +90,12 @@ static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx
     int min_needed = sx_array_count(arr) + increment;
     int m = new_count > min_needed ? new_count : min_needed;
     int* p = (int*)sx__realloc(alloc, arr ? sx__sbraw(arr) : 0,
-                               (size_t)itemsize * (size_t)m + sizeof(int) * 2, 0, file, func, line);
+                               (size_t)itemsize*(size_t)m + sizeof(int)*2, 0, file, func, line);
+
     if (p) {
+        p[0] = m;
         if (!arr)
             p[1] = 0;
-        p[0] = m;
         return p + 2;
     } else {
         sx_out_of_memory();

@@ -10,12 +10,16 @@
 //      sx_pool_del             Puts the data pointer back into pool
 //      sx_pool_valid_ptr           Checks if the object pointer is allocated from the pool
 //
-// This is a fixed capacity pool that is mainly needed in code, it's not recommended to assume
-// unlimited growable pools
-// But just in case we needed that kind of data, we can wrap this in another API and
-// create/link-list multiple pools
+// Note: memory will be zero'd on creation, so every object that you instanciate from the pool will 
+//       only be all-zero for the first instance, so you have to manage initialization for object by yourself
+//       see the example in the tip below
 //
 // TIP: You can use ctor caching pattern on pools, so some data of each object is initialized once
+//      typedef struct obj_t {
+//          bool is_init;       // will be set to zero at pool creation    
+//          uint32_t* buffer;   // whatever data
+//      } obj_t;
+//
 //      obj_t* obj = sx_pool_new(pool);
 //      if (!obj->is_init) {
 //          obj_init(obj);
@@ -26,7 +30,7 @@
 //
 #pragma once
 
-#include "sx.h"
+#include "allocator.h"
 
 typedef struct sx_alloc sx_alloc;
 
@@ -36,16 +40,14 @@ typedef sx_align_decl(16, struct) sx__pool_page
     uint8_t* buff;
     struct sx__pool_page* next;
     int iter;
-}
-sx__pool_page;
+} sx__pool_page;
 
 typedef sx_align_decl(16, struct) sx_pool
 {
     int item_sz;
     int capacity;
     sx__pool_page* pages;
-}
-sx_pool;
+} sx_pool;
 
 static inline sx__pool_page* sx__pool_create_page(sx_pool* pool, const sx_alloc* alloc)
 {
@@ -69,6 +71,7 @@ static inline sx__pool_page* sx__pool_create_page(sx_pool* pool, const sx_alloc*
     for (int i = 0; i < capacity; i++) {
         page->ptrs[capacity - i - 1] = page->buff + (size_t)i * (size_t)item_sz;
     }
+    sx_memset(page->buff, 0x0, capacity * item_sz);
 
     return page;
 }
@@ -101,6 +104,7 @@ static inline sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int ca
     for (int i = 0; i < capacity; i++) {
         page->ptrs[capacity - i - 1] = page->buff + (size_t)i * (size_t)item_sz;
     }
+    sx_memset(page->buff, 0x0, capacity * item_sz);
 
     return pool;
 }
@@ -141,8 +145,9 @@ static inline bool sx_pool_grow(sx_pool* pool, const sx_alloc* alloc)
     sx__pool_page* page = sx__pool_create_page(pool, alloc);
     if (page) {
         sx__pool_page* last = pool->pages;
-        while (last->next)
+        while (last->next) {
             last = last->next;
+        }
         last->next = page;
         return true;
     } else {

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     puts("\nPushing values to _MIN_ binary heap:");
     for (int i = 0; i < N; i++) {
-        int n = sx_rng_gen_irange(&rng, 1, 100);
+        int n = sx_rng_gen_rangei(&rng, 1, 100);
         if (i < N - 1)
             printf("%d - ", n);
         else
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
     puts("\nPushing values to _MAX_ binary heap:");
     for (int i = 0; i < N; i++) {
-        int n = sx_rng_gen_irange(&rng, 1, 100);
+        int n = sx_rng_gen_rangei(&rng, 1, 100);
         if (i < N - 1)
             printf("%d - ", n);
         else
@@ -57,14 +57,14 @@ int main(int argc, char* argv[])
     int num_pop = 0;
 
     for (int i = 0; i < N; i++) {
-        int n = sx_rng_gen_irange(&rng, 1, 100);
+        int n = sx_rng_gen_rangei(&rng, 1, 100);
         if (i < N - 1)
             printf("%d - ", n);
         else
             printf("%d\n", n);
         sx_bheap_push_min(bh, n, 0);
 
-        if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
+        if (sx_rng_gen_rangei(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_min(bh).key;
             for (int k = 0; k < bh->count; k++) sx_assert(key <= bh->items[k].key);
             num_pop++;
@@ -81,14 +81,14 @@ int main(int argc, char* argv[])
     puts("\nPushing values to _MAX_ binary heap with Random pops during push:");
 
     for (int i = 0; i < N; i++) {
-        int n = sx_rng_gen_irange(&rng, 1, 100);
+        int n = sx_rng_gen_rangei(&rng, 1, 100);
         if (i < N - 1)
             printf("%d - ", n);
         else
             printf("%d\n", n);
         sx_bheap_push_max(bh, n, 0);
 
-        if (sx_rng_gen_irange(&rng, 1, 100) < 50) {
+        if (sx_rng_gen_rangei(&rng, 1, 100) < 50) {
             int key = sx_bheap_pop_max(bh).key;
             for (int k = 0; k < bh->count; k++) sx_assert(key >= bh->items[k].key);
             num_pop++;

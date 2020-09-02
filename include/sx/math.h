@@ -219,7 +219,7 @@ typedef struct sx_tx3d {
 // This is different from AABB (sx_aabb) where it is axis-aligned and defined by min/max points
 typedef struct sx_box {
     sx_tx3d tx;   // transform (pos = origin of the box, rot = rotation of the box)
-    sx_vec3 he;   // half-extent from the origin (0.5*width, 0.5*height, 0.5f*depth)
+    sx_vec3 e;    // half-extent from the origin (0.5*width, 0.5*height, 0.5f*depth)
 } sx_box;
 
 SX_API SX_CONSTFN float sx_floor(float _f);
@@ -289,6 +289,7 @@ SX_API void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
 SX_API void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
 
 SX_API sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat);
+SX_API sx_aabb sx_aabb_from_box(const sx_box* box);
 
 
 // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -1407,12 +1408,30 @@ static inline sx_mat3 sx_mat3_ident()
     return sx_mat3f(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-/// multiply vector3 into 4x4 matrix that [x/w, y/w, z/w, 1], used for projections, etc...
+static inline sx_mat3 sx_mat3_transpose(const sx_mat3* _a)
+{
+    return sx_mat3f(_a->m11, _a->m21, _a->m31, 
+                    _a->m12, _a->m22, _a->m32, 
+                    _a->m13, _a->m23, _a->m33);
+}
+
 static inline sx_vec3 sx_mat3_mul_vec3(const sx_mat3* _mat, const sx_vec3 _vec)
 {
     return sx_vec3f(_vec.x * _mat->m11 + _vec.y * _mat->m12 + _vec.z * _mat->m13,
                     _vec.x * _mat->m21 + _vec.y * _mat->m22 + _vec.z * _mat->m23,
                     _vec.x * _mat->m31 + _vec.y * _mat->m32 + _vec.z * _mat->m33);
+}
+
+static inline sx_mat3 sx_mat3_mul_inverse(const sx_mat3* _a, const sx_mat3* _b)
+{
+    sx_mat3 _atrans = sx_mat3_transpose(_a);
+    return sx_mat3_mul(&_atrans, _b);
+}
+
+static inline sx_vec3 sx_mat3_mul_vec3_inverse(const sx_mat3* mat, sx_vec3 v)
+{
+    sx_mat3 rmat = sx_mat3_transpose(mat);
+    return sx_mat3_mul_vec3(&rmat, v);
 }
 
 static inline sx_vec2 sx_mat3_mul_vec2(const sx_mat3* _mat, const sx_vec2 _vec)
@@ -1454,13 +1473,6 @@ static inline sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, flo
                     sx*s,   sy*c,  ty, 
                     0.0f,   0.0f,  1.0f);
     // clang-format on
-}
-
-static inline sx_mat3 sx_mat3_transpose(const sx_mat3* _a)
-{
-    return sx_mat3f(_a->m11, _a->m21, _a->m31, 
-                    _a->m12, _a->m22, _a->m32, 
-                    _a->m13, _a->m23, _a->m33);
 }
 
 //
@@ -1874,7 +1886,9 @@ static inline void sx_aabb_corners(sx_vec3 corners[8], const sx_aabb* aabb)
 
 static inline sx_vec3 sx_aabb_extents(const sx_aabb* aabb)
 {
-    return sx_vec3f(aabb->vmax.x - aabb->vmin.x, aabb->vmax.y - aabb->vmin.y, aabb->vmax.z - aabb->vmin.z);
+    return sx_vec3_mulf(sx_vec3f(aabb->vmax.x - aabb->vmin.x, aabb->vmax.y - aabb->vmin.y,
+                                 aabb->vmax.z - aabb->vmin.z),
+                        0.5f);
 }
 
 static inline sx_vec3 sx_aabb_center(const sx_aabb* aabb)
@@ -1889,7 +1903,7 @@ static inline sx_aabb sx_aabb_translate(const sx_aabb* aabb, const sx_vec3 offse
 
 static inline sx_aabb sx_aabb_setpos(const sx_aabb* aabb, const sx_vec3 pos)
 {
-    sx_vec3 e = sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f);
+    sx_vec3 e = sx_aabb_extents(aabb);
     return sx_aabbf(pos.x - e.x, pos.y - e.y, pos.z - e.z, 
                     pos.x + e.x, pos.y + e.y, pos.z + e.z);
 }
@@ -1897,7 +1911,7 @@ static inline sx_aabb sx_aabb_setpos(const sx_aabb* aabb, const sx_vec3 pos)
 static inline sx_aabb sx_aabb_expand(const sx_aabb* aabb, const sx_vec3 expand)
 {
     sx_vec3 p = sx_aabb_center(aabb);
-    sx_vec3 e = sx_vec3_add(sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f), expand);
+    sx_vec3 e = sx_vec3_add(sx_aabb_extents(aabb), expand);
     return sx_aabbf(p.x - e.x, p.y - e.y, p.z - e.z, 
                     p.x + e.x, p.y + e.y, p.z + e.z);
 }
@@ -1905,11 +1919,10 @@ static inline sx_aabb sx_aabb_expand(const sx_aabb* aabb, const sx_vec3 expand)
 static inline sx_aabb sx_aabb_scale(const sx_aabb* aabb, const sx_vec3 scale)
 {
     sx_vec3 p = sx_aabb_center(aabb);
-    sx_vec3 e = sx_vec3_mul(sx_vec3_mulf(sx_aabb_extents(aabb), 0.5f), scale);
+    sx_vec3 e = sx_vec3_mul(sx_aabb_extents(aabb), scale);
     return sx_aabbf(p.x - e.x, p.y - e.y, p.z - e.z, 
                     p.x + e.x, p.y + e.y, p.z + e.z);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static inline sx_tx3d sx_tx3d_set(const sx_vec3 _pos, const sx_mat3 _rot)
@@ -1955,6 +1968,18 @@ static inline sx_tx3d sx_tx3d_inverse(const sx_tx3d* tx)
     return sx_tx3d_set(sx_mat3_mul_vec3(&rot_inv, sx_vec3_mulf(tx->pos, -1.0f)), rot_inv);
 }
 
+static inline sx_vec3 sx_tx3d_mul_vec3_inverse(const sx_tx3d* tx, sx_vec3 v)
+{   
+    sx_mat3 rmat = sx_mat3_transpose(&tx->rot);
+    return sx_mat3_mul_vec3(&rmat, sx_vec3_sub(v, tx->pos));
+}
+
+static inline sx_tx3d sx_tx3d_mul_inverse(const sx_tx3d* txa, const sx_tx3d* txb)
+{
+    return sx_tx3d_set(sx_mat3_mul_vec3_inverse(&txa->rot, sx_vec3_sub(txb->pos, txa->pos)), 
+                                                sx_mat3_mul_inverse(&txa->rot, &txb->rot));
+}
+
 static inline sx_mat4 sx_tx3d_mat4(const sx_tx3d* tx)
 {
     return sx_mat4v(sx_vec4v3(tx->rot.col1, 0.0f),
@@ -1971,11 +1996,10 @@ static inline sx_tx3d sx_mat4_tx3d(const sx_mat4* mat)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static inline sx_box sx_box_set(const sx_tx3d tx, sx_vec3 extents)
 {
-    sx_vec3 he = sx_vec3_mulf(extents, 0.5f);
 #ifdef __cplusplus
-    return {tx, he};
+    return {tx, extents};
 #else
-    return (sx_box) {.tx = tx, .he = he};
+    return (sx_box) {.tx = tx, .e = extents};
 #endif    
 }
 
@@ -1983,21 +2007,6 @@ static inline sx_box sx_box_setpne(const sx_vec3 pos, const sx_vec3 extents)
 {
     sx_tx3d tx = sx_tx3d_set(pos, sx_mat3_ident());
     return sx_box_set(tx, extents);
-}
-
-static inline sx_vec3 sx_box_pos(const sx_box* box)
-{
-    return box->tx.pos;
-}
-
-static inline sx_mat3 sx_box_rot(const sx_box* box)
-{
-    return box->tx.rot;
-}
-
-static inline sx_vec3 sx_box_extents(const sx_box* box)
-{
-    return sx_vec3_mulf(box->he, 2.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

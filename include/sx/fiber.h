@@ -134,8 +134,8 @@ typedef void(sx_fiber_cb)(sx_fiber_transfer transfer);
 // High level context API
 typedef struct sx_coro_context sx_coro_context;
 
-SX_API sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz);
-SX_API void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc);
+SX_API sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int num_initial_fibers, int stack_sz);
+SX_API void sx_coro_destroy_context(sx_coro_context* ctx);
 SX_API void sx_coro_update(sx_coro_context* ctx, float dt);
 SX_API bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
                                      sx_fiber_cb* new_callback);

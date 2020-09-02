@@ -127,9 +127,9 @@ int main(int argc, char* argv[])
     puts("Generating random strings ...");
     for (int i = 0; i < num_samples; i++) {
         str_item* item = &items[i];
-        int num_chars = sx_rng_gen_irange(&rng, 16, sizeof(item->str) - 1);
+        int num_chars = sx_rng_gen_rangei(&rng, 16, sizeof(item->str) - 1);
         for (int ii = 0; ii < num_chars; ii++) {
-            char ch = (char)sx_rng_gen_irange(&rng, 48, 122);
+            char ch = (char)sx_rng_gen_rangei(&rng, 48, 122);
             sx_assert(ch >= 48 && ch <= 122);
             item->str[ii] = ch;
         }
@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
     puts("\tSearching for random items ...");
     start_tm = sx_tm_now();
     for (int i = 0; i < num_samples; i++) {
-        int index = sx_rng_gen_irange(&rng, 0, num_samples - 1);
+        int index = sx_rng_gen_rangei(&rng, 0, num_samples - 1);
         int r = sx_hashtbl_find_get(tbl, sx_hash_fnv32_str(items[index].str), -1);
         if (r != index && r != -1) {
             printf(
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
     puts("\tSearching for random items ...");
     start_tm = sx_tm_now();
     for (int i = 0; i < num_samples; i++) {
-        int index = sx_rng_gen_irange(&rng, 0, num_samples - 1);
+        int index = sx_rng_gen_rangei(&rng, 0, num_samples - 1);
         int r = sx__hashtbl2_find_get(tbl2, sx_hash_fnv32_str(items[index].str), -1);
         if (r != index && r != -1) {
             printf(

@@ -966,6 +966,7 @@ sx_vec3 sx_plane_origin(const sx_plane _plane)
     return sx_vec3_mulf(_plane.normal, -_plane.dist);
 }
 
+#if 0
 sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat)
 {
     sx_vec3 minpt;
@@ -1050,3 +1051,34 @@ sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat)
 
     return sx_aabbv(minpt, maxpt);
 }
+#endif
+
+static inline sx_mat3 sx_mat3_abs(const sx_mat3* m)
+{
+    return sx_mat3f(sx_abs(m->m11), sx_abs(m->m12), sx_abs(m->m13), 
+                    sx_abs(m->m21), sx_abs(m->m22), sx_abs(m->m23), 
+                    sx_abs(m->m31), sx_abs(m->m32), sx_abs(m->m33));
+}
+
+sx_aabb sx_aabb_from_box(const sx_box* box)
+{
+    sx_vec3 center = box->tx.pos;
+    sx_mat3 mat_abs = sx_mat3_abs(&box->tx.rot);
+    sx_vec3 extents = sx_mat3_mul_vec3(&mat_abs, box->e);
+    return sx_aabbv(sx_vec3_sub(center, extents), sx_vec3_add(center, extents));
+}
+
+// https://zeux.io/2010/10/17/aabb-from-obb-with-component-wise-abs/
+sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat)
+{
+    sx_vec3 center = sx_aabb_center(aabb);
+    sx_vec3 extents = sx_aabb_extents(aabb);
+    
+    sx_mat3 rot_mat = sx_mat3fv(mat->col1.f, mat->col2.f, mat->col3.f);
+    sx_mat3 mat_abs  = sx_mat3_abs(&rot_mat);
+    sx_vec3 new_center = sx_mat4_mul_vec3(mat, center);
+    sx_vec3 new_extents = sx_mat3_mul_vec3(&mat_abs, extents);
+
+    return sx_aabbv(sx_vec3_sub(new_center, new_extents), sx_vec3_add(new_center, new_extents));
+}
+

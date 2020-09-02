@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
         sx_os_sleep(10);
         dt = (float)sx_tm_sec(sx_tm_laptime(&tick));
     }
-    sx_coro_destroy_context(ctx, alloc);
+    sx_coro_destroy_context(ctx);
 
     return 0;
 }
