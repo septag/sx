@@ -1607,6 +1607,11 @@ static inline sx_rect sx_rectv(const sx_vec2 _min, const sx_vec2 _max)
 #endif
 }
 
+static inline sx_rect sx_rectce(sx_vec2 center, sx_vec2 extents)
+{
+    return sx_rectv(sx_vec2_sub(center, extents), sx_vec2_add(center, extents));
+}
+
 static inline sx_rect sx_rect_expand(const sx_rect rc, const sx_vec2 expand)
 {
     return sx_rectf(rc.xmin - expand.x, rc.ymin - expand.y, rc.xmax + expand.x, rc.ymax + expand.y);
@@ -1633,6 +1638,17 @@ static inline void sx_rect_add_point(sx_rect* rc, const sx_vec2 pt)
     rc->vmin = sx_vec2_min(rc->vmin, pt);
     rc->vmax = sx_vec2_max(rc->vmax, pt);
 }
+
+static inline sx_rect sx_rect_empty()
+{
+    return sx_rectf(SX_FLOAT_MAX, SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX);
+}
+
+static inline bool sx_rect_isempty(const sx_rect rc)
+{
+    return rc.xmin >= rc.xmax || rc.ymin >= rc.ymax;
+}
+
 
 /*
  *   2               3
@@ -1664,6 +1680,16 @@ static inline float sx_rect_width(const sx_rect rc)
 static inline float sx_rect_height(const sx_rect rc)
 {
     return rc.ymax - rc.ymin;
+}
+
+static inline sx_vec2 sx_rect_extents(const sx_rect rc)
+{
+    return sx_vec2_mulf(sx_vec2_sub(rc.vmax, rc.vmin), 0.5f);
+}
+
+static inline sx_vec2 sx_rect_center(const sx_rect rc)
+{
+    return sx_vec2_mulf(sx_vec2_add(rc.vmin, rc.vmax), 0.5f);
 }
 
 static inline sx_rect sx_rect_move(const sx_rect rc, const sx_vec2 pos) 
