@@ -867,7 +867,7 @@ sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal)
     // clang-format on
 }
 
-sx_mat3 sx_quad_mat3(const sx_quat quat)
+sx_mat3 sx_quat_mat3(const sx_quat quat)
 {
     float norm = sx_sqrt(sx_quat_dot(quat, quat));
     float s = norm > 0.0f ? (2.0f / norm) : 0.0f;
@@ -922,6 +922,47 @@ sx_mat4 sx_quat_mat4(const sx_quat quat)
     // clang-format on
 }
 
+sx_quat sx_quat_lerp(const sx_quat _a, const sx_quat _b, float t)
+{
+    float tinv = 1.0f - t;
+    float dot = sx_quat_dot(_a, _b);
+    sx_quat r;
+    if (dot >= 0.0f) {
+        r = sx_quat4f(tinv * _a.x + t * _b.x, tinv * _a.y + t * _b.y, tinv * _a.z + t * _b.z, tinv * _a.w + t * _b.w);
+    } else {
+        r = sx_quat4f(tinv * _a.x - t * _b.x, tinv * _a.y - t * _b.y, tinv * _a.z - t * _b.z, tinv * _a.w - t * _b.w);
+    }
+    return sx_quat_norm(r);
+}
+
+sx_quat sx_quat_slerp(const sx_quat _a, sx_quat _b, float t)
+{
+    const float epsilon = 1e-6f;
+
+    float dot = sx_quat_dot(_a, _b);
+    bool flip = false;
+    if (dot < 0.0f) {
+        flip = true;
+        dot *= -1.0f;
+    }
+
+    float s1, s2;
+    if (dot > (1.0f - epsilon)) {
+        s1 = 1.0f - t;
+        s2 = t;
+        if (flip)
+            s2 *= -1.0f;
+    } else {
+        float omega = sx_acos(dot);
+        float inv_omega_sin = 1.0f / sx_sin(omega);
+        s1 = sx_sin((1.0f - t) * omega) * inv_omega_sin;
+        s2 = sx_sin(t * omega) * inv_omega_sin;
+        if (flip)
+            s2 *= -1.0f;
+    }
+    return sx_quat4f(s1 * _a.x + s2 * _b.x, s1 * _a.y + s2 * _b.y, s1 * _a.z + s2 * _b.z,
+                     s1 * _a.w + s2 * _b.w);
+}
 
 sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b)
 {

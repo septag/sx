@@ -304,9 +304,10 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
 
 void sx_hashtbl_destroy(sx_hashtbl* tbl, const sx_alloc* alloc)
 {
-    sx_assert(tbl);
-    tbl->count = tbl->capacity = 0;
-    sx_free(alloc, tbl);
+    if (tbl) {
+        tbl->count = tbl->capacity = 0;
+        sx_free(alloc, tbl);
+    }
 }
 
 bool sx_hashtbl_grow(sx_hashtbl** ptbl, const sx_alloc* alloc)

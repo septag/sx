@@ -63,7 +63,6 @@
 #define SX_PLATFORM_OSX 0
 #define SX_PLATFORM_PS4 0
 #define SX_PLATFORM_RPI 0
-#define SX_PLATFORM_STEAMLINK 0
 #define SX_PLATFORM_WINDOWS 0
 #define SX_PLATFORM_WINRT 0
 #define SX_PLATFORM_XBOXONE 0
@@ -179,10 +178,6 @@
 #        undef SX_PLATFORM_WINRT
 #        define SX_PLATFORM_WINRT 1
 #    endif
-#elif defined(__STEAMLINK__)
-// SteamLink compiler defines __linux__
-#    undef SX_PLATFORM_STEAMLINK
-#    define SX_PLATFORM_STEAMLINK 1
 #elif defined(__VCCOREVER__) || defined(__RPI__)
 // RaspberryPi compiler defines __linux__
 #    undef SX_PLATFORM_RPI
@@ -245,12 +240,12 @@
 #define SX_PLATFORM_POSIX                                                                         \
     (0 || SX_PLATFORM_ANDROID || SX_PLATFORM_BSD || SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_HURD || \
      SX_PLATFORM_IOS || SX_PLATFORM_LINUX || SX_PLATFORM_NX || SX_PLATFORM_OSX ||                 \
-     SX_PLATFORM_PS4 || SX_PLATFORM_RPI || SX_PLATFORM_STEAMLINK)
+     SX_PLATFORM_PS4 || SX_PLATFORM_RPI)
 
 #define SX_PLATFORM_NONE                                                                           \
     !(0 || SX_PLATFORM_ANDROID || SX_PLATFORM_BSD || SX_PLATFORM_EMSCRIPTEN || SX_PLATFORM_HURD || \
       SX_PLATFORM_IOS || SX_PLATFORM_LINUX || SX_PLATFORM_NX || SX_PLATFORM_OSX ||                 \
-      SX_PLATFORM_PS4 || SX_PLATFORM_RPI || SX_PLATFORM_STEAMLINK || SX_PLATFORM_WINDOWS ||        \
+      SX_PLATFORM_PS4 || SX_PLATFORM_RPI || SX_PLATFORM_WINDOWS ||        \
       SX_PLATFORM_WINRT || SX_PLATFORM_XBOXONE)
 
 #if SX_COMPILER_GCC
@@ -262,7 +257,9 @@
         "Clang " sx_stringize(__clang_major__) "." sx_stringize(__clang_minor__) "." sx_stringize( \
             __clang_patchlevel__)
 #elif SX_COMPILER_MSVC
-#    if SX_COMPILER_MSVC >= 1910    // Visual Studio 2017
+#    if SX_COMPILER_MSVC >= 1920    // Visual Studio 2019
+#        define SX_COMPILER_NAME "MSVC 16.0"
+#    elif SX_COMPILER_MSVC >= 1910    // Visual Studio 2017
 #        define SX_COMPILER_NAME "MSVC 15.0"
 #    elif SX_COMPILER_MSVC >= 1900    // Visual Studio 2015
 #        define SX_COMPILER_NAME "MSVC 14.0"
@@ -303,8 +300,6 @@
 #    define SX_PLATFORM_NAME "PlayStation 4"
 #elif SX_PLATFORM_RPI
 #    define SX_PLATFORM_NAME "RaspberryPi"
-#elif SX_PLATFORM_STEAMLINK
-#    define SX_PLATFORM_NAME "SteamLink"
 #elif SX_PLATFORM_WINDOWS
 #    define SX_PLATFORM_NAME "Windows"
 #elif SX_PLATFORM_WINRT

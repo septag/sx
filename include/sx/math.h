@@ -7,9 +7,9 @@
 // License: https://github.com/bkaradzic/bx#license-bsd-2-clause
 //
 //
-// math.h - 1.3    Scalar and Vector math functions
+// math.h - 1.4    Scalar and Vector math functions
 //                 Contains vector primitives and vector/fpu math functions, event functions implemented in libm
-//                 Many functions are taken from bx library (https://github.com/bkaradzic/bx)
+//                 Some essential functions are taken from bx library (https://github.com/bkaradzic/bx)
 // Easings:
 //      Reference: https://easings.net/
 //                 https://github.com/r-lyeh-archived/tween
@@ -282,8 +282,10 @@ SX_API sx_mat4 sx_mat4_project_plane(const sx_vec3 plane_normal);
 SX_API sx_mat3 sx_mat3_inv(const sx_mat3* _a);
 SX_API sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
 
-SX_API sx_mat3 sx_quad_mat3(const sx_quat quat);
+SX_API sx_mat3 sx_quat_mat3(const sx_quat quat);
 SX_API sx_mat4 sx_quat_mat4(const sx_quat quat);
+SX_API sx_quat sx_quat_lerp(const sx_quat _a, const sx_quat _b, float t);
+SX_API sx_quat sx_quat_slerp(const sx_quat _a, sx_quat _b, float t);
 
 SX_API void sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
 SX_API void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
@@ -2364,3 +2366,4 @@ SX_API sx_color SX_COLOR_PURPLE;
 //      v1.2.0      Added new primitives like color and rect
 //      v1.2.1      Moved std-math.h to C unit
 //      v1.3        Added tx3d (transform), box and plane primitives
+//      v1.4        Added more primitives, and quaternion lerping
