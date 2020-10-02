@@ -108,7 +108,7 @@ void sx_semaphore_init(sx_sem* sem)
 {
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->handle = dispatch_semaphore_create(0);
-    sx_assert(_sem->handle != NULL && "dispatch_semaphore_create failed");
+    sx_assertf(_sem->handle != NULL, "dispatch_semaphore_create failed");
 }
 
 void sx_semaphore_release(sx_sem* sem)
@@ -145,7 +145,7 @@ sx_tls sx_tls_create()
 {
     pthread_key_t key;
     int r = pthread_key_create(&key, NULL);
-    sx_assert(r == 0 && "pthread_key_create failed");
+    sx_assertf(r == 0, "pthread_key_create failed");
     sx_unused(r);
     return (sx_tls)(uintptr_t)key;
 }
@@ -154,7 +154,7 @@ void sx_tls_destroy(sx_tls tls)
 {
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
     int r = pthread_key_delete(key);
-    sx_assert(r == 0 && "pthread_key_delete failed");
+    sx_assertf(r == 0, "pthread_key_delete failed");
     sx_unused(r);
 }
 
@@ -162,7 +162,7 @@ void sx_tls_set(sx_tls tls, void* data)
 {
     pthread_key_t key = (pthread_key_t)(uintptr_t)tls;
     int r = pthread_setspecific(key, data);
-    sx_assert(r == 0 && "pthread_setspcific failed");
+    sx_assertf(r == 0, "pthread_setspcific failed");
     sx_unused(r);
 }
 
@@ -208,9 +208,9 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
     pthread_attr_t attr;
     int r = pthread_attr_init(&attr);
     sx_unused(r);
-    sx_assert(r == 0 && "pthread_attr_init failed");
+    sx_assertf(r == 0, "pthread_attr_init failed");
     r = pthread_attr_setstacksize(&attr, thrd->stack_sz);
-    sx_assert(r == 0 && "pthread_attr_setstacksize failed");
+    sx_assertf(r == 0, "pthread_attr_setstacksize failed");
 
 #    if SX_PLATFORM_APPLE
     thrd->name[0] = 0;
@@ -219,7 +219,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
 #    endif
 
     r = pthread_create(&thrd->handle, &attr, thread_fn, thrd);
-    sx_assert(r == 0 && "pthread_create failed");
+    sx_assertf(r == 0, "pthread_create failed");
 
     // Ensure that thread callback is running
     sx_semaphore_wait(&thrd->sem, -1);
@@ -234,7 +234,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
 
 int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc)
 {
-    sx_assert(thrd->running && "Thread is not running!");
+    sx_assertf(thrd->running, "Thread is not running!");
 
     union {
         void* ptr;
@@ -295,7 +295,7 @@ void sx_mutex_init(sx_mutex* mutex)
     sx_assert(r == 0);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     r = pthread_mutex_init(&_m->handle, &attr);
-    sx_assert(r == 0 && "pthread_mutex_init failed");
+    sx_assertf(r == 0, "pthread_mutex_init failed");
     sx_unused(r);
 }
 
@@ -346,10 +346,10 @@ void sx_signal_init(sx_signal* sig)
     sx__signal* _sig = (sx__signal*)sig->data;
     _sig->value = 0;
     int r = pthread_mutex_init(&_sig->mutex, NULL);
-    sx_assert(r == 0 && "pthread_mutex_init failed");
+    sx_assertf(r == 0, "pthread_mutex_init failed");
 
     r = pthread_cond_init(&_sig->cond, NULL);
-    sx_assert(r == 0 && "pthread_cond_init failed");
+    sx_assertf(r == 0, "pthread_cond_init failed");
 
     sx_unused(r);
 }
@@ -402,10 +402,10 @@ void sx_semaphore_init(sx_sem* sem)
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->count = 0;
     int r = pthread_mutex_init(&_sem->mutex, NULL);
-    sx_assert(r == 0 && "pthread_mutex_init failed");
+    sx_assertf(r == 0, "pthread_mutex_init failed");
 
     r = pthread_cond_init(&_sem->cond, NULL);
-    sx_assert(r == 0 && "pthread_cond_init failed");
+    sx_assertf(r == 0, "pthread_cond_init failed");
 
     sx_unused(r);
 }
@@ -465,7 +465,7 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs)
 sx_tls sx_tls_create()
 {
     DWORD tls_id = TlsAlloc();
-    sx_assert(tls_id != TLS_OUT_OF_INDEXES && "Failed to create tls!");
+    sx_assertf(tls_id != TLS_OUT_OF_INDEXES, "Failed to create tls!");
     return (sx_tls)(uintptr_t)tls_id;
 }
 
@@ -520,7 +520,7 @@ void sx_semaphore_init(sx_sem* sem)
 {
     sx__sem* _sem = (sx__sem*)sem->data;
     _sem->handle = CreateSemaphoreA(NULL, 0, LONG_MAX, NULL);
-    sx_assert(_sem->handle != NULL && "Failed to create semaphore");
+    sx_assertf(_sem->handle != NULL, "Failed to create semaphore");
 }
 
 void sx_semaphore_release(sx_sem* sem)
@@ -549,13 +549,13 @@ void sx_signal_init(sx_signal* sig)
     sx__signal* _sig = (sx__signal*)sig->data;
 #    if _WIN32_WINNT >= 0x0600
     BOOL r = InitializeCriticalSectionAndSpinCount(&_sig->mutex, 32);
-    sx_assert(r && "InitializeCriticalSectionAndSpinCount failed");
+    sx_assertf(r, "InitializeCriticalSectionAndSpinCount failed");
     sx_unused(r);
     InitializeConditionVariable(&_sig->cond);
     _sig->value = 0;
 #    else
     _sig->e = CreateEvent(NULL, FALSE, FALSE, NULL);
-    sx_assert(_sig->e && "CreateEvent failed");
+    sx_assertf(_sig->e, "CreateEvent failed");
 #    endif
 }
 
@@ -630,7 +630,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
 
     thrd->handle =
         CreateThread(NULL, thrd->stack_sz, (LPTHREAD_START_ROUTINE)thread_fn, thrd, 0, NULL);
-    sx_assert(thrd->handle != NULL && "CreateThread failed");
+    sx_assertf(thrd->handle != NULL, "CreateThread failed");
 
     // Ensure that thread callback is running
     sx_semaphore_wait(&thrd->sem, -1);
@@ -643,7 +643,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
 
 int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc)
 {
-    sx_assert(thrd->running && "Thread is not running!");
+    sx_assertf(thrd->running, "Thread is not running!");
 
     DWORD exit_code;
     WaitForSingleObject(thrd->handle, INFINITE);
@@ -711,6 +711,6 @@ uint32_t sx_thread_tid()
 #elif SX_PLATFORM_HURD
     return (pthread_t)pthread_self();
 #else
-    sx_assert(0 && "Tid not implemented");
+    sx_assertf(0, "Tid not implemented");
 #endif    // SX_PLATFORM_
 }

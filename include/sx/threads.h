@@ -105,7 +105,7 @@ SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
 {
     int prev = sx_atomic_xchg(lock, 0);
     sx_unused(prev);
-    sx_assert_rel(prev == 1);
+    sx_assert_always(prev == 1);
 }
 
 SX_FORCE_INLINE bool sx_trylock(sx_lock_t* lock)

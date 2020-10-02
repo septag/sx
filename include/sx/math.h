@@ -826,7 +826,7 @@ static inline sx_quat sx_quat_norm(const sx_quat _quat)
         return sx_quat4f(_quat.x * inv_norm, _quat.y * inv_norm, _quat.z * inv_norm,
                          _quat.w * inv_norm);
     } else {
-        sx_assert(0 && "divide by zero");
+        sx_assertf(0, "divide by zero");
         return sx_quat_ident();
     }
 }
@@ -971,7 +971,7 @@ static inline sx_vec3 sx_vec3_norm(const sx_vec3 _a)
         const float invlen = 1.0f / len;
         return sx_vec3f(_a.x * invlen, _a.y * invlen, _a.z * invlen);
     } else {
-        sx_assert(0 && "Divide by zero");
+        sx_assertf(0, "Divide by zero");
         return sx_vec3f(0.0f, 0.0f, 0.0f);
     }
 }
@@ -985,7 +985,7 @@ static inline sx_vec3 sx_vec3_norm_len(const sx_vec3 _a, float* _outlen)
         *_outlen = len;
         return sx_vec3f(_a.x * invlen, _a.y * invlen, _a.z * invlen);
     } else {
-        sx_assert(0 && "Divide by zero");
+        sx_assertf(0, "Divide by zero");
         return sx_vec3f(0.0f, 0.0f, 0.0f);
     }
 }
@@ -1494,7 +1494,7 @@ static inline sx_vec2 sx_vec2_norm(const sx_vec2 _a)
     if (len > 0.0f) {
         return sx_vec2f(_a.x / len, _a.y / len);
     } else {
-        sx_assert(0 && "Divide by zero");
+        sx_assertf(0, "Divide by zero");
         return _a;
     }
 }
@@ -1506,7 +1506,7 @@ static inline sx_vec2 sx_vec2_norm_len(const sx_vec2 _a, float* outlen)
         *outlen = len;
         return sx_vec2f(_a.x / len, _a.y / len);
     } else {
-        sx_assert(0 && "Divide by zero");
+        sx_assertf(0, "Divide by zero");
         return _a;
     }
 }

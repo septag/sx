@@ -112,7 +112,7 @@ static inline sx_handle_t sx_handle_new(sx_handle_pool* pool)
         pool->sparse[_index] = index;
         return new_handle;
     } else {
-        sx_assert(0 && "handle pool is full");
+        sx_assertf(0, "handle pool is full");
     }
 
     return SX_INVALID_HANDLE;

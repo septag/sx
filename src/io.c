@@ -92,9 +92,9 @@ void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int64_t size)
 bool sx_mem_grow(sx_mem_block** pmem, int64_t size)
 {
     sx_mem_block* mem = *pmem;
-    sx_assert(mem->alloc &&
+    sx_assertf(mem->alloc,
               "Growable memory must be created with an allocator - sx_mem_create_block");
-    sx_assert(size > mem->size && "New size must be greater than the previous one");
+    sx_assertf(size > mem->size, "New size must be greater than the previous one");
 
     int align = mem->align;
     const sx_alloc* alloc = mem->alloc;
@@ -305,14 +305,14 @@ int64_t sx_file_read(sx_file* file, void* data, int64_t size)
     sx__file_win32* f = (sx__file_win32*)file;
 
     sx_assert(f->handle && f->handle != INVALID_HANDLE_VALUE);
-    sx_assert_rel(size < UINT32_MAX);
+    sx_assert_always(size < UINT32_MAX);
 
     if (f->flags & SX_FILE_NOCACHE) {
         static size_t pagesz = 0;
         if (pagesz == 0) {
             pagesz = sx_os_pagesz();
         }
-        sx_assert_rel((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
+        sx_assert_always((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
     }
 
     DWORD bytes_read;
@@ -329,7 +329,7 @@ int64_t sx_file_write(sx_file* file, const void* data, int64_t size)
     sx__file_win32* f = (sx__file_win32*)file;
 
     sx_assert(f->handle && f->handle != INVALID_HANDLE_VALUE);
-    sx_assert_rel(size < UINT32_MAX);
+    sx_assert_always(size < UINT32_MAX);
 
     DWORD bytes_written;
     if (!WriteFile(f->handle, data, (DWORD)size, &bytes_written, NULL)) {
@@ -432,7 +432,7 @@ bool sx_file_open(sx_file* file, const char* filepath, sx_file_open_flags flags)
     struct stat _stat;
     int sr = fstat(file_id, &_stat);
     if (sr != 0) {
-        sx_assert(0 && "stat failed!");
+        sx_assertf(0, "stat failed!");
         return false;
     }
     f->id = file_id;
@@ -462,7 +462,7 @@ int64_t sx_file_read(sx_file* file, void* data, int64_t size)
         if (pagesz == 0) {
             pagesz = sx_os_pagesz();
         }
-        sx_assert_rel((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
+        sx_assert_always((uintptr_t)data % pagesz == 0 && "buffers must be aligned with NoCache flag");
     }
     return read(f->id, data, (size_t)size);
 }
@@ -603,13 +603,13 @@ static bool sx__iff_read_all_chunks(sx_iff_file* iff)
         sx_iff_chunk chunk;
         int64_t r = sx__iff_read(iff, &chunk, sizeof(chunk));
         if (r < (int64_t)sizeof(chunk)) {
-            sx_assert_rel(r == 0 && "file is probably corrupt");
+            sx_assert_always(r == 0 && "file is probably corrupt");
             return r == 0;
         }
 
         int64_t pos = sx__iff_seek(iff, chunk.size, SX_WHENCE_CURRENT);
         if (pos <= 0 || (pos - chunk.pos) < chunk.size) {
-            sx_assert_rel(0 && "file is probably corrupt");
+            sx_assert_always(0 && "file is probably corrupt");
             return false;  
         }
 
@@ -635,7 +635,7 @@ bool sx_iff_init_from_file_reader(sx_iff_file* iff, sx_file* file, sx_iff_flags 
     sx_iff_chunk first_chunk;
     sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
     if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
-        sx_assert(0 && "invalid IFF file format");
+        sx_assertf(0, "invalid IFF file format");
         return false;
     }
     sx_array_push(alloc, iff->chunks, first_chunk);
@@ -669,7 +669,7 @@ bool sx_iff_init_from_file_writer(sx_iff_file* iff, sx_file* file, sx_iff_flags 
         int64_t bytes_read = sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
         if (bytes_read != sizeof(first_chunk) || first_chunk.fourcc != SIFF_SIGN || 
             first_chunk.parent_id != -1 || first_chunk.size) {
-            sx_assert(0 && "invalid IFF file format");
+            sx_assertf(0, "invalid IFF file format");
             return false;
         }
         sx_array_push(alloc, iff->chunks, first_chunk);
@@ -709,7 +709,7 @@ bool sx_iff_init_from_mem_reader(sx_iff_file* iff, sx_mem_reader* mread, sx_iff_
     sx_iff_chunk first_chunk;
     sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
     if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
-        sx_assert(0 && "invalid IFF file format");
+        sx_assertf(0, "invalid IFF file format");
         return false;
     }
     sx_array_push(alloc, iff->chunks, first_chunk);
@@ -742,7 +742,7 @@ bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff
         sx_iff_chunk first_chunk;
         sx__iff_read(iff, &first_chunk, sizeof(first_chunk));
         if (first_chunk.fourcc != SIFF_SIGN || first_chunk.parent_id != -1 || first_chunk.size) {
-            sx_assert(0 && "invalid IFF file format");
+            sx_assertf(0, "invalid IFF file format");
             return false;
         }
         sx_array_push(alloc, iff->chunks, first_chunk);
@@ -783,14 +783,14 @@ int sx_iff_get_chunk(sx_iff_file* iff, uint32_t fourcc, int parent_id)
             sx_iff_chunk chunk;
             int64_t r = sx__iff_read(iff, &chunk, sizeof(chunk));
             if (r < (int64_t)sizeof(chunk)) {
-                sx_assert_rel(r == 0 && "file is probably corrupt");
+                sx_assert_always(r == 0 && "file is probably corrupt");
                 iff->read_all = true;
                 break;  // EOF
             }
 
             int64_t pos = sx__iff_seek(iff, chunk.size, SX_WHENCE_CURRENT);
             if (pos <= 0 || (pos - chunk.pos) < chunk.size) {
-                sx_assert_rel(0 && "file is probably corrupt");
+                sx_assert_always(0 && "file is probably corrupt");
                 break;  
             }
 
@@ -818,17 +818,17 @@ bool sx_iff_read_chunk(sx_iff_file* iff, int chunk_id, void* chunk_data, int64_t
 
     sx_iff_chunk* chunk = &iff->chunks[chunk_id];
     if (chunk->size != size) {
-        sx_assert(0 && "size does not match the actual chunk size");
+        sx_assertf(0, "size does not match the actual chunk size");
         return false;
     }
 
     int64_t pos = sx__iff_seek(iff, chunk->pos, SX_WHENCE_BEGIN);
     sx_unused(pos);
-    sx_assert_rel(pos == chunk->pos && "probably file corruption");
+    sx_assert_always(pos == chunk->pos && "probably file corruption");
 
     int64_t r = sx__iff_read(iff, chunk_data, size);
     if (r != chunk->size) {
-        sx_assert_rel(0 && "corrupt file");
+        sx_assert_always(0 && "corrupt file");
         return false;
     }
 

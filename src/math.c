@@ -974,7 +974,7 @@ sx_vec3 sx_plane_normal(const sx_vec3 _va, const sx_vec3 _vb, const sx_vec3 _vc)
 {
     sx_vec3 ba = sx_vec3_sub(_vb, _va);
     sx_vec3 ca = sx_vec3_sub(_vc, _va);
-    sx_vec3 baca = sx_vec3_cross(ba, ca);
+    sx_vec3 baca = sx_vec3_cross(ca, ba);
 
     return sx_vec3_norm(baca);
 }

@@ -16,7 +16,7 @@ typedef struct sx_bitarray {
 static inline bool sx_bitarray_init(sx_bitarray* bar, void* data, int data_size, bool init_val)
 {
     if (data_size % sizeof(uint64_t) != 0) {
-        sx_assert(0 && "data_size must be a multiple of 8: sizeof(uint64)");
+        sx_assertf(0, "data_size must be a multiple of 8: sizeof(uint64)");
         return false;
     }
     sx_memset(data, init_val ? 0xff : 0x0, data_size);

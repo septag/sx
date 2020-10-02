@@ -220,8 +220,6 @@ void sx_os_sleep(int ms)
 {
 #if SX_PLATFORM_WINDOWS
     Sleep(ms);
-#elif SX_PLATFORM_XBOXONE
-    sx_assert(0 && "Sleep not implemented");
 #else
     struct timespec req = { (time_t)ms / 1000, (long)((ms % 1000) * 1000000) };
     struct timespec rem = { 0, 0 };
@@ -276,7 +274,7 @@ sx_pinfo sx_os_exec(const char* const* argv)
     return pinfo;
 #else
     sx_unused(argv);
-    sx_assert(0 && "not implemented");
+    sx_assertf(0, "not implemented");
     return (sx_pinfo){ {0}, 0 };
 #endif    // SX_PLATFORM_
 }
@@ -306,7 +304,7 @@ bool sx_os_copy(const char* src, const char* dest)
     close(output);
     return result > -1;
 #else
-    sx_assert(0 && "not implemented");
+    sx_assert(0, "not implemented");
     return false;
 #endif
 }
@@ -360,7 +358,7 @@ char* sx_os_path_exepath(char* dst, int size)
 #else
     sx_unused(dst);
     sx_unused(size);
-    sx_assert(0 && "not implemented");
+    sx_assertf(0, "not implemented");
     return NULL;
 #endif
 }

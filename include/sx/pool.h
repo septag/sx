@@ -78,7 +78,7 @@ static inline sx__pool_page* sx__pool_create_page(sx_pool* pool, const sx_alloc*
 
 static inline sx_pool* sx_pool_create(const sx_alloc* alloc, int item_sz, int capacity)
 {
-    sx_assert(item_sz > 0 && "Item size should not be zero");
+    sx_assertf(item_sz > 0, "Item size should not be zero");
 
     capacity = sx_align_mask(capacity, 15);
     uint8_t* buff = (uint8_t*)sx_aligned_malloc(
@@ -135,7 +135,7 @@ static inline void* sx_pool_new(sx_pool* pool)
     if (page->iter > 0) {
         return page->ptrs[--page->iter];
     } else {
-        sx_assert(0 && "capacity is full");
+        sx_assertf(0, "capacity is full");
         return NULL;
     }
 }
@@ -205,9 +205,9 @@ static inline void sx_pool_del(sx_pool* pool, void* ptr)
     while (page) {
         if (uptr >= (uintptr_t)page->buff &&
             uptr < (uintptr_t)(page->buff + (size_t)capacity * (size_t)item_sz)) {
-            sx_assert((uintptr_t)((uint8_t*)ptr - page->buff) % item_sz == 0 &&
+            sx_assertf((uintptr_t)((uint8_t*)ptr - page->buff) % item_sz == 0,
                       "ptr is not aligned to items, probably invalid");
-            sx_assert(page->iter != capacity &&
+            sx_assertf(page->iter != capacity,
                       "cannot delete more objects, possible double delete");
 
             page->ptrs[page->iter++] = ptr;
@@ -216,7 +216,7 @@ static inline void sx_pool_del(sx_pool* pool, void* ptr)
 
         page = page->next;
     }
-    sx_assert(0 && "pointer does not blong to the pool");
+    sx_assertf(0, "pointer does not blong to the pool");
 }
 
 #define sx_pool_new_and_grow(_pool, _alloc) \

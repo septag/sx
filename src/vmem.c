@@ -175,7 +175,7 @@ void* sx_vmem_commit_page(sx_vmem_context* vmem, int page_id)
 
     void* ptr = (uint8_t*)vmem->ptr + vmem->page_size * page_id;
     if (mprotect(ptr, vmem->page_size, PROT_READ | PROT_WRITE) != 0) {
-        sx_assert_rel(0);
+        sx_assert_always(0);
         return NULL;
     }
 
@@ -211,7 +211,7 @@ void* sx_vmem_commit_pages(sx_vmem_context* vmem, int start_page_id, int num_pag
 
     void* ptr = (uint8_t*)vmem->ptr + vmem->page_size * start_page_id;
     if (mprotect(ptr, (size_t)vmem->page_size*(size_t)num_pages, PROT_READ | PROT_WRITE) != 0) {
-        sx_assert_rel(0);
+        sx_assert_always(0);
         return NULL;
     }
 

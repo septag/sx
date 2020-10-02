@@ -305,7 +305,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
     int range_reminder = count % num_workers;
     int num_jobs = range_size > 0 ? num_workers : (range_reminder > 0 ? range_reminder : 0);
     sx_assert(num_jobs > 0);
-    sx_assert(num_jobs <= ctx->job_pool->capacity &&
+    sx_assertf(num_jobs <= ctx->job_pool->capacity,
               "this amount of jobs at a time cannot be done. increase max_jobs");
 
     // Create a counter (job handle)
@@ -314,12 +314,12 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
     sx_unlock(&ctx->counter_lk);
 
     if (!counter) {
-        sx_assert(0 && "Maximum job instances exceeded");
+        sx_assertf(0, "Maximum job instances exceeded");
         return NULL;
     }
 
     *counter = num_jobs;
-    sx_assert(tdata && "Dispatch must be called within main thread or job threads");
+    sx_assertf(tdata, "Dispatch must be called within main thread or job threads");
 
     // Another job is running on this thread. So depend the current running job to the new
     // dispatches
@@ -511,7 +511,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
     tdata->main_thrd = main_thrd;
 
     bool r = sx_fiber_stack_init(&tdata->selector_stack, (int)sx_os_minstacksz());
-    sx_assert(r && "Not enough memory for temp stacks");
+    sx_assertf(r, "Not enough memory for temp stacks");
     sx_unused(r);
 
     return tdata;
@@ -534,7 +534,7 @@ static int sx__job_thread_fn(void* user1, void* user2)
     // note: thread index #0 is reserved for main thread
     sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, index + 1, false);
     if (!tdata) {
-        sx_assert(tdata && "ThreadData create failed!");
+        sx_assertf(tdata, "ThreadData create failed!");
         return -1;
     }
     sx_tls_set(ctx->thread_tls, tdata);
@@ -604,7 +604,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
             sx_snprintf(name, sizeof(name), "sx_job_thread(%d)", i + 1);
             ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, (int)sx_os_minstacksz(),
                                                name, (void*)(intptr_t)i);
-            sx_assert(ctx->threads[i] && "sx_thread_create failed!");
+            sx_assertf(ctx->threads[i], "sx_thread_create failed!");
         }
     }
 

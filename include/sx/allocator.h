@@ -34,14 +34,24 @@
 //                                  detection use sx_dump_leaks and the end of the program to dump
 //                                  possible memory leaks
 //
+// Out-of-memory/failure handling:
+//      You can use sx_memory_fail() macro to trigger memory failure when allocations fail and it will always trigger assertion failure
+//      You can also provide a custom callback via `sx_mem_set_fail_callback` and provide your own
+//      behavior whenever memory allocation fails
 #pragma once
 
 #include "sx.h"
 
-// Define anything here, for out of memory exceptions (exit/assert/...)
-#ifndef sx_out_of_memory
-#    define sx_out_of_memory()  sx_assert_rel(0 && "Out of memory!")
-#endif
+typedef void (sx_mem_fail_cb)(const char* sourcefile, uint32_t line);
+
+SX_API void sx_mem_set_fail_callback(sx_mem_fail_cb* callback);
+SX_API void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line);   // internal
+
+// Call this whenever memory allocation fails
+// you can override the callback function to 
+#define sx_memory_fail()                                \
+    do { sx__mem_run_fail_callback(__FILE__, __LINE__); sx_assert_alwaysf(0, "Out of memory"); } while (0)
+#define sx_out_of_memory() sx_memory_fail()
 
 #if SX_CONFIG_DEBUG_ALLOCATOR
 #    define sx_malloc(_allocator, _size) \

@@ -18,6 +18,19 @@ static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const c
 
 static const sx_alloc g_alloc_malloc = { sx__malloc_cb, NULL };
 static const sx_alloc g_alloc_malloc_leakd = { sx__malloc_leakd_cb, NULL };
+static sx_mem_fail_cb* g_alloc_failed_cb;
+
+void sx_mem_set_fail_callback(sx_mem_fail_cb* callback)
+{   
+    g_alloc_failed_cb = callback;
+}
+
+void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line)
+{
+    if (g_alloc_failed_cb) {
+        g_alloc_failed_cb(sourcefile, line);
+    }
+}
 
 const sx_alloc* sx_alloc_malloc()
 {

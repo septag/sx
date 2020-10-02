@@ -51,7 +51,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
     sx_stackalloc* stackalloc = (sx_stackalloc*)user_data;
     void* last_ptr = stackalloc->ptr + stackalloc->last_ptr_offset;
     if (size > 0) {
-        sx_assert_rel(size < UINT32_MAX);
+        sx_assert_always(size < UINT32_MAX);
 
         if (ptr == NULL) {
             // malloc
@@ -97,7 +97,7 @@ static void* sx__stackalloc_cb(void* ptr, size_t size, uint32_t align, const cha
         return NULL;
     }
 
-    sx_assert(0 && "Invalid arguments?!");
+    sx_assertf(0, "Invalid arguments?!");
     return NULL;
 }
 

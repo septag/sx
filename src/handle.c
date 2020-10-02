@@ -11,7 +11,7 @@ const uint32_t k__handle_gen_shift = (32 - SX_CONFIG_HANDLE_GEN_BITS);
 
 sx_handle_pool* sx_handle_create_pool(const sx_alloc* alloc, int capacity)
 {
-    sx_assert(capacity < UINT16_MAX && "capacity is too high");
+    sx_assertf(capacity < UINT16_MAX, "capacity is too high");
 
     // Align count to 16, for a better aligned internal memory
     int maxsz = sx_align_mask(capacity, 15);

@@ -69,8 +69,8 @@ void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int siz
 {
     size_t page_sz = sx_os_pagesz();
     sx_unused(page_sz);
-    sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
-    sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
+    sx_assertf((uintptr_t)ptr % page_sz == 0, "buffer size must be dividable to OS page size");
+    sx_assertf(size % page_sz == 0, "buffer size must be dividable to OS page size");
 
     fstack->sptr = ptr;
     fstack->ssize = size;
@@ -165,7 +165,7 @@ static inline void sx__coro_remove_list(sx__coro_state** pfirst, sx__coro_state*
 sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int num_initial_fibers, int stack_sz)
 {
     sx_assert(num_initial_fibers > 0);
-    sx_assert((size_t)stack_sz >= sx_os_minstacksz() && "stack size too small");
+    sx_assertf((size_t)stack_sz >= sx_os_minstacksz(), "stack size too small");
 
     sx_coro_context* ctx = (sx_coro_context*)sx_malloc(alloc, sizeof(sx_coro_context));
     if (!ctx) {
@@ -264,7 +264,7 @@ void sx_coro_update(sx_coro_context* ctx, float dt)
             break;
         }
         default:
-            sx_assert(0 && "Invalid ret type in update loop");
+            sx_assertf(0, "Invalid ret type in update loop");
             break;
         }
 
@@ -302,9 +302,9 @@ bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
 static inline void sx__coro_return(sx_coro_context* ctx, sx_fiber_t* pfrom, sx_coro_ret_type type,
                                    int arg)
 {
-    sx_assert(ctx->cur_coro &&
+    sx_assertf(ctx->cur_coro,
               "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
-    sx_assert(type != CORO_RET_NONE && "Invalid enum for type");
+    sx_assertf(type != CORO_RET_NONE, "Invalid enum for type");
 
     sx__coro_state* fs = ctx->cur_coro;
 
