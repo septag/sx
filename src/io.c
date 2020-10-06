@@ -36,6 +36,7 @@ sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size, const voi
         mem->alloc = alloc;
         mem->data = sx_align_ptr(mem + 1, 0, align);
         mem->size = size;
+        mem->start_offset = 0;
         mem->align = align;
         mem->refcount = 1;
         if (data)
@@ -54,6 +55,7 @@ sx_mem_block* sx_mem_ref_block(const sx_alloc* alloc, int64_t size, void* data)
         mem->alloc = alloc;
         mem->data = data;
         mem->size = size;
+        mem->start_offset = 0;
         mem->align = 0;
         mem->refcount = 1;
         return mem;
@@ -80,13 +82,21 @@ void sx_mem_addref(sx_mem_block* mem)
     sx_atomic_incr(&mem->refcount);
 }
 
+void sx_mem_addoffset(sx_mem_block* mem, int64_t offset)
+{
+    mem->data = (uint8_t*)mem->data + offset;
+    mem->size -= offset;
+    mem->start_offset += offset;
+}
 
 void sx_mem_init_block_ptr(sx_mem_block* mem, void* data, int64_t size)
 {
     mem->alloc = NULL;
     mem->data = data;
     mem->size = size;
+    mem->start_offset = 0;
     mem->align = 0;
+    mem->refcount = 1;
 }
 
 bool sx_mem_grow(sx_mem_block** pmem, int64_t size)
@@ -98,9 +108,10 @@ bool sx_mem_grow(sx_mem_block** pmem, int64_t size)
 
     int align = mem->align;
     const sx_alloc* alloc = mem->alloc;
-    mem = (sx_mem_block*)sx_realloc(alloc, mem, (size_t)size + sizeof(sx_mem_block) + align);
+    mem = (sx_mem_block*)sx_realloc(alloc, mem, (size_t)(size + mem->start_offset) + 
+                                    sizeof(sx_mem_block) + align);
     if (mem) {
-        mem->data = sx_align_ptr(mem + 1, 0, align);
+        mem->data = (uint8_t*)sx_align_ptr(mem + 1, 0, align) + mem->start_offset;
         mem->size = size;
         *pmem = mem;
         return true;
