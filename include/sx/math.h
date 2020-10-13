@@ -1048,15 +1048,8 @@ SX_FORCE_INLINE float sx_quat_dot(sx_quat _a, sx_quat _b)
 
 SX_FORCE_INLINE sx_quat sx_quat_norm(sx_quat _quat)
 {
-    const float norm = sx_quat_dot(_quat, _quat);
-    if (0.0f < norm) {
-        const float inv_norm = sx_rsqrt(norm);
-        return sx_quat4f(_quat.x * inv_norm, _quat.y * inv_norm, _quat.z * inv_norm,
-                         _quat.w * inv_norm);
-    } else {
-        sx_assertf(0, "divide by zero");
-        return sx_quat_ident();
-    }
+    const float inv_norm = sx_rsqrt(sx_quat_dot(_quat, _quat));
+    return sx_quat4f(_quat.x*inv_norm, _quat.y*inv_norm, _quat.z*inv_norm, _quat.w*inv_norm);
 }
 
 SX_FORCE_INLINE sx_vec3 sx_quat_toeuler(sx_quat _quat)
@@ -1194,14 +1187,7 @@ SX_FORCE_INLINE sx_vec3 sx_vec3_lerp(sx_vec3 _a, sx_vec3 _b, float _t)
 
 SX_FORCE_INLINE sx_vec3 sx_vec3_norm(sx_vec3 _a)
 {
-    const float len = sx_vec3_len(_a);
-    if (len > 0.0f) {
-        const float invlen = 1.0f / len;
-        return sx_vec3f(_a.x * invlen, _a.y * invlen, _a.z * invlen);
-    } else {
-        sx_assertf(0, "Divide by zero");
-        return sx_vec3f(0.0f, 0.0f, 0.0f);
-    }
+    return sx_vec3_mulf(_a, sx_rsqrt(sx_vec3_dot(_a, _a)));
 }
 
 SX_FORCE_INLINE sx_vec3 sx_vec3_norm_len(sx_vec3 _a, float* _outlen)
@@ -1718,13 +1704,7 @@ SX_FORCE_INLINE float sx_vec2_len(sx_vec2 _a)
 
 SX_FORCE_INLINE sx_vec2 sx_vec2_norm(sx_vec2 _a)
 {
-    const float len = sx_vec2_len(_a);
-    if (len > 0.0f) {
-        return sx_vec2f(_a.x / len, _a.y / len);
-    } else {
-        sx_assertf(0, "Divide by zero");
-        return _a;
-    }
+    return sx_vec2_mulf(_a, sx_rsqrt(sx_vec2_dot(_a, _a)));
 }
 
 SX_FORCE_INLINE sx_vec2 sx_vec2_norm_len(sx_vec2 _a, float* outlen)
