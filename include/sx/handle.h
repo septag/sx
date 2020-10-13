@@ -97,7 +97,7 @@ SX_API const uint32_t k__handle_gen_shift;
     (uint32_t)((((uint32_t)(_g)&k__handle_gen_mask) << k__handle_gen_shift) | \
                ((uint32_t)(_idx)&k__handle_index_mask))
 
-static inline sx_handle_t sx_handle_new(sx_handle_pool* pool)
+SX_INLINE sx_handle_t sx_handle_new(sx_handle_pool* pool)
 {
     if (pool->count < pool->capacity) {
         int index = pool->count++;
@@ -118,7 +118,7 @@ static inline sx_handle_t sx_handle_new(sx_handle_pool* pool)
     return SX_INVALID_HANDLE;
 }
 
-static inline void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
+SX_INLINE void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
 {
     sx_assert(pool->count > 0);
 
@@ -129,7 +129,7 @@ static inline void sx_handle_del(sx_handle_pool* pool, sx_handle_t handle)
     pool->dense[index] = last_handle;
 }
 
-static inline void sx_handle_reset_pool(sx_handle_pool* pool)
+SX_INLINE void sx_handle_reset_pool(sx_handle_pool* pool)
 {
     pool->count = 0;
     sx_handle_t* dense = pool->dense;
@@ -138,20 +138,20 @@ static inline void sx_handle_reset_pool(sx_handle_pool* pool)
     }
 }
 
-static inline bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle)
+SX_INLINE bool sx_handle_valid(const sx_handle_pool* pool, sx_handle_t handle)
 {
     sx_assert(handle);
     int index = pool->sparse[sx_handle_index(handle)];
     return index < pool->count && pool->dense[index] == handle;
 }
 
-static inline sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index)
+SX_INLINE sx_handle_t sx_handle_at(const sx_handle_pool* pool, int index)
 {
     sx_assert(index < pool->count);
     return pool->dense[index];
 }
 
-static inline bool sx_handle_full(const sx_handle_pool* pool)
+SX_INLINE bool sx_handle_full(const sx_handle_pool* pool)
 {
     return pool->count == pool->capacity;
 }

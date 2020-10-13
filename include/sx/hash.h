@@ -141,19 +141,19 @@ SX_API int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value);
 SX_API int sx_hashtbl_find(const sx_hashtbl* tbl, uint32_t key);
 SX_API void sx_hashtbl_clear(sx_hashtbl* tbl);
 
-static inline int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
+SX_INLINE int sx_hashtbl_get(const sx_hashtbl* tbl, int index)
 {
     sx_assert(index >= 0 && index < tbl->capacity);
     return tbl->values[index];
 }
 
-static inline int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
+SX_INLINE int sx_hashtbl_find_get(const sx_hashtbl* tbl, uint32_t key, int not_found_val)
 {
     int index = sx_hashtbl_find(tbl, key);
     return index != -1 ? tbl->values[index] : not_found_val;
 }
 
-static inline void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
+SX_INLINE void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
 {
     sx_assert(index >= 0 && index < tbl->capacity);
 
@@ -161,7 +161,7 @@ static inline void sx_hashtbl_remove(sx_hashtbl* tbl, int index)
     --tbl->count;
 }
 
-static inline void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key)
+SX_INLINE void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key)
 {
     int index = sx_hashtbl_find(tbl, key);
     if (index != -1)
@@ -169,7 +169,7 @@ static inline void sx_hashtbl_remove_if_found(sx_hashtbl* tbl, uint32_t key)
 }
 
 
-static inline bool sx_hashtbl_full(const sx_hashtbl* tbl)
+SX_INLINE bool sx_hashtbl_full(const sx_hashtbl* tbl)
 {
     return tbl->capacity == tbl->count;
 }
@@ -205,7 +205,7 @@ SX_API int sx_hashtbltval_add(sx_hashtbl_tval* tbl, uint32_t key, const void* va
 SX_API int sx_hashtbltval_find(const sx_hashtbl_tval* tbl, uint32_t key);
 SX_API void sx_hashtbltval_clear(sx_hashtbl_tval* tbl);
 
-static inline const void* sx_hashtbltval_get(const sx_hashtbl_tval* tbl, int index) 
+SX_INLINE const void* sx_hashtbltval_get(const sx_hashtbl_tval* tbl, int index) 
 {
     sx_assert(index >= 0);
     sx_assert(index < tbl->capacity);
@@ -213,13 +213,13 @@ static inline const void* sx_hashtbltval_get(const sx_hashtbl_tval* tbl, int ind
     return (const void*)(tbl->values + index*tbl->value_stride);
 }
 
-static inline const void* sx_hashtbltval_find_get(const sx_hashtbl_tval* tbl, uint32_t key, const void* not_found_val)
+SX_INLINE const void* sx_hashtbltval_find_get(const sx_hashtbl_tval* tbl, uint32_t key, const void* not_found_val)
 {
     int index = sx_hashtbltval_find(tbl, key);
     return index != -1 ? (const void*)(tbl->values + tbl->value_stride*index) : not_found_val;
 }
 
-static inline void sx_hashtbltval_remove(sx_hashtbl_tval* tbl, int index)
+SX_INLINE void sx_hashtbltval_remove(sx_hashtbl_tval* tbl, int index)
 {
     sx_assert(index >= 0 && index < tbl->capacity);
 
@@ -227,7 +227,7 @@ static inline void sx_hashtbltval_remove(sx_hashtbl_tval* tbl, int index)
     --tbl->count;
 }
 
-static inline void sx_hashtbltval_remove_if_found(sx_hashtbl_tval* tbl, uint32_t key)
+SX_INLINE void sx_hashtbltval_remove_if_found(sx_hashtbl_tval* tbl, uint32_t key)
 {
     int index = sx_hashtbltval_find(tbl, key);
     if (index != -1) {
@@ -235,7 +235,7 @@ static inline void sx_hashtbltval_remove_if_found(sx_hashtbl_tval* tbl, uint32_t
     }
 }
 
-static inline bool sx_hashtbltval_full(const sx_hashtbl_tval* tbl)
+SX_INLINE bool sx_hashtbltval_full(const sx_hashtbl_tval* tbl)
 {
     return tbl->capacity == tbl->count;
 }

@@ -91,6 +91,13 @@
 #   define SX_CONFIG_ARRAY_INIT_SIZE 8
 #endif
 
+// This preprocessor applies a trick for hot functions that need to be inlined even in debug builds
+// only applies to UC_ALWAYS_INLINE functions, but leaves SX_INLINE not inlined
+// And also, the build should be compiled with /Ob1 flag
+#ifndef SX_CONFIG_FORCE_INLINE_DEBUG
+#   define SX_CONFIG_FORCE_INLINE_DEBUG 0
+#endif
+
 #if defined(_MSC_VER) && 0
 // Macros for stdint.h definitions
 // There are some problems with intellisense+gcc and I had to define these (only works in editor,

@@ -90,8 +90,6 @@ char sx_os_getch(void)
 {
 #if SX_PLATFORM_WINDOWS
     return getchar();
-//#elif SX_PLATFORM_EMSCRIPTEN
-//	return 0;
 #elif SX_PLATFORM_POSIX
     struct termios old_term;
     struct termios new_term;
@@ -205,8 +203,7 @@ const char* sx_os_dlerr(void)
 
 int sx_os_chdir(const char* path)
 {
-#if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_PLATFORM_ANDROID || \
-    Sx_PLATFORM_IOS
+#if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_PLATFORM_ANDROID || SX_PLATFORM_IOS
     sx_unused(path);
     return -1;
 #elif SX_PLATFORM_WINDOWS

@@ -28,7 +28,7 @@ SX_API void sx_rng_seed_time(sx_rng* rng);
 SX_API uint32_t sx_rng_gen(sx_rng* rng);
 SX_API float sx_rng_genf(sx_rng* rng);
 
-static inline int sx_rng_gen_rangei(sx_rng* rng, int _min, int _max)
+SX_INLINE int sx_rng_gen_rangei(sx_rng* rng, int _min, int _max)
 {
     sx_assert(_min <= _max);
 
@@ -36,7 +36,7 @@ static inline int sx_rng_gen_rangei(sx_rng* rng, int _min, int _max)
     return _min + (int)(sx_rng_gen(rng) % range);
 }
 
-static inline float sx_rng_gen_rangef(sx_rng* rng, float _min, float _max)
+SX_INLINE float sx_rng_gen_rangef(sx_rng* rng, float _min, float _max)
 {
     sx_assert(_min <= _max);
 

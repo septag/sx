@@ -51,8 +51,8 @@ typedef struct sx_linear_buffer {
 } sx_linear_buffer;
 
 // internal
-static inline void sx__linear_buffer_init(sx_linear_buffer* buf, const char* parent_type,
-                                          size_t parent_size, uint32_t align sx_default(0))
+SX_INLINE void sx__linear_buffer_init(sx_linear_buffer* buf, const char* parent_type,
+                                      size_t parent_size, uint32_t align sx_default(0))
 {
     sx_assert(parent_size > 0);
 
@@ -69,8 +69,8 @@ static inline void sx__linear_buffer_init(sx_linear_buffer* buf, const char* par
     buf->num_fields = 1;
 }
 
-static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int offset_in_struct,
-                                         void** pptr, uint32_t align)
+SX_INLINE void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int offset_in_struct,
+                                     void** pptr, uint32_t align)
 {
     sx_assert(buf);
 
@@ -106,7 +106,7 @@ static inline void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int
 #define sx_linear_buffer_addptr(_buf, _pptr, _type, _count, _align) \
     sx__linear_buffer_add((_buf), sizeof(_type) * (_count), -1, (void**)(_pptr), (_align))
 
-static inline void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_alloc* alloc)
+SX_INLINE void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_alloc* alloc)
 {
     void* mem = buf->parent_align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
                     ? sx_malloc(alloc, buf->size)

@@ -52,9 +52,8 @@
 #endif    // defined(__has_extension)
 
 #if SX_COMPILER_GCC || SX_COMPILER_CLANG
-#    define sx_align_decl(_align, _decl) _decl __attribute__((aligned(_align)))
 #    define SX_ALLOW_UNUSED __attribute__((unused))
-#    define SX_FORCE_INLINE static inline __attribute__((__always_inline__))
+#    define SX_FORCE_INLINE SX_INLINE __attribute__((__always_inline__))
 #    define SX_FUNCTION __PRETTY_FUNCTION__
 #    define SX_NO_INLINE __attribute__((noinline))
 #    define SX_NO_RETURN __attribute__((noreturn))
@@ -65,8 +64,12 @@
 #    if SX_CRT_MSVC
 #        define __stdcall
 #    endif    // SX_CRT_MSVC
+#    if SX_CONFIG_FORCE_INLINE_DEBUG
+#       define SX_INLINE static 
+#    else
+#       define SX_INLINE static inline  
+#    endif
 #elif SX_COMPILER_MSVC
-#    define sx_align_decl(_align, _decl) __declspec(align(_align)) _decl
 #    define SX_ALLOW_UNUSED
 #    define SX_FORCE_INLINE __forceinline
 #    define SX_FUNCTION __FUNCTION__
@@ -75,8 +78,19 @@
 #    define SX_CONSTFN __declspec(noalias)
 #    define SX_RESTRICT __restrict
 #    define SX_FLATTEN 
+#    if SX_CONFIG_FORCE_INLINE_DEBUG
+#       define SX_INLINE static 
+#    else
+#       define SX_INLINE static inline  
+#    endif
 #else
 #    error "Unknown SX_COMPILER_?"
+#endif
+
+#if SX_COMPILER_GCC || SX_COMPILER_CLANG
+#    define sx_align_decl(_align, _decl) _decl __attribute__((aligned(_align)))
+#else
+#    define sx_align_decl(_align, _decl) __declspec(align(_align)) _decl
 #endif
 
 #if SX_COMPILER_CLANG
