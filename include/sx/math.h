@@ -510,14 +510,16 @@ SX_FORCE_INLINE float sx_easeinout_bounce(float t);
 #if defined(__SSE2__) || (SX_COMPILER_MSVC && (SX_ARCH_64BIT || _M_IX86_FP >= 2))
 SX_FORCE_INLINE SX_CONSTFN float sx_sqrt(float x)
 {
-    __m128 a = _mm_load_ss(&x);
-    return _mm_sqrt_ss(a).m128_f32[0];
+    float r;
+    _mm_store_ss(&r, _mm_sqrt_ss( _mm_load_ss(&x)));
+    return r;
 }
 
 SX_FORCE_INLINE SX_CONSTFN float sx_rsqrt(float x)
 {
-    __m128 a = _mm_load_ss(&x);
-    return _mm_rsqrt_ss(a).m128_f32[0];
+    float r;
+    _mm_store_ss(&r, _mm_rsqrt_ss(_mm_load_ss(&x)));
+    return r;
 }
 #endif
 
