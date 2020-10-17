@@ -59,7 +59,6 @@ set(SOURCE_FILES src/sx.c
                  src/threads.c
                  src/lin-alloc.c
                  src/hash.c
-                 src/stack-alloc.c
                  src/os.c 
                  src/string.c
                  src/io.c
@@ -86,7 +85,6 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/threads.h
                   include/sx/lin-alloc.h
                   include/sx/hash.h
-                  include/sx/stack-alloc.h
                   include/sx/os.h 
                   include/sx/string.h
                   include/sx/handle.h

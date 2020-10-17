@@ -16,22 +16,22 @@ static void* sx__linalloc_malloc(sx_linalloc* alloc, size_t size, uint32_t align
     if (new_offset % align != 0) {
         size_t aligned_offset = sx_align_mask(new_offset, (size_t)align-1);
         total += (aligned_offset - new_offset);
+        new_offset = aligned_offset;
     }
 
-    if ((alloc->offset + total) > (size_t)alloc->size) {
+    if ((new_offset + size) > alloc->size) {
         sx_out_of_memory();
         return NULL;
     }
 
-    uint8_t* ptr = alloc->ptr + alloc->offset;
-    uint8_t* aligned = (uint8_t*)sx_align_ptr(ptr, sizeof(sx__linalloc_hdr), align);
+    uint8_t* aligned = alloc->ptr + new_offset;
     sx_assert((uintptr_t)aligned % align == 0);
 
     // Fill header info
     sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)aligned - 1;
     hdr->size = (uint32_t)size;
 
-    alloc->offset += total;
+    alloc->offset = new_offset + size;
     alloc->peak = sx_max(alloc->peak, alloc->offset);
 
     return aligned;
@@ -58,11 +58,15 @@ static void* sx__linalloc_cb(void* ptr, size_t size, uint32_t align, const char*
             // any new allocation
             //          TODO: put some control in alignment checking, so alignment stay constant
             //          between reallocs
-            if ((linalloc->offset + size) > linalloc->size) {
+
+            sx__linalloc_hdr* hdr = (sx__linalloc_hdr*)ptr - 1;
+            if ((linalloc->last_ptr_offset + size) > linalloc->size) {
                 sx_out_of_memory();
                 return NULL;
             }
-            linalloc->offset += size;
+
+            linalloc->offset = linalloc->last_ptr_offset + size;
+            hdr->size = (uint32_t)size;
             return ptr;    // Input pointer does not change
         } else {
             // Realloc: generic, create new allocation and sx_memcpy the previous data into the
