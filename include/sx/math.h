@@ -1333,8 +1333,10 @@ SX_FORCE_INLINE sx_mat4 sx_mat4v(sx_vec4 _col1, sx_vec4 _col2, sx_vec4 _col3,
 
 SX_FORCE_INLINE sx_mat4 sx_mat4_ident()
 {
-    return sx_mat4f(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f);
+    return sx_mat4f(1.0f, 0.0f, 0.0f, 0.0f, 
+                    0.0f, 1.0f, 0.0f, 0.0f, 
+                    0.0f, 0.0f, 1.0f, 0.0f, 
+                    0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 SX_FORCE_INLINE sx_vec4 sx_mat4_row1(const sx_mat4* m)

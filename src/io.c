@@ -130,7 +130,10 @@ void sx_mem_init_writer(sx_mem_writer* writer, const sx_alloc* alloc, int64_t in
         init_size = 4096;
 
     writer->mem = sx_mem_create_block(alloc, init_size, NULL, 0);
-    sx_assert(writer->mem);
+    if (!writer->mem) {
+        sx_memory_fail();
+        return;
+    }
 
     writer->data = (uint8_t*)writer->mem->data;
     writer->pos = writer->top = 0;

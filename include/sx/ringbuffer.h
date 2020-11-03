@@ -16,7 +16,7 @@
 //                                  if `data` argument is NULL, it just advances the pointer 
 //      sx_ringbuffer_read_noadvance Reads N bytes from the ring-buffer w/o advancing the read ptr
 //                                   This is useful for peeking at data
-//                                   'offset' is the actual offset in the buffer, which you can 
+//                                   'offset' (optional) is the actual offset in the buffer, which you can 
 //                                   pass sx_ringbuffer.start as initial parameter, the function 
 //                                   will update it after advancing the value, but the read pointer
 //                                   inside the buffer won't be changed

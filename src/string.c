@@ -644,15 +644,11 @@ sx_str_block sx_findblock(const char* str, char open, char close)
     sx_str_block b = { NULL, NULL };
 
     for (char ch = *str; ch && count >= 0; ch = *++str) {
-        if (ch == open) {
+        if (!b.start && ch == open) {
             b.start = str + 1;
-            count++;
-        } else if (ch == close) {
-            count--;
-            if (count == 0) {
-                b.end = str - 1;
-                return b;
-            }
+        } else if (b.start && ch == close) {
+            b.end = str - 1;
+            return b;
         }
     }
 
@@ -706,7 +702,7 @@ char* sx_toupper(char* dst, int dst_sz, const char* str)
     int offset = 0;
     int dst_max = dst_sz - 1;
     while (*str && offset < dst_max) {
-        dst[offset++] = sx_tolowerchar(*str);
+        dst[offset++] = sx_toupperchar(*str);
         ++str;
     }
     dst[offset] = '\0';

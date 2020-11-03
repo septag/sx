@@ -423,7 +423,10 @@ sx_mat4 sx_mat4_perspective(float width, float height, float zn, float zf, bool 
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
-    return sx_mat4f(width, 0, 0, 0, 0, height, 0, 0, 0, 0, -aa, -bb, 0, 0, -1.0f, 0);
+    return sx_mat4f(width,  0,      0,      0, 
+                    0,      height, 0,      0, 
+                    0,      0,      -aa,    -bb, 
+                    0,      0,      -1.0f,  0);
 }
 
 sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, bool ogl_ndc)
@@ -431,7 +434,10 @@ sx_mat4 sx_mat4_perspectiveLH(float width, float height, float zn, float zf, boo
     const float d = zf - zn;
     const float aa = ogl_ndc ? (zf + zn) / d : zf / d;
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
-    return sx_mat4f(width, 0, 0, 0, 0, height, 0, 0, 0, 0, aa, -bb, 0, 0, 1.0f, 0);
+    return sx_mat4f(width,  0,      0,      0, 
+                    0,      height, 0,      0, 
+                    0,      0,      aa,     -bb, 
+                    0,      0,      1.0f,   0);
 }
 
 sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float ymax, float zn,
@@ -442,7 +448,10 @@ sx_mat4 sx_mat4_perspective_offcenter(float xmin, float ymin, float xmax, float 
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
     const float width = xmax - xmin;
     const float height = ymax - ymin;
-    return sx_mat4f(width, 0, xmin, 0, 0, height, ymin, 0, 0, 0, -aa, -bb, 0, 0, -1.0f, 0);
+    return sx_mat4f(width,  0,      xmin,   0, 
+                    0,      height, ymin,   0, 
+                    0,      0,      -aa,    -bb, 
+                    0,      0,      -1.0f,  0);
 }
 
 sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
@@ -453,7 +462,10 @@ sx_mat4 sx_mat4_perspective_offcenterLH(float xmin, float ymin, float xmax, floa
     const float bb = ogl_ndc ? (2.0f * zn * zf) / d : zn * aa;
     const float width = xmax - xmin;
     const float height = ymax - ymin;
-    return sx_mat4f(width, 0, -xmin, 0, 0, height, -ymin, 0, 0, 0, aa, -bb, 0, 0, 1.0f, 0);
+    return sx_mat4f(width,  0,      -xmin,  0, 
+                    0,      height, -ymin,  0, 
+                    0,      0,      aa,     -bb, 
+                    0,      0,      1.0f,   0);
 }
 
 sx_mat4 sx_mat4_perspectiveFOV(float fov_y, float aspect, float zn, float zf, bool ogl_ndc)
@@ -476,8 +488,10 @@ sx_mat4 sx_mat4_ortho(float width, float height, float zn, float zf, float offse
     const float cc = (ogl_ndc ? 2.0f : 1.0f) / d;
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
 
-    return sx_mat4f(2.0f / width, 0, 0, offset, 0, 2.0f / height, 0, 0, 0, 0, -cc, ff, 0, 0, 0,
-                    1.0f);
+    return sx_mat4f(2.0f / width,   0,              0,      offset, 
+                    0,              2.0f / height,  0,      0, 
+                    0,              0,              -cc,    ff, 
+                    0,              0,              0,      1.0f);
 }
 
 sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float offset, bool ogl_ndc)
@@ -486,8 +500,10 @@ sx_mat4 sx_mat4_orthoLH(float width, float height, float zn, float zf, float off
     const float cc = (ogl_ndc ? 2.0f : 1.0f) / d;
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
 
-    return sx_mat4f(2.0f / width, 0, 0, offset, 0, 2.0f / height, 0, 0, 0, 0, cc, ff, 0, 0, 0,
-                    1.0f);
+    return sx_mat4f(2.0f / width,   0,              0,      offset, 
+                    0,              2.0f / height,  0,      0, 
+                    0,              0,              cc,     ff, 
+                    0,              0,              0,      1.0f);
 }
 
 sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, float zn, float zf,
@@ -501,8 +517,10 @@ sx_mat4 sx_mat4_ortho_offcenter(float xmin, float ymin, float xmax, float ymax, 
     const float ee = (ymin + ymax) / (ymin - ymax);
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
 
-    return sx_mat4f(2.0f / width, 0, 0, dd + offset, 0, 2.0f / height, 0, ee, 0, 0, -cc, ff, 0, 0,
-                    0, 1.0f);
+    return sx_mat4f(2.0f / width,   0,              0,      dd + offset, 
+                    0,              2.0f / height,  0,      ee, 
+                    0,              0,              -cc,    ff,
+                    0,              0,              0,      1.0f);
 }
 
 sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax, float zn,
@@ -516,8 +534,10 @@ sx_mat4 sx_mat4_ortho_offcenterLH(float xmin, float ymin, float xmax, float ymax
     const float ee = (ymin + ymax) / (ymin - ymax);
     const float ff = ogl_ndc ? -(zn + zf) / d : -zn / d;
 
-    return sx_mat4f(2.0f / width, 0, 0, dd + offset, 0, 2.0f / height, 0, ee, 0, 0, cc, ff, 0, 0, 0,
-                    1.0f);
+    return sx_mat4f(2.0f / width,   0,              0,  dd + offset, 
+                    0,              2.0f / height,  0,  ee, 
+                    0,              0,              cc, ff, 
+                    0,              0,              0,  1.0f);
 }
 
 sx_mat4 sx_mat4_SRT(float _sx, float _sy, float _sz, float _ax, float _ay, float _az, float _tx,

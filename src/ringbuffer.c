@@ -81,7 +81,7 @@ int sx_ringbuffer_read_noadvance(sx_ringbuffer* rb, void* data, int size, int* o
     sx_assert(data);
     uint8_t* buff = (uint8_t*)(rb + 1);
     uint8_t* udata = (uint8_t*)data;
-    int _offset = *offset;
+    int _offset = offset ? *offset : rb->start;
     int remain = rb->capacity - _offset;
     if (remain >= size) {
         sx_memcpy(udata, &buff[_offset], size);
@@ -90,6 +90,8 @@ int sx_ringbuffer_read_noadvance(sx_ringbuffer* rb, void* data, int size, int* o
         sx_memcpy(&udata[remain], buff, (size_t)size - (size_t)remain);
     }
 
-    *offset = (*offset + size) % rb->capacity;
+    if (offset) {
+        *offset = (*offset + size) % rb->capacity;
+    }
     return size;
 }
