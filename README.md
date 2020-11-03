@@ -37,7 +37,6 @@ This library currently contains these functionalities (listed by header files):
 - [platform.h](include/sx/platform.h): Platform and compiler detection macros, taken from [bx](https://github.com/bkaradzic/bx)
 - [pool.h](include/sx/pool.h): Self-contained pool allocator
 - [rng.h](include/sx/rng.h): Random number generators. Currently only implementation is PCG.
-- [stack-alloc.h](include/sx/stack-alloc.h): Generic linear stack based allocator
 - [string.h](include/sx/string.h): Useful C-style string functions including Sean barret's [stb_printf](http://github.com/nothings/stb) implementation. Plus string pool implementation from [mattias](https://github.com/mattiasgustavsson/libs/blob/master/strpool.h)
 - [threads.h](include/sx/threads.h): Portable threading primitives:
 	- Thread
