@@ -686,10 +686,16 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
     tn.id = thrd->thread_id;
     tn.flags = 0;
 
+    #if !SX_CRT_MINGW
     __try {
+    #endif
+
         RaiseException(0x406d1388, 0, sizeof(tn) / 4, (ULONG_PTR*)(&tn));
+
+    #if !SX_CRT_MINGW
     } __except (EXCEPTION_EXECUTE_HANDLER) {
     }
+    #endif
 }
 
 #else

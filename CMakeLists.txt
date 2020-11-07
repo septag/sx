@@ -147,14 +147,19 @@ elseif (WIN32)
     else()
         set(CPU_ARCH "i386")
     endif()
-    set(ASM_EXT "ms_pe_masm.asm")
+
+    if (MSVC)
+        set(ASM_EXT "ms_pe_masm.asm")
+    elseif (CMAKE_C_COMPILER_ID MATCHES "GNU")
+        set(ASM_EXT "ms_pe_gas.S")
+    endif()
 endif()
 
 set(ASM_SOURCES "asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
-if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4) 
+if (WIN32 AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND MSVC) 
     set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_OPTIONS /safeseh)
 endif()
 
@@ -201,6 +206,8 @@ add_library(sx ${LIB_TYPE} ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
 # compat files include dir
 if (MSVC)
     set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/msvc)
+elseif (WIN32 AND (CMAKE_C_COMPILER_ID MATCHES "GNU"))
+    set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/mingw)
 elseif(APPLE)
     if (IOS)
         set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/ios)

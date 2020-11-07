@@ -80,7 +80,11 @@ SX_API void sx__debug_message(const char* sourcefile, uint32_t line, const char*
 #endif
 
 #ifndef sx_memmove
-#    include <memory.h>    // memmove
+#    if SX_CRT_MINGW
+#       include <string.h>    // memmove
+#    else
+#       include <memory.h>    // memmove
+#    endif // SX_CRT_MINGW
 #    define sx_memmove(_dst, _src, _n) memmove((_dst), (_src), (_n))
 #endif
 

@@ -15,7 +15,7 @@
 // clang-format off
 #    include <windows.h>
 #    include <direct.h>    // _getcwd
-#    include <Psapi.h>
+#    include <psapi.h>
 // clang-format on
 #elif SX_PLATFORM_POSIX
 #    include <dirent.h>    // S_IFREG
