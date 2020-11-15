@@ -85,11 +85,10 @@ SX_INLINE void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int off
         offset = sx_align_mask(offset, align - 1);
     }
 
-    buf->fields[index] = (sx_linear_buffer_field){
-        .pptr = pptr,                           //
-        .offset = offset,                       //
-        .offset_in_parent = offset_in_struct    //
-    };
+    sx_linear_buffer_field* field = &buf->fields[index];
+    field->pptr = pptr;
+    field->offset = offset;
+    field->offset_in_parent = offset_in_struct;
 
     buf->size = offset + size;
     ++buf->num_fields;

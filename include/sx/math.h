@@ -234,6 +234,7 @@ SX_API SX_CONSTFN          float sx_sqrt(float _a);
 SX_API SX_CONSTFN          float sx_rsqrt(float _a);
 #endif
 
+SX_API SX_CONSTFN          float sx_copysign(float _x, float _y);
 SX_API SX_CONSTFN          float sx_floor(float _f);
 SX_API SX_CONSTFN          float sx_cos(float _a);
 SX_API SX_CONSTFN          float sx_acos(float _a);
@@ -436,14 +437,14 @@ SX_FORCE_INLINE sx_quat sx_quat_mul(sx_quat p, sx_quat q);
 SX_FORCE_INLINE sx_quat sx_quat_inv(sx_quat _quat);
 SX_FORCE_INLINE float   sx_quat_dot(sx_quat _a, sx_quat _b);
 SX_FORCE_INLINE sx_quat sx_quat_norm(sx_quat _quat);
-SX_FORCE_INLINE sx_vec3 sx_quat_toeuler(sx_quat _quat);
-SX_FORCE_INLINE sx_quat sx_quat_fromeular(sx_vec3 _vec3);
 SX_FORCE_INLINE sx_quat sx_quat_rotateaxis(sx_vec3 _axis, float _angle);
 SX_FORCE_INLINE sx_quat sx_quat_rotateX(float _ax);
 SX_FORCE_INLINE sx_quat sx_quat_rotateY(float _ay);
 SX_FORCE_INLINE sx_quat sx_quat_rotateZ(float _az);
 SX_API          sx_quat sx_quat_lerp(sx_quat _a, sx_quat _b, float t);
 SX_API          sx_quat sx_quat_slerp(sx_quat _a, sx_quat _b, float t);
+SX_API          sx_vec3 sx_quat_toeuler(sx_quat _quat);
+SX_API          sx_quat sx_quat_fromeular(sx_vec3 _vec3);
 
 SX_FORCE_INLINE sx_color sx_color4u(unsigned char _r, unsigned char _g, unsigned char _b,
                                     unsigned char _a sx_default(255));
@@ -1052,44 +1053,6 @@ SX_FORCE_INLINE sx_quat sx_quat_norm(sx_quat _quat)
     return sx_quat4f(_quat.x*inv_norm, _quat.y*inv_norm, _quat.z*inv_norm, _quat.w*inv_norm);
 }
 
-SX_FORCE_INLINE sx_vec3 sx_quat_toeuler(sx_quat _quat)
-{
-    const float x = _quat.x;
-    const float y = _quat.y;
-    const float z = _quat.z;
-    const float w = _quat.w;
-
-    const float yy = y * y;
-    const float zz = z * z;
-    const float xx = x * x;
-
-    return sx_vec3f(sx_atan2(2.0f * (x * w - y * z), 1.0f - 2.0f * (xx + zz)),
-                    sx_atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (yy + zz)),
-                    sx_asin(2.0f * (x * y + z * w)));
-}
-
-SX_FORCE_INLINE sx_quat sx_quat_fromeular(sx_vec3 _vec3)
-{
-    float yaw = _vec3.z;
-    float pitch = _vec3.y;
-    float roll = _vec3.x;
-
-    float cy = sx_cos(yaw * 0.5f);
-    float sy = sx_sin(yaw * 0.5f);
-    float cp = sx_cos(pitch * 0.5f);
-    float sp = sx_sin(pitch * 0.5f);
-    float cr = sx_cos(roll * 0.5f);
-    float sr = sx_sin(roll * 0.5f);
-
-    sx_quat q;
-    q.w = cr * cp * cy + sr * sp * sy;
-    q.x = sr * cp * cy - cr * sp * sy;
-    q.y = cr * sp * cy + sr * cp * sy;
-    q.z = cr * cp * sy - sr * sp * cy;
-
-    return q;
-}
-
 SX_FORCE_INLINE sx_quat sx_quat_rotateaxis(sx_vec3 _axis, float _angle)
 {
     const float ha = _angle * 0.5f;
@@ -1258,15 +1221,15 @@ SX_FORCE_INLINE sx_vec3 sx_vec3_fromlatlong(float _u, float _v)
     const float ct = sx_cos(theta);
     const float cp = sx_cos(phi);
 
-    return sx_vec3f(-st * sp, ct, -st * cp);
+    return sx_vec3f(-st * sp, -st * cp, ct);
 }
 
 SX_FORCE_INLINE sx_vec2 sx_vec3_tolatlong(sx_vec3 _dir)
 {
-    const float phi = sx_atan2(_dir.x, _dir.z);
-    const float theta = sx_acos(_dir.y);
+    const float phi = sx_atan2(_dir.x, _dir.y);
+    const float theta = sx_acos(_dir.z);
 
-    return sx_vec2f((SX_PI + phi) / SX_PI2, theta * SX_PI);
+    return sx_vec2f((SX_PI + phi) / SX_PI2, theta * SX_INVPI);
 }
 
 SX_FORCE_INLINE sx_vec3 sx_vec3_mul_quat(sx_vec3 _vec, sx_quat _quat)

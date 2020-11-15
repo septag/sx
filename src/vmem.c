@@ -9,7 +9,10 @@
 #if SX_PLATFORM_WINDOWS
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
 #    include <windows.h>
+SX_PRAGMA_DIAGNOSTIC_POP()
 #elif SX_PLATFORM_POSIX
 #    include <sys/mman.h>
 #    include <unistd.h>

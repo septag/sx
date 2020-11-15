@@ -3,10 +3,15 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 
+#include "sx/macros.h"
+
 #define SOKOL_IMPL
 #define SOKOL_API_DECL static inline
 #define SOKOL_API_IMPL static inline
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
 #include "../3rdparty/sokol/sokol_time.h"
+SX_PRAGMA_DIAGNOSTIC_POP()
 
 #include "sx/timer.h"
 

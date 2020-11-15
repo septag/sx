@@ -13,7 +13,10 @@
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
 // clang-format off
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
 #    include <windows.h>
+SX_PRAGMA_DIAGNOSTIC_POP()
 #    include <direct.h>    // _getcwd
 #    include <psapi.h>
 // clang-format on

@@ -20,10 +20,10 @@
 #include <stddef.h>     // NULL, size_t
 #include <stdint.h>     // uint32_t, int64_t, etc.
 
-#ifndef __cplusplus
 // static_assert doesn't do anything in MSVC + C compiler, because we just don't have it !
+#ifndef __cplusplus
 #    ifndef static_assert
-#        if SX_COMPILER_MSVC
+#        if SX_COMPILER_MSVC && (SX_COMPILER_MSVC < 1928)
 #            define static_assert(_e, _msg)
 #        else
 #            define static_assert(_e, _msg) _Static_assert(_e, _msg)

@@ -13,7 +13,10 @@
 
 #if SX_PLATFORM_WINDOWS
 #    define WIN32_LEAN_AND_MEAN
-#    include "windows.h"
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
+#    include <windows.h>
+SX_PRAGMA_DIAGNOSTIC_POP()
 #elif SX_PLATFORM_POSIX
 #    define _LARGEFILE64_SOURCE
 #    include <sys/stat.h>

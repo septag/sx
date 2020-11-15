@@ -68,6 +68,7 @@
 #       define SX_INLINE static 
 #    else
 #       define SX_INLINE static inline  
+#    define SX_NO_VTABLE 
 #    endif
 #elif SX_COMPILER_MSVC
 #    define SX_ALLOW_UNUSED
@@ -83,6 +84,7 @@
 #    else
 #       define SX_INLINE static inline  
 #    endif
+#    define SX_NO_VTABLE __declspec(novtable)
 #else
 #    error "Unknown SX_COMPILER_?"
 #endif

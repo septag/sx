@@ -62,6 +62,14 @@ sx_color SX_COLOR_PURPLE = { 255, 0, 255, 255 };
 #define sx__mad(_a, _b, _c) _a* _b + _c
 
 #if !SX_CONFIG_STDMATH
+SX_CONSTFN float sx_copysign(float _x, float _y)
+{
+    if ((_x < 0 && _y > 0) || (_x > 0 && _y < 0))
+        return -_x;
+    else
+        return _x;
+}
+
 SX_CONSTFN float sx_floor(float _a)
 {
     if (_a < 0.0f) {
@@ -307,6 +315,11 @@ SX_CONSTFN float sx_sqrt(float _a)
 }
 #endif // if __SSE2__
 #else
+SX_CONSTFN float sx_copysign(float _x, float _y)
+{
+    return copysignf(_x, _y);
+}
+
 SX_CONSTFN float sx_floor(float _f)
 {
     return floorf(_f);
@@ -986,6 +999,48 @@ sx_quat sx_quat_slerp(sx_quat _a, sx_quat _b, float t)
     }
     return sx_quat4f(s1 * _a.x + s2 * _b.x, s1 * _a.y + s2 * _b.y, s1 * _a.z + s2 * _b.z,
                      s1 * _a.w + s2 * _b.w);
+}
+
+sx_vec3 sx_quat_toeuler(sx_quat _quat)
+{
+    float sinr_cosp = 2 * (_quat.w * _quat.x + _quat.y * _quat.z);
+    float cosr_cosp = 1 - 2 * (_quat.x * _quat.x + _quat.y * _quat.y);
+    float x = sx_atan2(sinr_cosp, cosr_cosp);
+
+    float sinp = 2 * (_quat.w * _quat.y - _quat.z * _quat.x);
+    float y;
+    if (sx_abs(sinp) >= 1)
+        y = sx_copysign(SX_PIHALF, sinp);
+    else
+        y = sx_asin(sinp);
+
+    float siny_cosp = 2 * (_quat.w * _quat.z + _quat.x * _quat.y);
+    float cosy_cosp = 1 - 2 * (_quat.y * _quat.y + _quat.z * _quat.z);
+    float z = sx_atan2(siny_cosp, cosy_cosp);
+
+    return sx_vec3f(x, y, z);
+}
+
+sx_quat sx_quat_fromeular(sx_vec3 _vec3)
+{
+    float z = _vec3.z;
+    float x = _vec3.x;
+    float y = _vec3.y;
+
+    float cy = sx_cos(z * 0.5f);
+    float sy = sx_sin(z * 0.5f);
+    float cp = sx_cos(y * 0.5f);
+    float sp = sx_sin(y * 0.5f);
+    float cr = sx_cos(x * 0.5f);
+    float sr = sx_sin(x * 0.5f);
+
+    sx_quat q;
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
 }
 
 sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b)

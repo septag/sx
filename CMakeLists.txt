@@ -199,6 +199,11 @@ if (NOT CLANG_CL AND (CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_
 elseif (MSVC)
     sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "/EHsc /GR")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+    
+    if (${MSVC_VERSION} GREATER_EQUAL 1928)
+        message(STATUS "MSVC compiler supports C17 standard")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c17")
+    endif()
 endif()
 
 add_library(sx ${LIB_TYPE} ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
