@@ -1,10 +1,6 @@
 #if SX_PLATFORM_WINDOWS
 #    define WIN32_LEAN_AND_MEAN
 #    include <conio.h>
-SX_PRAGMA_DIAGNOSTIC_PUSH()
-SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
-#    include <windows.h>
-SX_PRAGMA_DIAGNOSTIC_POP()
 #endif
 #include <stdio.h>
 
@@ -38,8 +34,6 @@ static int worker_thread_fn(void* user_data1, void* user_data2)
 int main(int argc, char* argv[])
 {
     const sx_alloc* alloc = sx_alloc_malloc();
-    const char* msvc = sx_stringize(SX_COMPILER_MSVC);
-    uint32_t msvc_ = SX_COMPILER_MSVC;
 
     g_queue = sx_queue_spsc_create(alloc, sizeof(work_item), 10);
     sx_semaphore_init(&g_sem);
