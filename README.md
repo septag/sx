@@ -16,7 +16,7 @@ Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir K
 This library currently contains these functionalities (listed by header files):
 
 - [allocator.h](include/sx/allocator.h): basic memory allocation functions and default heap/leak_check allocators. 
-- [array.h](include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation. Also contains a vert thing C++ template wrapper over array macros for C++ users.
+- [array.h](include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation. Also contains a very thin C++ template wrapper over array macros for C++ users.
 - [atomic.h](include/sx/atomic.h): Set of portable atomic types and functions like CAS/Exchange/Incr/etc. plus a minimal spinlock implementation.
 - [cmdline.h](include/sx/cmdline.h): wrapper over [getopt](https://github.com/wc-duck/getopt) - getopt command line parser
 - [fiber.h](include/sx/fiber.h): Portable fibers and coroutines, Assembly backend implementation taken from _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
