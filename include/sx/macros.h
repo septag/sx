@@ -167,6 +167,8 @@
 
 #ifdef __cplusplus
 #    define sx_cppbool(_b) (_b) ? true : false;
+#    define SX_CONSTEXPR constexpr
 #else
 #    define sx_cppbool(_b) _b
+#    define SX_CONSTEXPR 
 #endif

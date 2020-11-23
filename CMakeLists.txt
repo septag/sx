@@ -97,6 +97,10 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/vmem.h 
                   include/sx/fiber.h
                   include/sx/math.h
+                  include/sx/math-types.h 
+                  include/sx/math-scalar.h 
+                  include/sx/math-vec.h 
+                  include/sx/math-easing.h
                   include/sx/jobs.h
                   include/sx/bheap.h
                   include/sx/simd.h

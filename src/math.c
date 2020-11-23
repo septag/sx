@@ -786,8 +786,9 @@ void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3])
 
 sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b)
 {
-    return sx_mat3fv(sx_mat3_mul_vec3(_a, _b->col1).f, sx_mat3_mul_vec3(_a, _b->col2).f,
-                     sx_mat3_mul_vec3(_a, _b->col3).f);
+    return sx_mat3fv(sx_mat3_mul_vec3(_a, sx_vec3fv(_b->fc1)).f, 
+                     sx_mat3_mul_vec3(_a, sx_vec3fv(_b->fc2)).f,
+                     sx_mat3_mul_vec3(_a, sx_vec3fv(_b->fc3)).f);
 }
 
 sx_quat sx_mat4_quat(const sx_mat4* m)
@@ -1045,8 +1046,10 @@ sx_quat sx_quat_fromeular(sx_vec3 _vec3)
 
 sx_mat4 sx_mat4_mul(const sx_mat4* _a, const sx_mat4* _b)
 {
-    return sx_mat4fv(sx_mat4_mul_vec4(_a, _b->col1).f, sx_mat4_mul_vec4(_a, _b->col2).f,
-                     sx_mat4_mul_vec4(_a, _b->col3).f, sx_mat4_mul_vec4(_a, _b->col4).f);
+    return sx_mat4fv(sx_mat4_mul_vec4(_a, sx_vec4fv(_b->fc1)).f, 
+                     sx_mat4_mul_vec4(_a, sx_vec4fv(_b->fc2)).f,
+                     sx_mat4_mul_vec4(_a, sx_vec4fv(_b->fc3)).f, 
+                     sx_mat4_mul_vec4(_a, sx_vec4fv(_b->fc4)).f);
 }
 
 sx_vec3 sx_plane_normal(sx_vec3 _va, sx_vec3 _vb, sx_vec3 _vc)
@@ -1073,17 +1076,17 @@ sx_plane sx_planenp(sx_vec3 _normal, sx_vec3 _p)
 
 float sx_plane_distance(sx_plane _plane, sx_vec3 _p)
 {
-    return sx_vec3_dot(_plane.normal, _p) + _plane.dist;
+    return sx_vec3_dot(sx_vec3fv(_plane.normal), _p) + _plane.dist;
 }
 
 sx_vec3 sx_plane_project_point(sx_plane _plane, sx_vec3 _p)
 {
-    return sx_vec3_sub(_p, sx_vec3_mulf(_plane.normal, sx_plane_distance(_plane, _p)));
+    return sx_vec3_sub(_p, sx_vec3_mulf(sx_vec3fv(_plane.normal), sx_plane_distance(_plane, _p)));
 }
 
 sx_vec3 sx_plane_origin(sx_plane _plane)
 {
-    return sx_vec3_mulf(_plane.normal, -_plane.dist);
+    return sx_vec3_mulf(sx_vec3fv(_plane.normal), -_plane.dist);
 }
 
 SX_FORCE_INLINE sx_mat3 sx_mat3_abs(const sx_mat3* m)
@@ -1107,7 +1110,7 @@ sx_aabb sx_aabb_transform(const sx_aabb* aabb, const sx_mat4* mat)
     sx_vec3 center = sx_aabb_center(aabb);
     sx_vec3 extents = sx_aabb_extents(aabb);
     
-    sx_mat3 rot_mat = sx_mat3fv(mat->col1.f, mat->col2.f, mat->col3.f);
+    sx_mat3 rot_mat = sx_mat3fv(mat->fc1, mat->fc2, mat->fc3);
     sx_mat3 mat_abs  = sx_mat3_abs(&rot_mat);
     sx_vec3 new_center = sx_mat4_mul_vec3(mat, center);
     sx_vec3 new_extents = sx_mat3_mul_vec3(&mat_abs, extents);

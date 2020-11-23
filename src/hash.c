@@ -24,41 +24,6 @@ static inline SX_ALLOW_UNUSED SX_CONSTFN bool sx__ispow2(int n)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32_t sx_hash_u32(uint32_t key)
-{
-    const uint32_t c2 = 0x27d4eb2d;    // a prime or an odd constant
-    key = (key ^ 61) ^ (key >> 16);
-    key = key + (key << 3);
-    key = key ^ (key >> 4);
-    key = key * c2;
-    key = key ^ (key >> 15);
-    return key;
-}
-
-uint64_t sx_hash_u64(uint64_t key)
-{
-    key = (~key) + (key << 21);    // key = (key << 21) - key - 1;
-    key = key ^ (key >> 24);
-    key = (key + (key << 3)) + (key << 8);    // key * 265
-    key = key ^ (key >> 14);
-    key = (key + (key << 2)) + (key << 4);    // key * 21
-    key = key ^ (key >> 28);
-    key = key + (key << 31);
-    return key;
-}
-
-uint32_t sx_hash_u64_to_u32(uint64_t key)
-{
-    key = (~key) + (key << 18);
-    key = key ^ (key >> 31);
-    key = key * 21;
-    key = key ^ (key >> 11);
-    key = key + (key << 6);
-    key = key ^ (key >> 22);
-    return (uint32_t)key;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // XXH
 #define XXH_PRIVATE_API
 #include "../3rdparty/xxhash/xxhash.h"
@@ -127,39 +92,6 @@ uint64_t sx_hash_xxh64_digest(sx_hash_xxh64_t* state)
 {
     XXH64_state_t* xstate = (XXH64_state_t*)state;
     return XXH64_digest(xstate);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FNV1a
-// http://www.isthe.com/chongo/src/fnv/hash_32a.c
-
-#define FNV1_32_INIT 0x811c9dc5
-#define FNV1_32_PRIME 0x01000193
-uint32_t sx_hash_fnv32(const void* data, size_t len)
-{
-    const char* bp = (const char*)data;
-    const char* be = bp + len;
-
-    uint32_t hval = FNV1_32_INIT;
-    while (bp < be) {
-        hval ^= (uint32_t)*bp++;
-        hval *= FNV1_32_PRIME;
-    }
-
-    return hval;
-}
-
-uint32_t sx_hash_fnv32_str(const char* str)
-{
-    const char* s = str;
-
-    uint32_t hval = FNV1_32_INIT;
-    while (*s) {
-        hval ^= (uint32_t)*s++;
-        hval *= FNV1_32_PRIME;
-    }
-
-    return hval;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

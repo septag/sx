@@ -72,6 +72,10 @@
 //                  integer anymore. It can be any POD type. you just define the size of your type
 //      The function are pretty much the same as sx_hashtbl, but with `sx_hashtbltval_` prefix.
 //
+// NOTE for C++ users:
+//      Take a look at `sx_hashtable_t` struct and it's members (C++ only) in this file. It is a very 
+//      thin template wrapper over sx_hashtbl_tval for more convenient C++ usage
+//
 #pragma once
 
 #include "sx.h"
@@ -85,17 +89,17 @@ SX_API uint32_t sx_hash_xxh32(const void* data, size_t len, uint32_t seed);
 SX_API uint64_t sx_hash_xxh64(const void* data, size_t len, uint64_t seed);
 
 // FNV1a: suitable for small data (usually less than 32 bytes), mainly small strings
-SX_API uint32_t sx_hash_fnv32(const void* data, size_t len);
-SX_API uint32_t sx_hash_fnv32_str(const char* str);
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_fnv32(const void* data, size_t len);
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_fnv32_str(const char* str);
 
 // CRC32: Pretty standard hash, mainly used for files
 SX_API uint32_t sx_hash_crc32(const void* data, size_t len, uint32_t seed);
 
 // Integer hash functions: useful for pointer/index hashing
 // Reference: https://gist.github.com/badboy/6267743
-SX_API uint32_t sx_hash_u32(uint32_t key);
-SX_API uint64_t sx_hash_u64(uint64_t key);
-SX_API uint32_t sx_hash_u64_to_u32(uint64_t key);
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_u32(uint32_t key);
+SX_INLINE SX_CONSTEXPR uint64_t sx_hash_u64(uint64_t key);
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_u64_to_u32(uint64_t key);
 
 // Streaming (state based) hash using xxhash32
 typedef struct sx_hash_xxh32 sx_hash_xxh32_t;
@@ -243,3 +247,221 @@ SX_INLINE bool sx_hashtbltval_full(const sx_hashtbl_tval* tbl)
 #define sx_hashtbltval_add_and_grow(_tbl, _key, _value, _alloc)        \
     (sx_hashtbltval_full(_tbl) ? sx_hashtbltval_grow(&(_tbl), _alloc) : 0, \
      sx_hashtbltval_add(_tbl, _key, _value))
+
+// cplusplus minimal template wrapper over hashtbltval
+#ifdef __cplusplus
+template <typename _T>
+struct sx_hashtable_t
+{
+private:
+    sx_hashtbl_tval* ht;
+    const sx_alloc* alloc;
+
+public:
+    sx_hashtable_t();
+    ~sx_hashtable_t();
+
+    bool init(const sx_alloc* alloc, int capacity);
+    void release();
+
+    int add(uint32_t key, const _T& value);
+    int find(uint32_t key) const;
+    void clear();
+
+    const _T& get(int index) const;
+    void remove(int index);
+
+    const _T& find_get(uint32_t key, const _T& not_found_value = {0}) const;
+    void find_remove(uint32_t key);
+
+    int capacity() const;
+    int count() const;
+    const uint32_t* keys() const;
+    const _T* values() const;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// impl
+
+template <typename _T>
+const _T* sx_hashtable_t<_T>::values() const
+{
+    return reinterpret_cast<const _T*>(this->ht->values);
+}
+
+template <typename _T>
+const uint32_t* sx_hashtable_t<_T>::keys() const
+{
+    return this->ht->keys;
+}
+
+template <typename _T>
+int sx_hashtable_t<_T>::count() const
+{
+    return this->ht->count;
+}
+
+template <typename _T>
+int sx_hashtable_t<_T>::capacity() const
+{
+    return this->ht->capacity;
+}
+
+template <typename _T>
+const _T& sx_hashtable_t<_T>::get(int index) const
+{
+    return *reinterpret_cast<_T*>(this->ht->values + index*this->ht->value_stride);
+}
+
+
+template <typename _T>
+void sx_hashtable_t<_T>::remove(int index)
+{
+    sx_assert_alwaysf(index >= 0 && index < this->ht->capacity, "index out of range");
+
+    this->ht->keys[index] = 0;
+    --this->ht->count;
+}
+
+template <typename _T>
+void sx_hashtable_t<_T>::clear()
+{
+    sx_hashtbltval_clear(this->ht);
+}
+
+template <typename _T>
+int sx_hashtable_t<_T>::find(uint32_t key) const 
+{
+    return sx_hashtbltval_find(this->ht, key);
+}
+
+template <typename _T>
+int sx_hashtable_t<_T>::add(uint32_t key, const _T& value)
+{
+    if (this->ht->count == this->ht->capacity) {
+        sx_assert(this->alloc);
+        bool r = sx_hashtbltval_grow(&this->ht, this->alloc);
+        sx_unused(r);
+        sx_assert_alwaysf(r, "could not grow hash-table");
+    }
+    sx_hashtbltval_add(this->ht, key, &value);
+}
+
+template <typename _T>
+void sx_hashtable_t<_T>::release()
+{
+    if (this->ht) {
+        sx_hashtbltval_destroy(this->ht, this->alloc);
+        this->ht = nullptr;
+    }
+    this->alloc = nullptr;
+}
+
+template <typename _T>
+bool sx_hashtable_t<_T>::init(const sx_alloc* _alloc, int capacity)
+{
+    sx_assert_alwaysf(!this->ht, "hash-table already initialized");
+    this->ht = sx_hashtbltval_create(_alloc, capacity, (int)sizeof(_T));
+    this->alloc = _alloc;
+    return this->ht ? true : false;
+}
+
+template <typename _T>
+sx_hashtable_t<_T>::~sx_hashtable_t()
+{
+    release();
+}
+
+template <typename _T>
+sx_hashtable_t<_T>::sx_hashtable_t()
+{
+    this->ht = nullptr;
+    this->alloc = nullptr;
+}
+
+template <typename _T>
+const _T& sx_hashtable_t<_T>::find_get(uint32_t key, const _T& not_found_value /*= {0}*/) const
+{
+    int index = sx_hashtbltval_find(this->ht, key);
+    return index != -1 ? this->get(index) : not_found_value;
+}
+
+template <typename _T>
+void sx_hashtable_t<_T>::find_remove(uint32_t key)
+{
+    int index = sx_hashtbltval_find(this->ht, key);
+    if (index != -1) {
+        this->remove(index);
+    }
+}
+
+#endif // __cplusplus
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// FNV1a
+// http://www.isthe.com/chongo/src/fnv/hash_32a.c
+
+#define FNV1_32_INIT 0x811c9dc5
+#define FNV1_32_PRIME 0x01000193
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_fnv32(const void* data, size_t len)
+{
+    const char* bp = (const char*)data;
+    const char* be = bp + len;
+
+    uint32_t hval = FNV1_32_INIT;
+    while (bp < be) {
+        hval ^= (uint32_t)*bp++;
+        hval *= FNV1_32_PRIME;
+    }
+
+    return hval;
+}
+
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_fnv32_str(const char* str)
+{
+    const char* s = str;
+
+    uint32_t hval = FNV1_32_INIT;
+    while (*s) {
+        hval ^= (uint32_t)*s++;
+        hval *= FNV1_32_PRIME;
+    }
+
+    return hval;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_u32(uint32_t key)
+{
+    const uint32_t c2 = 0x27d4eb2d;    // a prime or an odd constant
+    key = (key ^ 61) ^ (key >> 16);
+    key = key + (key << 3);
+    key = key ^ (key >> 4);
+    key = key * c2;
+    key = key ^ (key >> 15);
+    return key;
+}
+
+SX_INLINE SX_CONSTEXPR uint64_t sx_hash_u64(uint64_t key)
+{
+    key = (~key) + (key << 21);    // key = (key << 21) - key - 1;
+    key = key ^ (key >> 24);
+    key = (key + (key << 3)) + (key << 8);    // key * 265
+    key = key ^ (key >> 14);
+    key = (key + (key << 2)) + (key << 4);    // key * 21
+    key = key ^ (key >> 28);
+    key = key + (key << 31);
+    return key;
+}
+
+SX_INLINE SX_CONSTEXPR uint32_t sx_hash_u64_to_u32(uint64_t key)
+{
+    key = (~key) + (key << 18);
+    key = key ^ (key >> 31);
+    key = key * 21;
+    key = key ^ (key >> 11);
+    key = key + (key << 6);
+    key = key ^ (key >> 22);
+    return (uint32_t)key;
+}

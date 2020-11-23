@@ -16,7 +16,7 @@ Inspired by the works of [Sean Barret](https://github.com/nothings), [Branimir K
 This library currently contains these functionalities (listed by header files):
 
 - [allocator.h](include/sx/allocator.h): basic memory allocation functions and default heap/leak_check allocators. 
-- [array.h](include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation
+- [array.h](include/sx/array.h): [stretchy_buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h) implementation. Also contains a vert thing C++ template wrapper over array macros for C++ users.
 - [atomic.h](include/sx/atomic.h): Set of portable atomic types and functions like CAS/Exchange/Incr/etc. plus a minimal spinlock implementation.
 - [cmdline.h](include/sx/cmdline.h): wrapper over [getopt](https://github.com/wc-duck/getopt) - getopt command line parser
 - [fiber.h](include/sx/fiber.h): Portable fibers and coroutines, Assembly backend implementation taken from _de-boostified_ project [deboost.context](https://github.com/septag/deboost.context)
@@ -30,7 +30,7 @@ This library currently contains these functionalities (listed by header files):
 	- Overriadable thread init and shutdown. To initialize your own stuff on each thread
 	- Support for tags: each worker thread can be tagged to handle specific class of jobs
 - [handle.h](include/sx/handle.h): Handle pool. sparse/dense handle allocator to address array items with handles instead of pointers. With generation counters for validating dead handles.
-- [hash.h](include/sx/hash.h):  Some nice hash functions (xxhash/crc32/fnv1a) and a fast fibonacci multiplicative hash-table
+- [hash.h](include/sx/hash.h):  Some nice hash functions (xxhash/crc32/fnv1a) and a fast fibonacci multiplicative hash-table. Contains a very thin C++ template wrapper for sx_hashtbltval.
 - [ini.h](include/sx/ini.h): INI file encoder/decoder. wrapper over [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/ini.h)
 - [io.h](include/sx/io.h): Read and write to/from memory and file streams
 - [lin-alloc.h](include/sx/lin-alloc.h): Generic linear allocator
@@ -46,14 +46,15 @@ This library currently contains these functionalities (listed by header files):
 	- Signal
 - [timer.h](include/sx/timer.h): Portable high-res timer, wrapper over [sokol_time](https://github.com/floooh/sokol)
 - [vmem.h](include/sx/vmem.h): Page based virtual memory allocator
-- [math.h](include/sx/math.h): 
-	- Standard floating-point
-	- Vector (2,3,4)
-	- Matrix (3x3, 4x4)
-	- Quaternion
-	- Easing functions
-	- AABB
-	- Color (RGBA 4 unsigned bytes)
+- [math.h](include/sx/math.h): The math library is divided into multiple parts, the main typedefs are in _math-types.h_
+	- Standard floating-point and constants: _math-scalar.h_
+	- Vector (2,3,4): _math-vec.h_
+	- Matrix (3x3, 4x4): _math-vec.h_
+	- Quaternion: _math-vec.h_
+	- Easing functions: _math-easing.h_
+	- AABB: _math-vec.h_
+	- Color (RGBA 4 unsigned bytes): _math-vec.h_
+	- Cpp operator overrides: _math-vec.h_
 - [os.h](include/sx/os.h): Common portable OS related routines
 	- Basic system information like available memory and cpu cores count
 	- Shared library management
@@ -68,6 +69,19 @@ This library currently contains these functionalities (listed by header files):
 - [bitarray.h](include/sx/bitarray.h): utility data structure to hold arbitary number of bits
 
 ## Changes
+### v1.1.0 (Nov 2020)
+- Divided math lib into multiple headers. _math.h_ still contains all of the math lib, but to improve build times, you can use _math-types.h_ in your headers and include their specific headers in sources.
+- MinGW build support
+- Faster Sqrt/rsqrt on CPUs with SSE2
+- Many math improvements and fixes
+- Assert improvements. Besides `sx_assert`, you have `sx_assertf` and `sx_assert_alwaysf` to output (potentially log) error messages with them.
+- Memory allocation fail callback: Added `sx_mem_fail_cb` callback registration to override out-of-memory errors
+- [BREAKING] IFF file writer/reader improvements and API changes (see io.h)
+- _addref_ for memory blocks to add reference count
+- [BREAKING] Removed stack-allocator. Use linear-allocator instead
+- Fixed minor bug in jobs.h for job-selector
+- Better inline implementations. Now many math functions are FORCE_INLINE, you can also use `/Ob1` flag in msvc + DEBUG builds  and set `SX_CONFIG_FORCE_INLINE_DEBUG=1` to force those functions to be inlined and leave others be. Very useful for improving debug runtime performance.
+
 ### v1.0.0 (May 2020)
 - [BREAKING]: Removed `virtual-alloc.h` and replaced it with the new `vmem.h`. virtual-alloc was not Suitable for general memory allocator. So I ditched it completely and replaced with a cleaner, better virtual memory allocation scheme. which is page based
 - [BREAKING]: Removed `tlsf-alloc` and all of it's dependencies. In order to cut the maintainable code and reduce repo size. I decided to remove this and leave it for the user to use the open-source [tlsf allocator](https://github.com/mattconte/tlsf). 

@@ -48,7 +48,10 @@
 //     Note that 'TYPE *a' in sx_array_push and sx_array_add must be lvalues
 //     so that the library can overwrite the existing pointer if the object has to be reallocated.
 //
-
+// NOTE for C++ users:
+//     take a look at `sx_array` struct and it's members at the end of this file. It's a thing template 
+//     wrapper over array macros for more convenient C++ usage
+//
 #pragma once
 
 typedef struct sx_alloc sx_alloc;
@@ -102,3 +105,107 @@ SX_INLINE void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_all
         return 0x0;    // NULL
     }
 }
+
+
+// cpp wrapper (minimal template)
+#ifdef __cplusplus
+template <typename _T>
+struct sx_array 
+{
+    _T* p;
+    const sx_alloc* alloc;
+
+    sx_array() { p = nullptr; alloc = nullptr; }
+    explicit sx_array(const sx_alloc* _alloc) : alloc(_alloc), p(nullptr) {} 
+
+    ~sx_array() 
+    { 
+        if (alloc) {
+            sx_array_free(alloc, p); 
+            alloc = nullptr;
+        }
+        p = nullptr;
+    }
+
+    void init(const sx_alloc* _alloc, int init_count = 0)
+    {
+        sx_assert(_alloc);
+        this->alloc = _alloc;
+        if (init_count > 0) {
+            sx_array_reserve(_alloc, p, init_count);
+        }
+    }
+
+    void release()
+    {
+        sx_assert(alloc);
+        sx_array_free(alloc, p);
+        p = nullptr;
+        alloc = nullptr;
+    }
+
+    void push(const _T& _value) 
+    {
+        sx_assert(alloc);
+        sx_array_push(alloc, p, _value);
+    }
+
+    void pop(int _index)
+    {
+        sx_assert(alloc);
+        sx_assert(_index < sx_array_count(p));
+        sx_array_pop(alloc, _index);
+    }
+
+    void pop_last()
+    {
+        sx_assert(alloc);
+        sx_assert(sx_array_count(p));
+        sx_array_pop_last(p);
+    }
+
+    void clear()
+    {
+        sx_assert(alloc);
+        sx_array_clear(p);
+    }
+
+    void free() 
+    {
+        sx_assert(alloc);
+        sx_array_free(alloc, p);
+        p = nullptr;
+    }
+
+    int count() const 
+    {
+        sx_assert(alloc);
+        return sx_array_count(p);
+    }
+
+    _T* expand(int _count) 
+    {
+        sx_assert(alloc);
+        return sx_array_add(alloc, p, _count);
+    }
+
+    void reserve(int _count)
+    {
+        sx_assert(alloc);
+        sx_array_reserve(alloc, p, _count);
+    }
+
+    _T& operator[](int _index)
+    {
+        sx_assert(p);
+        return this->p[_index];
+    }
+
+    const _T& operator[](int index) const
+    {
+        sx_assert(p);
+        return this->p[index];
+    }
+
+};
+#endif // __cplusplus
