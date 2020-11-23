@@ -130,3 +130,35 @@ SX_INLINE void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_al
 
     return mem;
 }
+
+#ifdef __cplusplus
+template <typename _T>
+struct sx_linear_buffer_t
+{
+public:
+    sx_linear_buffer_t(uint32_t align = 0)
+    {
+        sx_linear_buffer_init(&this->lb, sizeof(_T), align);
+    }
+    
+    template <typename _F> sx_linear_buffer_t& add_field(int offset_in_struct, size_t count, uint32_t align = 0)
+    {
+        sx__linear_buffer_add(&this->lb, sizeof(_F)*count, offset_in_struct, nullptr, align);
+        return *this;
+    }
+
+    template <typename _F> sx_linear_buffer_t& add_external_array(_F** pptr, size_t count, uint32_t align = 0)
+    {
+        sx__linear_buffer_add(&this->lb, sizeof(_F)*count, -1, (void**)pptr, align);
+        return *this;
+    }
+
+    _T* calloc(const sx_alloc* alloc)
+    {
+        return reinterpret_cast<_T*>(sx_linear_buffer_calloc(&this->lb, alloc));
+    }
+   
+private:
+    sx_linear_buffer lb;
+};
+#endif

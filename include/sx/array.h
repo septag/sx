@@ -170,13 +170,6 @@ struct sx_array
         sx_array_clear(p);
     }
 
-    void free() 
-    {
-        sx_assert(alloc);
-        sx_array_free(alloc, p);
-        p = nullptr;
-    }
-
     int count() const 
     {
         sx_assert(alloc);
