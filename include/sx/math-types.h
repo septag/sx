@@ -24,6 +24,10 @@
 #define SX_FLOAT_MIN (1.175494e-38f)
 #define SX_FLOAT_MAX (3.402823e+38f)
 
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4201)     // nonstandard extension used : nameless struct/union
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4204)     // nonstandard extension used: non-constant aggregate initializer
+
 typedef union sx_vec2 {
     struct {
         float x;
@@ -172,9 +176,9 @@ typedef union sx_mat3 {
         m21 = _col1[1];     m22 = _col2[1];     m23 = _col3[1];
         m31 = _col1[2];     m32 = _col2[2];     m33 = _col3[2];
     }
-    explicit sx_mat3(sx_vec3 _col1, sx_vec3 _col2, sx_vec3 _col3)
+    explicit sx_mat3(sx_vec3 _col1, sx_vec3 _col2, sx_vec3 _col3) :
+        sx_mat3(_col1.f, _col2.f, _col3.f)
     {
-        sx_mat3(_col1.f, _col2.f, _col3.f);
     }    
     #endif
 } sx_mat3;
@@ -215,9 +219,9 @@ typedef union sx_mat4 {
         m31 = _col1[2];     m32 = _col2[2];     m33 = _col3[2];     m34 = _col4[2];
         m41 = _col1[3];     m42 = _col2[3];     m43 = _col3[3];     m44 = _col4[3];
     }
-    explicit sx_mat4(sx_vec4 _col1, sx_vec4 _col2, sx_vec4 _col3, sx_vec4 _col4)
+    explicit sx_mat4(sx_vec4 _col1, sx_vec4 _col2, sx_vec4 _col3, sx_vec4 _col4) : 
+        sx_mat4(_col1.f, _col2.f, _col3.f, _col4.f)
     {
-        sx_mat4(_col1.f, _col2.f, _col3.f, _col4.f);
     }
     #endif
 } sx_mat4;
@@ -246,9 +250,9 @@ typedef union sx_rect {
         vmin[0] = _vmin[0];    vmin[1] = _vmin[1];
         vmax[0] = _vmax[0];    vmax[1] = _vmax[1];
     }
-    explicit sx_rect(sx_vec2 _vmin, sx_vec2 _vmax)
+    explicit sx_rect(sx_vec2 _vmin, sx_vec2 _vmax) :
+        sx_rect(_vmin.f, _vmax.f)
     {
-        sx_rect(_vmin.f, _vmax.f);
     }
     #endif
 } sx_rect;
@@ -264,7 +268,7 @@ typedef union sx_irect {
         int vmax[3];
     };
 
-    int f[4];
+    int n[4];
 
     #ifdef __cplusplus
     sx_irect() = default;
@@ -277,9 +281,9 @@ typedef union sx_irect {
         vmin[0] = _vmin[0];     vmin[1] = _vmin[1];
         vmax[0] = _vmax[0];     vmax[1] = _vmax[1];
     }
-    explicit sx_irect(sx_ivec2 _vmin, sx_ivec2 _vmax) 
+    explicit sx_irect(sx_ivec2 _vmin, sx_ivec2 _vmax) :
+        sx_irect(_vmin.n, _vmax.n)
     { 
-        sx_irect(_vmin.n, _vmax.n); 
     }
 #endif
 } sx_irect;
@@ -309,9 +313,9 @@ typedef union sx_aabb {
         vmin[0] = _vmin[0];    vmin[1] = _vmin[1];      vmin[2] = _vmin[2];
         vmax[0] = _vmax[0];    vmax[1] = _vmax[1];      vmax[2] = _vmax[2];
     }
-    explicit sx_aabb(sx_vec3 _vmin, sx_vec3 _vmax)
+    explicit sx_aabb(sx_vec3 _vmin, sx_vec3 _vmax) :
+        sx_aabb(_vmin.f, _vmax.f)
     {
-        sx_aabb(_vmin.f, _vmax.f);
     }
     #endif
 } sx_aabb;
@@ -816,3 +820,5 @@ SX_FORCE_INLINE sx_plane sx_planev(sx_vec3 _normal, float _d)
     return (sx_plane){ .p = { .x = _normal.x, .y = _normal.y, .z = _normal.z, .w = _d } };
 #endif
 }
+
+SX_PRAGMA_DIAGNOSTIC_POP()    // ignore msvc warnings

@@ -55,19 +55,24 @@ SX_API void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line);   
 
 #if SX_CONFIG_DEBUG_ALLOCATOR
 #    define sx_malloc(_allocator, _size) \
-        sx__malloc(_allocator, _size, 0, __FILE__, __FUNCTION__, __LINE__)
+        sx__malloc(_allocator, _size, 0, __FILE__, SX_FUNCTION, __LINE__)
 #    define sx_realloc(_allocator, _ptr, _size) \
-        sx__realloc(_allocator, _ptr, _size, 0, __FILE__, __FUNCTION__, __LINE__)
+        sx__realloc(_allocator, _ptr, _size, 0, __FILE__, SX_FUNCTION, __LINE__)
 #    define sx_free(_allocator, _ptr) \
-        sx__free(_allocator, _ptr, 0, __FILE__, __FUNCTION__, __LINE__)
+        sx__free(_allocator, _ptr, 0, __FILE__, SX_FUNCTION, __LINE__)
 #    define sx_aligned_malloc(_allocator, _size, _align) \
-        sx__malloc(_allocator, _size, _align, __FILE__, __FUNCTION__, __LINE__)
+        sx__malloc(_allocator, _size, _align, __FILE__, SX_FUNCTION, __LINE__)
 #    define sx_aligned_realloc(_allocator, _ptr, _size, _align) \
-        sx__realloc(_allocator, _ptr, _size, _align, __FILE__, __FUNCTION__, __LINE__)
+        sx__realloc(_allocator, _ptr, _size, _align, __FILE__, SX_FUNCTION, __LINE__)
 #    define sx_aligned_free(_allocator, _ptr, _align) \
-        sx__free(_allocator, _ptr, _align, __FILE__, __FUNCTION__, __LINE__)
+        sx__free(_allocator, _ptr, _align, __FILE__, SX_FUNCTION, __LINE__)
+#    define sx_calloc(_allocator, _size) \
+        sx__calloc(_allocator, _size, 0, __FILE__, SX_FUNCTION, __LINE__)
+#    define sx_aligned_calloc(_allocator, _size, _align) \
+        sx__calloc(_allocator, _size, _align, __FILE__, SX_FUNCTION, __LINE__)
 #else
-#    define sx_malloc(_allocator, _size) sx__malloc(_allocator, _size, 0, NULL, NULL, 0)
+#    define sx_malloc(_allocator, _size) \
+        sx__malloc(_allocator, _size, 0, NULL, NULL, 0)
 #    define sx_realloc(_allocator, _ptr, _size) \
         sx__realloc(_allocator, _ptr, _size, 0, NULL, NULL, 0)
 #    define sx_free(_allocator, _ptr) sx__free(_allocator, _ptr, 0, NULL, NULL, 0)
@@ -77,6 +82,10 @@ SX_API void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line);   
         sx__realloc(_allocator, _ptr, _size, _align, NULL, NULL, 0)
 #    define sx_aligned_free(_allocator, _ptr, _align) \
         sx__free(_allocator, _ptr, _align, NULL, NULL, 0)
+#    define sx_calloc(_allocator, _size) \
+        sx__calloc(_allocator, _size, 0, NULL, NULL, 0)
+#    define sx_aligned_calloc(_allocator, _size, _align) \
+        sx__calloc(_allocator, _size, _align, NULL, NULL, 0)
 #endif    // SX_CONFIG_ALLOCATOR_DEBUG
 
 typedef struct sx_alloc {
@@ -123,7 +132,7 @@ SX_INLINE void* sx_align_ptr(void* ptr, size_t extra, uint32_t align)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal
 SX_INLINE void* sx__malloc(const sx_alloc* alloc, size_t size, uint32_t align, const char* file,
-                               const char* func, uint32_t line)
+                           const char* func, uint32_t line)
 {
     return alloc->alloc_cb(NULL, size, align, file, func, line, alloc->user_data);
 }
@@ -187,4 +196,14 @@ SX_INLINE void* sx__aligned_realloc(const sx_alloc* alloc, void* ptr, size_t siz
     uint32_t* header = (uint32_t*)new_aligned - 1;
     *header = (uint32_t)(new_aligned - (uint8_t*)ptr);
     return new_aligned;
+}
+
+SX_INLINE void* sx__calloc(const sx_alloc* alloc, size_t size, uint32_t align, const char* file,
+                           const char* func, uint32_t line)
+{
+    void* ptr = alloc->alloc_cb(NULL, size, align, file, func, line, alloc->user_data);
+    if (ptr) {
+        sx_memset(ptr, 0x0, size);
+    }
+    return ptr;
 }

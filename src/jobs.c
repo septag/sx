@@ -346,6 +346,8 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
         // Post to semaphore to worker threads start cur_job
         sx_semaphore_post(&ctx->sem, num_jobs);
     } else {
+        SX_PRAGMA_DIAGNOSTIC_PUSH()
+        SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4204)     // nonstandard extension used: non-constant aggregate initializer
         sx__job_pending pending = { .counter = counter,
                                     .range_size = range_size,
                                     .range_reminder = range_reminder,
@@ -354,6 +356,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
                                     .priority = priority,
                                     .tags = tags };
         sx_array_push(ctx->alloc, ctx->pending, pending);
+        SX_PRAGMA_DIAGNOSTIC_POP()   
     }
     sx_unlock(&ctx->job_lk);
 

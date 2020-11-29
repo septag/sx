@@ -92,7 +92,7 @@ size_t sx_os_minstacksz(void)
 char sx_os_getch(void)
 {
 #if SX_PLATFORM_WINDOWS
-    return getchar();
+    return (char)(getchar() & 0xff);
 #elif SX_PLATFORM_POSIX
     struct termios old_term;
     struct termios new_term;

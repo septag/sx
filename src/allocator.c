@@ -46,6 +46,9 @@ static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* f
                            const char* func, uint32_t line, void* user_data)
 {
     sx_unused(user_data);
+    sx_unused(line);
+    sx_unused(func);
+    sx_unused(file);
 
     if (size == 0) {
         if (ptr) {

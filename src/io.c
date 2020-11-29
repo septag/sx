@@ -574,10 +574,10 @@ static inline int64_t sx__iff_read(sx_iff_file* iff, void* data, int64_t size)
 {
     switch (iff->type) {
     case SX_IFFTYPE_MEM_READER:
-        return sx_mem_read(iff->mread, data, size);
+        return sx_mem_read(iff->io.mread, data, size);
     case SX_IFFTYPE_DISK_READER:
     case SX_IFFTYPE_DISK_WRITER:
-        return sx_file_read(iff->disk, data, size);
+        return sx_file_read(iff->io.disk, data, size);
     default:
         sx_assert(0);
         return -1;
@@ -588,9 +588,9 @@ static inline int64_t sx__iff_write(sx_iff_file* iff, const void* data, int64_t 
 {
     switch (iff->type) {
     case SX_IFFTYPE_MEM_WRITER:
-        return sx_mem_write(iff->mwrite, data, size);
+        return sx_mem_write(iff->io.mwrite, data, size);
     case SX_IFFTYPE_DISK_WRITER:
-        return sx_file_write(iff->disk, data, size);
+        return sx_file_write(iff->io.disk, data, size);
     default:
         sx_assert(0);
         return -1;
@@ -601,12 +601,12 @@ static inline int64_t sx__iff_seek(sx_iff_file* iff, int64_t offset, sx_whence w
 {
     switch (iff->type) {
     case SX_IFFTYPE_MEM_READER:
-        return sx_mem_seekr(iff->mread, offset, whence);
+        return sx_mem_seekr(iff->io.mread, offset, whence);
     case SX_IFFTYPE_MEM_WRITER:
-        return sx_mem_seekw(iff->mwrite, offset, whence);
+        return sx_mem_seekw(iff->io.mwrite, offset, whence);
     case SX_IFFTYPE_DISK_WRITER:
     case SX_IFFTYPE_DISK_READER:
-        return sx_file_seek(iff->disk, offset, whence);
+        return sx_file_seek(iff->io.disk, offset, whence);
     default:
         sx_assert(0);
         return -1;
@@ -620,13 +620,13 @@ static bool sx__iff_read_all_chunks(sx_iff_file* iff)
         sx_iff_chunk chunk;
         int64_t r = sx__iff_read(iff, &chunk, sizeof(chunk));
         if (r < (int64_t)sizeof(chunk)) {
-            sx_assert_always(r == 0 && "file is probably corrupt");
+            sx_assert_alwaysf(r == 0, "file is probably corrupt");
             return r == 0;
         }
 
         int64_t pos = sx__iff_seek(iff, chunk.size, SX_WHENCE_CURRENT);
         if (pos <= 0 || (pos - chunk.pos) < chunk.size) {
-            sx_assert_always(0 && "file is probably corrupt");
+            sx_assert_alwaysf(0, "file is probably corrupt");
             return false;  
         }
 
@@ -645,7 +645,9 @@ bool sx_iff_init_from_file_reader(sx_iff_file* iff, sx_file* file, sx_iff_flags 
     *iff = (sx_iff_file) {
         .type = SX_IFFTYPE_DISK_READER,
         .alloc = alloc,
-        .disk = file
+        .io = { 
+            .disk = file
+        }
     };
 
     // read first chunk
@@ -675,7 +677,9 @@ bool sx_iff_init_from_file_writer(sx_iff_file* iff, sx_file* file, sx_iff_flags 
     *iff = (sx_iff_file) {
         .type = SX_IFFTYPE_DISK_WRITER,
         .alloc = alloc,
-        .disk = file
+        .io = {
+            .disk = file
+        }
     };
 
     bool r = true;
@@ -719,7 +723,7 @@ bool sx_iff_init_from_mem_reader(sx_iff_file* iff, sx_mem_reader* mread, sx_iff_
     *iff = (sx_iff_file) {
         .type = SX_IFFTYPE_MEM_READER,
         .alloc = alloc,
-        .mread = mread
+        .io = { .mread = mread }
     };
 
     // read first chunk
@@ -740,8 +744,7 @@ bool sx_iff_init_from_mem_reader(sx_iff_file* iff, sx_mem_reader* mread, sx_iff_
     return r;
 }
 
-bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff_flags flags,
-                                 const sx_alloc* alloc)
+bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff_flags flags, const sx_alloc* alloc)
 {
     sx_assert(iff);
     sx_assert(mwrite);
@@ -749,7 +752,7 @@ bool sx_iff_init_from_mem_writer(sx_iff_file* iff, sx_mem_writer* mwrite, sx_iff
     *iff = (sx_iff_file) {
         .type = SX_IFFTYPE_MEM_WRITER,
         .alloc = alloc,
-        .mwrite = mwrite
+        .io = { .mwrite = mwrite }
     };
 
     bool r = true;
@@ -800,14 +803,14 @@ int sx_iff_get_chunk(sx_iff_file* iff, uint32_t fourcc, int parent_id)
             sx_iff_chunk chunk;
             int64_t r = sx__iff_read(iff, &chunk, sizeof(chunk));
             if (r < (int64_t)sizeof(chunk)) {
-                sx_assert_always(r == 0 && "file is probably corrupt");
+                sx_assert_alwaysf(r == 0, "file is probably corrupt");
                 iff->read_all = true;
                 break;  // EOF
             }
 
             int64_t pos = sx__iff_seek(iff, chunk.size, SX_WHENCE_CURRENT);
             if (pos <= 0 || (pos - chunk.pos) < chunk.size) {
-                sx_assert_always(0 && "file is probably corrupt");
+                sx_assert_alwaysf(0, "file is probably corrupt");
                 break;  
             }
 
@@ -841,11 +844,11 @@ bool sx_iff_read_chunk(sx_iff_file* iff, int chunk_id, void* chunk_data, int64_t
 
     int64_t pos = sx__iff_seek(iff, chunk->pos, SX_WHENCE_BEGIN);
     sx_unused(pos);
-    sx_assert_always(pos == chunk->pos && "probably file corruption");
+    sx_assert_alwaysf(pos == chunk->pos, "probably file corruption");
 
     int64_t r = sx__iff_read(iff, chunk_data, size);
     if (r != chunk->size) {
-        sx_assert_always(0 && "corrupt file");
+        sx_assert_alwaysf(0, "corrupt file");
         return false;
     }
 

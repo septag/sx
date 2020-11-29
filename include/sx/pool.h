@@ -34,7 +34,7 @@
 
 typedef struct sx_alloc sx_alloc;
 
-typedef sx_align_decl(16, struct) sx__pool_page
+typedef struct sx__pool_page
 {
     void** ptrs;
     uint8_t* buff;
@@ -42,7 +42,7 @@ typedef sx_align_decl(16, struct) sx__pool_page
     int iter;
 } sx__pool_page;
 
-typedef sx_align_decl(16, struct) sx_pool
+typedef struct sx_pool
 {
     int item_sz;
     int capacity;

@@ -94,7 +94,7 @@
 typedef struct sx_alloc sx_alloc;
 
 #ifndef sx_data_truncate
-#    define sx_data_truncate() sx_assert_always(0 && "Data truncated !")
+#    define sx_data_truncate() sx_assert_alwaysf(0, "Data truncated !")
 #endif
 
 typedef enum sx_whence { SX_WHENCE_BEGIN = 0, SX_WHENCE_CURRENT, SX_WHENCE_END } sx_whence;
@@ -229,7 +229,7 @@ typedef struct sx_iff_file {
         sx_mem_reader* mread;
         sx_mem_writer* mwrite;
         sx_file* disk;
-    };
+    } io;
     bool read_all;
 } sx_iff_file;
 #pragma pack(pop)

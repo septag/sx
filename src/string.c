@@ -147,8 +147,10 @@ int sx_strlen(const char* str)
         }
     }
 
+    #if !SX_COMPILER_MSVC
     sx_assertf(0, "Not a null-terminated string");
     return -1;
+    #endif
 }
 
 static inline int sx__strnlen(const char* str, int _max)
@@ -204,8 +206,10 @@ static inline int sx__strnlen(const char* str, int _max)
         }
     }
 
+    #if !SX_COMPILER_MSVC
     sx_assertf(0, "Not a null-terminated string");
     return -1;
+    #endif
 }
 
 char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num)
@@ -283,7 +287,7 @@ const char* sx_strchar(const char* str, char ch)
     }
 
     longword_ptr = (uintptr_t*)char_ptr;
-    magic_bits = -1;
+    magic_bits = (uintptr_t)-1;
     magic_bits = magic_bits / 0xff * 0xfe << 1 >> 1 | 1;
     charmask = c | (c << 8);
     charmask |= charmask << 16;
@@ -301,36 +305,36 @@ const char* sx_strchar(const char* str, char ch)
             if (*cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
 #if SX_ARCH_64BIT
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
 #endif
         }
     }
