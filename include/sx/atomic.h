@@ -15,7 +15,7 @@
 //       So I had to implemenet common atomic functions and types myself
 //       Later I may re-evaluate the compatibility of stdatomic.h and use that instead
 //
-// sx_yield_cpu: yeilds cpu and prevents it from burning
+// sx_yield_cpu: yields cpu and prevents it from burning
 // sx_memory_barrier: performs full memory barrier on the cpu side
 //
 // sx_lock_t: Common spin lock, use this for short-time data locking, for longer locking times, use
