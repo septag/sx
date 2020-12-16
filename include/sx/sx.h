@@ -69,6 +69,8 @@ SX_API void sx__debug_message(const char* sourcefile, uint32_t line, const char*
         if (!(_e)) { sx__debug_message(__FILE__, __LINE__, __VA_ARGS__); sx_hwbreak(); }
 #endif
 
+#define sx_unreachable() sx_assert_alwaysf(0, "unreachable code");
+
 #ifndef sx_memset
 #    include <memory.h>    // memset
 #    define sx_memset(_dst, _n, _sz) memset((_dst), (_n), (_sz))

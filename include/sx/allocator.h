@@ -129,6 +129,24 @@ SX_INLINE void* sx_align_ptr(void* ptr, size_t extra, uint32_t align)
     return un.ptr;
 }
 
+// C++ new/delete overrides
+#ifdef __cplusplus
+struct sx__pnew_tag {};
+
+#    define sx_pnew(_ptr, _type) ::new (sx__pnew_tag(), _ptr) _type
+#    define sx_new(_allocator, _type) sx_pnew(sx_malloc(_allocator, sizeof(_type)), _type)
+#    define sx_aligned_new(_allocator, _type, _align) \
+    sx_pnew(sx_aligned_malloc(_allocator, sizeof(_type), _align), _type)
+#    define sx_delete(_allocator, _type, _ptr) if (_ptr) { (_ptr)->~_type(); sx_free(_allocator, _ptr); }
+
+inline void* operator new(size_t, sx__pnew_tag, void* _ptr)
+{
+    return _ptr;
+}
+
+inline void operator delete(void*, sx__pnew_tag, void*) throw() {}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Internal
 SX_INLINE void* sx__malloc(const sx_alloc* alloc, size_t size, uint32_t align, const char* file,

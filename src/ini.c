@@ -103,8 +103,7 @@ void sx_ini_property_name_set(sx_ini* ini, int section, int property, char const
     ini_property_name_set(ini, section, property, name, length);
 }
 
-void sx_ini_property_value_set(sx_ini* ini, int section, int property, char const* value,
-                               int length)
+void sx_ini_property_value_set(sx_ini* ini, int section, int property, char const* value, int length)
 {
     ini_property_value_set(ini, section, property, value, length);
 }
