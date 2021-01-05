@@ -497,7 +497,7 @@ char* sx_os_path_dirname(char* dst, int size, const char* path)
             sx_strncpy(dst, size, path, o);
         }
     } else if (dst != path) {
-        sx_strcpy(dst, size, path);
+        *dst = '\0';
     }
     return dst;
 }

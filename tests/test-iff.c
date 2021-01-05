@@ -123,11 +123,11 @@ int main(int argc, char* argv[])
 
     const char* command = argv[1];
 
-    if (strcmp(command, "save") == 0) {
+    if (sx_strequal(command, "save")) {
         test_write_iff("test.bin");
-    } else if (strcmp(command, "load") == 0) {
+    } else if (sx_strequal(command, "load")) {
         test_load_iff("test.bin");
-    } else if (strcmp(command, "append") == 0) {
+    } else if (sx_strequal(command, "append")) {
         test_append_iff("test.bin");
     }
 
