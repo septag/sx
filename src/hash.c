@@ -4,19 +4,7 @@
 //
 #include "sx/hash.h"
 #include "sx/allocator.h"
-
-// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-static inline SX_CONSTFN int sx__nearest_pow2(int n)
-{
-    n--;
-    n |= n >> 1;
-    n |= n >> 2;
-    n |= n >> 4;
-    n |= n >> 8;
-    n |= n >> 16;
-    n++;
-    return n;
-}
+#include "sx/math-scalar.h"
 
 static inline SX_ALLOW_UNUSED SX_CONSTFN bool sx__ispow2(int n)
 {
@@ -209,7 +197,7 @@ sx_hashtbl* sx_hashtbl_create(const sx_alloc* alloc, int capacity)
 {
     sx_assert(capacity > 0);
 
-    capacity = sx__nearest_pow2(capacity);
+    capacity = sx_nearest_pow2(capacity);
     sx_hashtbl* tbl = (sx_hashtbl*)sx_malloc(
         alloc, sizeof(sx_hashtbl) + capacity * (sizeof(uint32_t) + sizeof(int)) +
                    SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
@@ -287,7 +275,7 @@ int sx_hashtbl_fixed_size(int capacity)
 
 int sx_hashtbl_valid_capacity(int capacity)
 {
-    return sx__nearest_pow2(capacity);
+    return sx_nearest_pow2(capacity);
 }
 
 int sx_hashtbl_add(sx_hashtbl* tbl, uint32_t key, int value)
@@ -343,7 +331,7 @@ sx_hashtbl_tval* sx_hashtbltval_create(const sx_alloc* alloc, int capacity, int 
 {
     sx_assert(capacity > 0);
 
-    capacity = sx__nearest_pow2(capacity);
+    capacity = sx_nearest_pow2(capacity);
     sx_hashtbl_tval* tbl = (sx_hashtbl_tval*)sx_malloc(
         alloc, sizeof(sx_hashtbl_tval) + capacity * (sizeof(uint32_t) + value_stride) +
                    SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT);
@@ -424,7 +412,7 @@ int sx_hashtbltval_fixed_size(int capacity, int value_stride)
 
 int sx_hashtbltval_valid_capacity(int capacity)
 {
-    return sx__nearest_pow2(capacity);
+    return sx_nearest_pow2(capacity);
 }
 
 int sx_hashtbltval_add(sx_hashtbl_tval* tbl, uint32_t key, const void* value)

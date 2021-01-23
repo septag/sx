@@ -784,6 +784,13 @@ void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3])
     _rgb[2] = vv * sx_lerp(1.0f, sx_saturate(pz - 1.0f), ss);
 }
 
+sx_vec4 sx_color_vec4_linear(sx_color c)
+{
+    float rcp = 1.0f / 255.0f;
+    return sx_vec4f(sx_sqrt((float)c.r * rcp), sx_sqrt((float)c.g * rcp), 
+                    sx_sqrt((float)c.b * rcp), (float)c.a * rcp);
+}
+
 sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b)
 {
     return sx_mat3fv(sx_mat3_mul_vec3(_a, sx_vec3fv(_b->fc1)).f, 
