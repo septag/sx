@@ -170,7 +170,7 @@ SX_FORCE_INLINE sx_vec3 sx_quat_mulXYZ(sx_quat _qa, sx_quat _qb)
     const float ax = _qa.x;
     const float ay = _qa.y;
     const float az = _qa.z;
-    const float aw = _qa.f[3];
+    const float aw = _qa.w;
 
     const float bx = _qb.x;
     const float by = _qb.y;
@@ -395,8 +395,8 @@ SX_FORCE_INLINE sx_vec3 sx_vec3_mul_quat(sx_vec3 _vec, sx_quat _quat)
 {
     sx_quat tmp0 = sx_quat_inv(_quat);
     sx_quat qv = sx_quat4f(_vec.x, _vec.y, _vec.z, 0.0f);
-    sx_quat tmp1 = sx_quat_mul(tmp0, qv);
-    return sx_quat_mulXYZ(tmp1, _quat);
+    sx_quat tmp1 = sx_quat_mul(qv, tmp0);
+    return sx_quat_mulXYZ(_quat, tmp1);
 }
 
 SX_FORCE_INLINE sx_vec4 sx_mat4_row1(const sx_mat4* m)
