@@ -366,6 +366,7 @@ SX_FORCE_INLINE sx_vec3 sx_vec3splat(float _f);
 
 SX_FORCE_INLINE sx_plane sx_planef(float _nx, float _ny, float _nz, float _d);
 SX_FORCE_INLINE sx_plane sx_planev(sx_vec3 _normal, float _d);
+SX_FORCE_INLINE sx_plane sx_planefv(const float* _f);
 
 SX_FORCE_INLINE sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14, 
                                  float m21, float m22, float m23, float m24, 
@@ -818,6 +819,15 @@ SX_FORCE_INLINE sx_plane sx_planev(sx_vec3 _normal, float _d)
     return sx_plane(_normal, _d);
 #else
     return (sx_plane){ .p = { .x = _normal.x, .y = _normal.y, .z = _normal.z, .w = _d } };
+#endif
+}
+
+SX_FORCE_INLINE sx_plane sx_planefv(const float* _f)
+{
+#ifdef __cplusplus
+    return sx_plane(_f[0], _f[1], _f[2], _f[3]);
+#else
+    return (sx_plane) { .p = { .x = _f[0], .y = _f[1], .z = _f[2], .w = _f[3] } };
 #endif
 }
 

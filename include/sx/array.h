@@ -200,5 +200,9 @@ struct sx_array
         return this->p[index];
     }
 
+    _T* begin() { return &p[0]; }
+
+    _T* end() { return &p[count()]; }
+
 };
 #endif // __cplusplus

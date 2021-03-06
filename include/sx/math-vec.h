@@ -122,13 +122,14 @@ SX_FORCE_INLINE sx_mat3 sx_mat3_scale(float sx, float sy);
 SX_FORCE_INLINE sx_mat3 sx_mat3_SRT(float sx, float sy, float angle, float tx, float ty);
 SX_API          sx_mat3 sx_mat3_inv(const sx_mat3* _a);
 SX_API          sx_mat3 sx_mat3_mul(const sx_mat3* _a, const sx_mat3* _b);
+
 SX_API          sx_mat3 sx_quat_mat3(sx_quat quat);
 SX_API          sx_mat4 sx_quat_mat4(sx_quat quat);
-
 SX_FORCE_INLINE sx_vec3 sx_quat_mulXYZ(sx_quat _qa, sx_quat _qb);
 SX_FORCE_INLINE sx_quat sx_quat_mul(sx_quat p, sx_quat q);
 SX_FORCE_INLINE sx_quat sx_quat_inv(sx_quat _quat);
 SX_FORCE_INLINE float   sx_quat_dot(sx_quat _a, sx_quat _b);
+SX_FORCE_INLINE float   sx_quat_angle(sx_quat _a, sx_quat _b);
 SX_FORCE_INLINE sx_quat sx_quat_norm(sx_quat _quat);
 SX_FORCE_INLINE sx_quat sx_quat_rotateaxis(sx_vec3 _axis, float _angle);
 SX_FORCE_INLINE sx_quat sx_quat_rotateX(float _ax);
@@ -140,7 +141,8 @@ SX_API          sx_vec3 sx_quat_toeuler(sx_quat _quat);
 SX_API          sx_quat sx_quat_fromeular(sx_vec3 _vec3);
 
 SX_FORCE_INLINE sx_vec4  sx_color_vec4(sx_color c);
-SX_API          sx_vec4  sx_color_vec4_linear(sx_color c);
+SX_API          sx_vec4  sx_color_vec4_tosrgb(sx_vec4 cf);
+SX_API          sx_vec4  sx_color_vec4_tolinear(sx_vec4 c);
 SX_API          void     sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);
 SX_API          void     sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3]);
 
@@ -204,6 +206,11 @@ SX_FORCE_INLINE sx_quat sx_quat_inv(sx_quat _quat)
 SX_FORCE_INLINE float sx_quat_dot(sx_quat _a, sx_quat _b)
 {
     return _a.x * _b.x + _a.y * _b.y + _a.z * _b.z + _a.w * _b.w;
+}
+
+SX_FORCE_INLINE float sx_quat_angle(sx_quat _a, sx_quat _b)
+{
+    return sx_acos(sx_min(sx_abs(sx_quat_dot(_a, _b)), 1.0f)) * 2.0f;
 }
 
 SX_FORCE_INLINE sx_quat sx_quat_norm(sx_quat _quat)
