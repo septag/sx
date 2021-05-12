@@ -13,20 +13,14 @@
 //                user_data that is to store any custom data for user allocators. 'alloc_cb'
 //                provides all three main allocation function inside of itself which is
 //                malloc/realloc/free Here's an example minimal custom implementation:
-//                      void my_alloc(
-//                          void* ptr, size_t size, uint32_t align, const char* file,
-//                          uint32_t line, void* user_data)
-//                      {
+//                      void my_alloc(void* ptr, size_t size, uint32_t align, const char* file,
+//                      uint32_t line, void* user_data) {
 //                          // 'file' can be NULL in none-debug builds
-//                          // if 'align' is zero or less than SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT, no alignment is needed
-//                          if (size == 0) {
-//                              free(ptr);  return NULL;
-//                          } else if (ptr == NULL)   {
-//                              return malloc(size);
-//                          }    // TODO: handle alignment cases
-//                          else {
-//                              return realloc(ptr, size);
-//                          }   // TODO: handle alignment cases
+//                          // if 'align' is zero or less than
+//                          SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT, no alignment is needed if (size
+//                          == 0) { free(ptr);  return NULL; } else if (ptr == NULL)   { return
+//                          malloc(size); }    // TODO: handle alignment cases else { return
+//                          realloc(ptr, size); }    // TODO: handle alignment cases
 //                      }
 //
 //     sx_alloc, sx_realloc, sx_free, sx_aligned_alloc, sx_aligned_realloc, sx_aligned_free:
@@ -54,7 +48,7 @@ SX_API void sx_mem_set_fail_callback(sx_mem_fail_cb* callback);
 SX_API void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line);   // internal
 
 // Call this whenever memory allocation fails
-// you can override the callback function to 
+// you can override the callback function to
 #define sx_memory_fail()                                \
     do { sx__mem_run_fail_callback(__FILE__, __LINE__); sx_assert_alwaysf(0, "Out of memory"); } while (0)
 #define sx_out_of_memory() sx_memory_fail()
