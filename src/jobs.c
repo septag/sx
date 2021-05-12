@@ -87,7 +87,7 @@ typedef struct sx_job_context {
 
 static void sx__del_job(sx_job_context* ctx, sx__job* job)
 {
-    sx_lock(&ctx->job_lk, 1);
+    sx_lock(&ctx->job_lk);
     sx_pool_del(ctx->job_pool, job);
     sx_unlock(&ctx->job_lk);
 }
@@ -179,7 +179,7 @@ static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid, u
 {
     sx__job_select_result r = { 0 };
     
-    sx_lock(&ctx->job_lk, 1);
+    sx_lock(&ctx->job_lk);
     for (int pr = 0; pr < SX_JOB_PRIORITY_COUNT; pr++) {
         sx__job* node = ctx->waiting_list[pr];
         while (node) {
@@ -233,7 +233,8 @@ static void sx__job_selector_main_thrd(sx_fiber_transfer transfer)
         }
     }
 
-    tdata->selector_fiber = sx_fiber_create(tdata->selector_stack, sx__job_selector_main_thrd);
+    // before returning, set selector to NULL, so we know that we have to recreate the fiber
+    tdata->selector_fiber = NULL;       
     sx_fiber_switch(transfer.from, transfer.user);
 }
 
@@ -304,21 +305,21 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
     int range_reminder = count % num_workers;
     int num_jobs = range_size > 0 ? num_workers : (range_reminder > 0 ? range_reminder : 0);
     sx_assert(num_jobs > 0);
-    sx_assert(num_jobs <= ctx->job_pool->capacity &&
+    sx_assertf(num_jobs <= ctx->job_pool->capacity,
               "this amount of jobs at a time cannot be done. increase max_jobs");
 
     // Create a counter (job handle)
-    sx_lock(&ctx->counter_lk, 1);
+    sx_lock(&ctx->counter_lk);
     sx_job_t counter = (sx_job_t)sx_pool_new_and_grow(ctx->counter_pool, ctx->alloc);
     sx_unlock(&ctx->counter_lk);
 
     if (!counter) {
-        sx_assert(0 && "Maximum job instances exceeded");
+        sx_assertf(0, "Maximum job instances exceeded");
         return NULL;
     }
 
     *counter = num_jobs;
-    sx_assert(tdata && "Dispatch must be called within main thread or job threads");
+    sx_assertf(tdata, "Dispatch must be called within main thread or job threads");
 
     // Another job is running on this thread. So depend the current running job to the new
     // dispatches
@@ -326,7 +327,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
         tdata->cur_job->wait_counter = counter;
 
     // Push jobs to the end of the list, so they can be collected by threads
-    sx_lock(&ctx->job_lk, 1);
+    sx_lock(&ctx->job_lk);
     if (!sx_pool_fulln(ctx->job_pool, num_jobs)) {
         int range_start = 0;
         int range_end = range_size + (range_reminder > 0 ? 1 : 0);
@@ -345,6 +346,8 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
         // Post to semaphore to worker threads start cur_job
         sx_semaphore_post(&ctx->sem, num_jobs);
     } else {
+        SX_PRAGMA_DIAGNOSTIC_PUSH()
+        SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4204)     // nonstandard extension used: non-constant aggregate initializer
         sx__job_pending pending = { .counter = counter,
                                     .range_size = range_size,
                                     .range_reminder = range_reminder,
@@ -353,6 +356,7 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
                                     .priority = priority,
                                     .tags = tags };
         sx_array_push(ctx->alloc, ctx->pending, pending);
+        SX_PRAGMA_DIAGNOSTIC_POP()   
     }
     sx_unlock(&ctx->job_lk);
 
@@ -392,7 +396,7 @@ static void sx__job_process_pending(sx_job_context* ctx)
 
 static void sx__job_process_pending_single(sx_job_context* ctx, int index)
 {
-    sx_lock(&ctx->job_lk, 1);
+    sx_lock(&ctx->job_lk);
     // unlike sx__job_process_pending, only check the specific index to push into job-list
     sx__job_pending pending = ctx->pending[index];
     if (!sx_pool_fulln(ctx->job_pool, *pending.counter)) {
@@ -422,6 +426,7 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
 {
     sx__job_thread_data* tdata = (sx__job_thread_data*)sx_tls_get(ctx->thread_tls);
 
+    uint64_t prev_tm = sx_cycle_clock();
     sx_compiler_read_barrier();
     while (*job > 0) {
         // check if the current job is the pending list
@@ -439,7 +444,7 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
             tdata->cur_job = NULL;
             cur_job->owner_tid = tdata->tid;
 
-            sx_lock(&ctx->job_lk, 1);
+            sx_lock(&ctx->job_lk);
             int list_idx = cur_job->priority;
             sx__job_add_list(&ctx->waiting_list[list_idx], &ctx->waiting_list_last[list_idx],
                              cur_job);
@@ -451,16 +456,25 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
 
         sx_fiber_switch(tdata->selector_fiber, ctx);    // Switch to selector loop
 
-        sx_yield_cpu();
+        if (!tdata->selector_fiber) {
+            tdata->selector_fiber = sx_fiber_create(tdata->selector_stack, sx__job_selector_main_thrd);
+        }
+
+        uint64_t now_tm = sx_cycle_clock();
+        uint64_t diff = now_tm - prev_tm;
+        prev_tm = now_tm;
+        if (diff < SX__LOCK_MAXTIME) {
+            sx_yield_cpu();
+        }
     }
 
     // All jobs are done, Delete the counter
-    sx_lock(&ctx->counter_lk, 1);
+    sx_lock(&ctx->counter_lk);
     sx_pool_del(ctx->counter_pool, (void*)job);
     sx_unlock(&ctx->counter_lk);
 
     // auto-dispatch pending jobs
-    sx_lock(&ctx->job_lk, 1);
+    sx_lock(&ctx->job_lk);
     sx__job_process_pending(ctx);
     sx_unlock(&ctx->job_lk);
 }
@@ -470,12 +484,12 @@ bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job)
     sx_compiler_read_barrier();
     if (*job == 0) {
         // All jobs are done, Delete the counter
-        sx_lock(&ctx->counter_lk, 1);
+        sx_lock(&ctx->counter_lk);
         sx_pool_del(ctx->counter_pool, (void*)job);
         sx_unlock(&ctx->counter_lk);
 
         // auto-dispatch pending jobs
-        sx_lock(&ctx->job_lk, 1);
+        sx_lock(&ctx->job_lk);
         sx__job_process_pending(ctx);
         sx_unlock(&ctx->job_lk);
         return true;
@@ -500,7 +514,7 @@ static sx__job_thread_data* sx__job_create_tdata(const sx_alloc* alloc, uint32_t
     tdata->main_thrd = main_thrd;
 
     bool r = sx_fiber_stack_init(&tdata->selector_stack, (int)sx_os_minstacksz());
-    sx_assert(r && "Not enough memory for temp stacks");
+    sx_assertf(r, "Not enough memory for temp stacks");
     sx_unused(r);
 
     return tdata;
@@ -523,7 +537,7 @@ static int sx__job_thread_fn(void* user1, void* user2)
     // note: thread index #0 is reserved for main thread
     sx__job_thread_data* tdata = sx__job_create_tdata(ctx->alloc, thread_id, index + 1, false);
     if (!tdata) {
-        sx_assert(tdata && "ThreadData create failed!");
+        sx_assertf(tdata, "ThreadData create failed!");
         return -1;
     }
     sx_tls_set(ctx->thread_tls, tdata);
@@ -593,7 +607,7 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
             sx_snprintf(name, sizeof(name), "sx_job_thread(%d)", i + 1);
             ctx->threads[i] = sx_thread_create(alloc, sx__job_thread_fn, ctx, (int)sx_os_minstacksz(),
                                                name, (void*)(intptr_t)i);
-            sx_assert(ctx->threads[i] && "sx_thread_create failed!");
+            sx_assertf(ctx->threads[i], "sx_thread_create failed!");
         }
     }
 

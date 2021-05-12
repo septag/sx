@@ -24,6 +24,10 @@
 #        define SX_CONFIG_DEBUG_ALLOCATOR 1
 #    endif
 
+#    ifndef SX_CONFIG_ENABLE_ASSERT
+#        define SX_CONFIG_ENABLE_ASSERT 1
+#    endif
+
 // There is an issue with msvc+clang_c2 where NDEBUG (and some other release flags) are always
 // defined
 #    ifdef NDEBUG
@@ -33,7 +37,7 @@
 #    ifndef SX_DEBUG
 #        define SX_DEBUG 1
 #    endif
-#endif
+#endif  // _DEBUG || SX_DEBUG
 
 #ifndef SX_DEBUG
 #    define SX_DEBUG 0
@@ -41,6 +45,15 @@
 
 #ifndef SX_CONFIG_DEBUG_ALLOCATOR
 #    define SX_CONFIG_DEBUG_ALLOCATOR 0
+#endif
+
+#ifndef SX_CONFIG_ENABLE_ASSERT
+#    define SX_CONFIG_ENABLE_ASSERT 1
+#endif
+
+// define SX_CONFIG_DISABLE_ASSERT_ALWAYS=1 to disable sx_assert_always 
+#ifndef SX_CONFIG_DISABLE_ASSERT_ALWAYS
+#    define SX_CONFIG_DISABLE_ASSERT_ALWAYS 0
 #endif
 
 // Natural aligment is the default memory alignment for each platform
@@ -76,6 +89,13 @@
 
 #ifndef SX_CONFIG_ARRAY_INIT_SIZE
 #   define SX_CONFIG_ARRAY_INIT_SIZE 8
+#endif
+
+// This preprocessor applies a trick for hot functions that need to be inlined even in debug builds
+// only applies to UC_ALWAYS_INLINE functions, but leaves SX_INLINE not inlined
+// And also, the build should be compiled with /Ob1 flag
+#ifndef SX_CONFIG_FORCE_INLINE_DEBUG
+#   define SX_CONFIG_FORCE_INLINE_DEBUG 0
 #endif
 
 #if defined(_MSC_VER) && 0

@@ -3,7 +3,9 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/rng.h"
-#include "sx/sx.h"
+#include "sx/hash.h"
+
+#include <time.h>
 
 // This implementation is taken from: https://github.com/mattiasgustavsson/libs/blob/master/rnd.h
 // With a minor optimization in sx_rng_gen_irange
@@ -43,6 +45,11 @@ void sx_rng_seed(sx_rng* rng, uint32_t seed)
     sx_rng_gen(rng);
 }
 
+void sx_rng_seed_time(sx_rng* rng)
+{
+    sx_rng_seed(rng, sx_hash_u64_to_u32((uint64_t)time(NULL)));
+}
+
 uint32_t sx_rng_gen(sx_rng* rng)
 {
     uint64_t oldstate = rng->state[0];
@@ -52,15 +59,9 @@ uint32_t sx_rng_gen(sx_rng* rng)
     return (xorshifted >> rot) | (xorshifted << ((-(int)rot) & 31));
 }
 
-float sx_rng_gen_f(sx_rng* rng)
+float sx_rng_genf(sx_rng* rng)
 {
     return sx__rng_float_normalized(sx_rng_gen(rng));
 }
 
-int sx_rng_gen_irange(sx_rng* rng, int _min, int _max)
-{
-    sx_assert(_min <= _max);
 
-    const uint32_t range = (uint32_t)(_max - _min) + 1;
-    return (int)(sx_rng_gen(rng) % range) + _min;
-}

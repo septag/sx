@@ -1,7 +1,6 @@
 #if SX_PLATFORM_WINDOWS
 #    define WIN32_LEAN_AND_MEAN
 #    include <conio.h>
-#    include <windows.h>
 #endif
 #include <stdio.h>
 
@@ -44,6 +43,7 @@ int main(int argc, char* argv[])
     }
 
     int id = 0;
+
     puts("Press space to submit an item to working thread");
     puts("Press ESC to close working thread and quit");
     puts("");

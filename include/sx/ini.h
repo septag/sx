@@ -35,7 +35,5 @@ SX_API void sx_ini_section_remove(sx_ini* ini, int section);
 SX_API void sx_ini_property_remove(sx_ini* ini, int section, int property);
 
 SX_API void sx_ini_section_name_set(sx_ini* ini, int section, char const* name, int length);
-SX_API void sx_ini_property_name_set(sx_ini* ini, int section, int property, char const* name,
-                                     int length);
-SX_API void sx_ini_property_value_set(sx_ini* ini, int section, int property, char const* value,
-                                      int length);
+SX_API void sx_ini_property_name_set(sx_ini* ini, int section, int property, char const* name, int length);
+SX_API void sx_ini_property_value_set(sx_ini* ini, int section, int property, char const* value, int length);

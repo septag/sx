@@ -31,7 +31,7 @@
 //                                                          if not, pushes the element into the array
 // Usage:
 //       NOTE: include "allocator.h" before array.h to prevent warnings and errors
-//       SomeStruct *arr = NULL;
+//       sx_array_declare(SomeStruct) = NULL; // SomeStruct *arr = NULL;
 //       while (something)
 //       {
 //          SomeStruct new_one;
@@ -48,7 +48,10 @@
 //     Note that 'TYPE *a' in sx_array_push and sx_array_add must be lvalues
 //     so that the library can overwrite the existing pointer if the object has to be reallocated.
 //
-
+// NOTE for C++ users:
+//     take a look at `sx_array` struct and it's members at the end of this file. It's a thing template 
+//     wrapper over array macros for more convenient C++ usage
+//
 #pragma once
 
 typedef struct sx_alloc sx_alloc;
@@ -82,7 +85,7 @@ typedef struct sx_alloc sx_alloc;
 #define sx__sbgrow(_alloc, a, n)  (*((void**)&(a)) = sx__sbgrowf((a), (n), sizeof(*(a)), (_alloc), __FILE__, __FUNCTION__, __LINE__))
 
 // clang-format on
-static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc,
+SX_INLINE void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc,
                                 const char* file, const char* func, int line)
 {
     int new_count = arr ? (sx__sbm(arr) << 1) : 0;
@@ -90,14 +93,116 @@ static inline void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx
     int min_needed = sx_array_count(arr) + increment;
     int m = new_count > min_needed ? new_count : min_needed;
     int* p = (int*)sx__realloc(alloc, arr ? sx__sbraw(arr) : 0,
-                               (size_t)itemsize * (size_t)m + sizeof(int) * 2, 0, file, func, line);
+                               (size_t)itemsize*(size_t)m + sizeof(int)*2, 0, file, func, line);
+
     if (p) {
+        p[0] = m;
         if (!arr)
             p[1] = 0;
-        p[0] = m;
         return p + 2;
     } else {
         sx_out_of_memory();
         return 0x0;    // NULL
     }
 }
+
+
+// cpp wrapper (minimal template)
+#ifdef __cplusplus
+template <typename _T>
+struct sx_array 
+{
+    _T* p;
+    const sx_alloc* alloc;
+
+    sx_array() { p = nullptr; alloc = nullptr; }
+    explicit sx_array(const sx_alloc* _alloc) : alloc(_alloc), p(nullptr) {} 
+
+    ~sx_array() 
+    { 
+        if (alloc) {
+            sx_array_free(alloc, p); 
+            alloc = nullptr;
+        }
+        p = nullptr;
+    }
+
+    void init(const sx_alloc* _alloc, int init_count = 0)
+    {
+        sx_assert(_alloc);
+        this->alloc = _alloc;
+        if (init_count > 0) {
+            sx_array_reserve(_alloc, p, init_count);
+        }
+    }
+
+    void release()
+    {
+        sx_assert(alloc);
+        sx_array_free(alloc, p);
+        p = nullptr;
+        alloc = nullptr;
+    }
+
+    void push(const _T& _value) 
+    {
+        sx_assert(alloc);
+        sx_array_push(alloc, p, _value);
+    }
+
+    void pop(int _index)
+    {
+        sx_assert(alloc);
+        sx_assert(_index < sx_array_count(p));
+        sx_array_pop(alloc, _index);
+    }
+
+    void pop_last()
+    {
+        sx_assert(alloc);
+        sx_assert(sx_array_count(p));
+        sx_array_pop_last(p);
+    }
+
+    void clear()
+    {
+        sx_assert(alloc);
+        sx_array_clear(p);
+    }
+
+    int count() const 
+    {
+        sx_assert(alloc);
+        return sx_array_count(p);
+    }
+
+    _T* expand(int _count) 
+    {
+        sx_assert(alloc);
+        return sx_array_add(alloc, p, _count);
+    }
+
+    void reserve(int _count)
+    {
+        sx_assert(alloc);
+        sx_array_reserve(alloc, p, _count);
+    }
+
+    _T& operator[](int _index)
+    {
+        sx_assert(p);
+        return this->p[_index];
+    }
+
+    const _T& operator[](int index) const
+    {
+        sx_assert(p);
+        return this->p[index];
+    }
+
+    _T* begin() { return &p[0]; }
+
+    _T* end() { return &p[count()]; }
+
+};
+#endif // __cplusplus

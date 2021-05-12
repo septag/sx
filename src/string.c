@@ -147,8 +147,10 @@ int sx_strlen(const char* str)
         }
     }
 
-    sx_assert(0 && "Not a null-terminated string");
+    #if !SX_COMPILER_MSVC
+    sx_assertf(0, "Not a null-terminated string");
     return -1;
+    #endif
 }
 
 static inline int sx__strnlen(const char* str, int _max)
@@ -204,8 +206,10 @@ static inline int sx__strnlen(const char* str, int _max)
         }
     }
 
-    sx_assert(0 && "Not a null-terminated string");
+    #if !SX_COMPILER_MSVC
+    sx_assertf(0, "Not a null-terminated string");
     return -1;
+    #endif
 }
 
 char* sx_strncpy(char* SX_RESTRICT dst, int dst_sz, const char* SX_RESTRICT src, int _num)
@@ -283,7 +287,7 @@ const char* sx_strchar(const char* str, char ch)
     }
 
     longword_ptr = (uintptr_t*)char_ptr;
-    magic_bits = -1;
+    magic_bits = (uintptr_t)-1;
     magic_bits = magic_bits / 0xff * 0xfe << 1 >> 1 | 1;
     charmask = c | (c << 8);
     charmask |= charmask << 16;
@@ -301,36 +305,36 @@ const char* sx_strchar(const char* str, char ch)
             if (*cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
 #if SX_ARCH_64BIT
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
             if (*++cp == c)
                 return (const char*)cp;
             else if (*cp == '\0')
-                return NULL;
+                break;
 #endif
         }
     }
@@ -644,15 +648,11 @@ sx_str_block sx_findblock(const char* str, char open, char close)
     sx_str_block b = { NULL, NULL };
 
     for (char ch = *str; ch && count >= 0; ch = *++str) {
-        if (ch == open) {
+        if (!b.start && ch == open) {
             b.start = str + 1;
-            count++;
-        } else if (ch == close) {
-            count--;
-            if (count == 0) {
-                b.end = str - 1;
-                return b;
-            }
+        } else if (b.start && ch == close) {
+            b.end = str - 1;
+            return b;
         }
     }
 
@@ -706,7 +706,7 @@ char* sx_toupper(char* dst, int dst_sz, const char* str)
     int offset = 0;
     int dst_max = dst_sz - 1;
     while (*str && offset < dst_max) {
-        dst[offset++] = sx_tolowerchar(*str);
+        dst[offset++] = sx_toupperchar(*str);
         ++str;
     }
     dst[offset] = '\0';
@@ -786,7 +786,7 @@ void sx_strpool_defrag(sx_strpool* sp)
 sx_str_t sx_strpool_add(sx_strpool* sp, const char* str, int len)
 {
     STRPOOL_U64 handle = strpool_inject(sp, str, len);
-    sx_assert((handle & 0xffffffff) == handle &&
+    sx_assertf((handle & 0xffffffff) == handle,
               "uint32_t overflow, check index_bits and counter_bits in config!");
     return (uint32_t)handle;
 }

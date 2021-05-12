@@ -3,6 +3,7 @@
 // License: https://github.com/septag/sx#license-bsd-2-clause
 //
 #include "sx/sx.h"
+#include "sx/string.h"
 
 #if SX_PLATFORM_ANDROID
 #    include <android/log.h>
@@ -12,37 +13,45 @@ __declspec(dllimport) void __stdcall OutputDebugStringA(const char* _str);
 #    include <stdio.h>    // fputs, fflush
 #endif
 
-// CRT symbol workaround
-#ifdef __cplusplus
-extern "C" {
-#endif
-int _fltused = 0;
-
-void sx__break_program(const char* text)
+static void sx__default_assert_handler(const char* text, const char* sourcefile, uint32_t line)
 {
+    char output_text[2048];
+    if (sourcefile) {
+        sx_snprintf(output_text, sizeof(output_text), "%s(%d): ASSERT FAILURE - ", sourcefile, line);
+    } else {
+        sx_strcpy(output_text, sizeof(output_text), "ASSERT FAILURE - ");
+    }
+    char* endptr = sx_strcat(output_text, sizeof(output_text), text);
+    sx_unused(endptr);
+
     // print
 #if SX_PLATFORM_ANDROID
-    __android_log_write(ANDROID_LOG_DEBUG, "", text);
+    __android_log_write(ANDROID_LOG_DEBUG, "", output_text);
 #elif SX_PLATFORM_WINDOWS
-    OutputDebugStringA(text);
+    sx_strcat(endptr, sizeof(output_text), "\n");
+    OutputDebugStringA(output_text);
 #else
-    fputs(text, stderr);
+    fputs(output_text, stderr);
     fflush(stderr);
 #endif
-
-    // break
-#if SX_COMPILER_MSVC
-    __debugbreak();
-#elif SX_CPU_ARM
-    __builtin_trap();
-#elif SX_CPU_X86 && (SX_COMPILER_GCC || SX_COMPILER_CLANG)
-    __asm__("int $3");
-#else
-    int* int3 = (int*)3L;
-    *int3 = 3;
-#endif
 }
 
-#ifdef __cplusplus
+static sx_assert_cb* g_assert_handler = sx__default_assert_handler;
+
+void sx_set_assert_callback(sx_assert_cb* callback)
+{
+    g_assert_handler = callback ? callback : sx__default_assert_handler;
 }
-#endif
+
+void sx__debug_message(const char* sourcefile, uint32_t line, const char* fmt, ...)
+{
+    char text[2048];
+
+    va_list args;
+    va_start(args, fmt);
+    sx_vsnprintf(text, sizeof(text), fmt, args);
+    va_end(args);
+
+    g_assert_handler(text, sourcefile, line);
+}
+

@@ -32,7 +32,7 @@
 #if SX_COMPILER_MSVC
 #    define SX_SIMD_INLINE __forceinline
 #else
-#    define SX_SIMD_INLINE static inline __attribute__((__always_inline__))
+#    define SX_SIMD_INLINE SX_INLINE __attribute__((__always_inline__))
 #endif
 
 #define SX_SIMD_ENABLED (SX_SIMD_NEON || SX_SIMD_SSE)

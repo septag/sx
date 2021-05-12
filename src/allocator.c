@@ -5,8 +5,9 @@
 #include "sx/allocator.h"
 
 #include <malloc.h>
+#include <stdlib.h>
 
-#include "sx/atomic.h"
+#include "sx/threads.h"
 #include "sx/os.h"
 #include "sx/string.h"
 
@@ -17,6 +18,19 @@ static void* sx__malloc_leakd_cb(void* ptr, size_t size, uint32_t align, const c
 
 static const sx_alloc g_alloc_malloc = { sx__malloc_cb, NULL };
 static const sx_alloc g_alloc_malloc_leakd = { sx__malloc_leakd_cb, NULL };
+static sx_mem_fail_cb* g_alloc_failed_cb;
+
+void sx_mem_set_fail_callback(sx_mem_fail_cb* callback)
+{   
+    g_alloc_failed_cb = callback;
+}
+
+void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line)
+{
+    if (g_alloc_failed_cb) {
+        g_alloc_failed_cb(sourcefile, line);
+    }
+}
 
 const sx_alloc* sx_alloc_malloc()
 {
@@ -32,6 +46,9 @@ static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* f
                            const char* func, uint32_t line, void* user_data)
 {
     sx_unused(user_data);
+    sx_unused(line);
+    sx_unused(func);
+    sx_unused(file);
 
     if (size == 0) {
         if (ptr) {
@@ -106,7 +123,7 @@ static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func,
 
     sx_os_path_basename(mi->file, sizeof(mi->file), file);
     sx_strcpy(mi->func, sizeof(mi->func), func);
-    sx_lock(&mi_lock, 1);
+    sx_lock(&mi_lock);
     mi->line = line;
     mi->next = mi_head;
     if (mi_head)
@@ -123,7 +140,7 @@ static void stb_leakcheck_free(void* ptr)
     if (ptr != NULL) {
         stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         mi->size = ~mi->size;
-        sx_lock(&mi_lock, 1);
+        sx_lock(&mi_lock);
 #ifndef STB_LEAKCHECK_SHOWALL
         if (mi->prev == NULL) {
             sx_assert(mi_head == mi);

@@ -12,10 +12,6 @@ add_executable(test-timer test-timer.c)
 target_link_libraries(test-timer PRIVATE sx)
 set_target_properties(test-timer PROPERTIES FOLDER tests)
 
-add_executable(test-virtualmem test-virtualmem.c)
-target_link_libraries(test-virtualmem PRIVATE sx)
-set_target_properties(test-virtualmem PROPERTIES FOLDER tests)
-
 add_executable(test-hash test-hash.c)
 target_link_libraries(test-hash PRIVATE sx)
 set_target_properties(test-hash PROPERTIES FOLDER tests)
@@ -28,9 +24,9 @@ add_executable(test-bheap test-bheap.c)
 target_link_libraries(test-bheap PRIVATE sx)
 set_target_properties(test-bheap PROPERTIES FOLDER tests)
 
-add_executable(test-tlsf test-tlsf.c)
-target_link_libraries(test-tlsf PRIVATE sx)
-set_target_properties(test-tlsf PROPERTIES FOLDER tests)
+add_executable(test-iff test-iff.c)
+target_link_libraries(test-iff PRIVATE sx)
+set_target_properties(test-iff PROPERTIES FOLDER tests)
 
 # skip test-fiber, test-threads in emscripten
 if (NOT EMSCRIPTEN)
@@ -41,6 +37,5 @@ if (NOT EMSCRIPTEN)
     add_executable(test-threads test-threads.c)
     target_link_libraries(test-threads PRIVATE sx)
     set_target_properties(test-threads PROPERTIES FOLDER tests)
-    #set_target_properties(test-threads PROPERTIES LINKER_FLAGS "-s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=2")
 endif()
 

@@ -48,7 +48,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Enable Assembler
-if (MSVC)
+if (MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
     enable_language(CXX ASM_MASM)
 else()
     enable_language(CXX ASM)
@@ -59,7 +59,6 @@ set(SOURCE_FILES src/sx.c
                  src/threads.c
                  src/lin-alloc.c
                  src/hash.c
-                 src/stack-alloc.c
                  src/os.c 
                  src/string.c
                  src/io.c
@@ -69,12 +68,11 @@ set(SOURCE_FILES src/sx.c
                  src/timer.c
                  src/rng.c
                  src/ini.c
-                 src/virtual-alloc.c
+                 src/vmem.c
                  src/fiber.c
                  src/math.c 
                  src/jobs.c
                  src/bheap.c
-                 src/tlsf-alloc.c
                  src/ringbuffer.c
                  src/lockless.c)
 set(INCLUDE_FILES include/sx/allocator.h
@@ -87,7 +85,6 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/threads.h
                   include/sx/lin-alloc.h
                   include/sx/hash.h
-                  include/sx/stack-alloc.h
                   include/sx/os.h 
                   include/sx/string.h
                   include/sx/handle.h
@@ -97,12 +94,15 @@ set(INCLUDE_FILES include/sx/allocator.h
                   include/sx/timer.h
                   include/sx/rng.h
                   include/sx/ini.h
-                  include/sx/virtual-alloc.h 
+                  include/sx/vmem.h 
                   include/sx/fiber.h
                   include/sx/math.h
+                  include/sx/math-types.h 
+                  include/sx/math-scalar.h 
+                  include/sx/math-vec.h 
+                  include/sx/math-easing.h
                   include/sx/jobs.h
                   include/sx/bheap.h
-                  include/sx/tlsf-alloc.h
                   include/sx/simd.h
                   include/sx/ringbuffer.h
                   include/sx/lockless.h 
@@ -151,14 +151,21 @@ elseif (WIN32)
     else()
         set(CPU_ARCH "i386")
     endif()
-    set(ASM_EXT "ms_pe_masm.asm")
+
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(ASM_EXT "ms_pe_clang_gas.S")
+    elseif (MSVC)
+        set(ASM_EXT "ms_pe_masm.asm")
+    elseif (CMAKE_C_COMPILER_ID MATCHES "GNU")
+        set(ASM_EXT "ms_pe_gas.S")
+    endif()
 endif()
 
 set(ASM_SOURCES "asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_DEFINITIONS BOOST_CONTEXT_EXPORT=)
-if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4) 
+if (WIN32 AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND MSVC) 
     set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_OPTIONS /safeseh)
 endif()
 
@@ -183,13 +190,13 @@ if (SX_SHARED_LIB)
     set(LIB_TYPE SHARED)
 endif()
 
-if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU"))
-    add_compile_options(-nostdlib -Wno-deprecated-declarations)
+if (CMAKE_C_COMPILER_ID MATCHES "Clang" AND MSVC AND NOT CLANG_CL)
+    set(CLANG_CL 1 CACHE INTERNAL BOOl "")
+    message(STATUS "using clang-cl compiler")
+endif()
 
-    # MSVC + Clang_C2
-    if (MSVC)
-        add_compile_options("$<$<CONFIG:Debug>:-g>")
-    endif()
+if (NOT CLANG_CL AND (CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU"))
+    add_compile_options(-nostdlib -Wno-deprecated-declarations)
     add_compile_options("$<$<CONFIG:Debug>:-D_DEBUG>")
     add_compile_options("$<$<CONFIG:Release>:-DNDEBUG>")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
@@ -198,6 +205,11 @@ if ((CMAKE_C_COMPILER_ID MATCHES "Clang") OR (CMAKE_C_COMPILER_ID MATCHES "GNU")
 elseif (MSVC)
     sx_remove_compile_options(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" "/EHsc /GR")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+    
+    if (${MSVC_VERSION} GREATER_EQUAL 1928)
+        message(STATUS "MSVC compiler supports C17 standard")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c17")
+    endif()
 endif()
 
 add_library(sx ${LIB_TYPE} ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
@@ -205,6 +217,8 @@ add_library(sx ${LIB_TYPE} ${SOURCE_FILES} ${INCLUDE_FILES} ${ASM_SOURCES})
 # compat files include dir
 if (MSVC)
     set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/msvc)
+elseif (WIN32 AND (CMAKE_C_COMPILER_ID MATCHES "GNU"))
+    set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/mingw)
 elseif(APPLE)
     if (IOS)
         set(COMPAT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/compat/ios)

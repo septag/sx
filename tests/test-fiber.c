@@ -2,6 +2,7 @@
 #include "sx/fiber.h"
 #include "sx/os.h"
 #include "sx/timer.h"
+#include "sx/string.h"
 #include <stdio.h>
 
 void fiber1_fn(sx_fiber_transfer transfer)
@@ -44,6 +45,7 @@ sx_coro_declare(yield_test)
     sx_coro_end(ctx);    // Always call this !
 }
 
+
 int main(int argc, char* argv[])
 {
     const sx_alloc* alloc = sx_alloc_malloc();
@@ -78,7 +80,7 @@ int main(int argc, char* argv[])
         sx_os_sleep(10);
         dt = (float)sx_tm_sec(sx_tm_laptime(&tick));
     }
-    sx_coro_destroy_context(ctx, alloc);
+    sx_coro_destroy_context(ctx);
 
     return 0;
 }

@@ -13,9 +13,12 @@
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
 // clang-format off
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
 #    include <windows.h>
+SX_PRAGMA_DIAGNOSTIC_POP()
 #    include <direct.h>    // _getcwd
-#    include <Psapi.h>
+#    include <psapi.h>
 // clang-format on
 #elif SX_PLATFORM_POSIX
 #    include <dirent.h>    // S_IFREG
@@ -59,7 +62,7 @@ static const char* k_path_sep = "\\";
 static const char* k_path_sep = "/";
 #endif
 
-size_t sx_os_pagesz()
+size_t sx_os_pagesz(void)
 {
 #if SX_PLATFORM_WINDOWS
     SYSTEM_INFO si;
@@ -70,7 +73,7 @@ size_t sx_os_pagesz()
 #endif
 }
 
-size_t sx_os_maxstacksz()
+size_t sx_os_maxstacksz(void)
 {
 #if SX_PLATFORM_WINDOWS
     return 1073741824;    // 1gb
@@ -81,17 +84,15 @@ size_t sx_os_maxstacksz()
 #endif
 }
 
-size_t sx_os_minstacksz()
+size_t sx_os_minstacksz(void)
 {
     return 32768;    // 32kb
 }
 
-char sx_os_getch()
+char sx_os_getch(void)
 {
 #if SX_PLATFORM_WINDOWS
-    return getchar();
-//#elif SX_PLATFORM_EMSCRIPTEN
-//	return 0;
+    return (char)(getchar() & 0xff);
 #elif SX_PLATFORM_POSIX
     struct termios old_term;
     struct termios new_term;
@@ -114,7 +115,7 @@ size_t sx_os_align_pagesz(size_t size)
     return page_cnt * page_sz;
 }
 
-size_t sx_os_processmem()
+size_t sx_os_processmem(void)
 {
 #if SX_PLATFORM_ANDROID
     struct mallinfo mi = mallinfo();
@@ -192,7 +193,7 @@ void* sx_os_dlsym(void* handle, const char* symbol)
 #endif
 }
 
-const char* sx_os_dlerr()
+const char* sx_os_dlerr(void)
 {
 #if SX_PLATFORM_WINDOWS
     return "";
@@ -205,12 +206,11 @@ const char* sx_os_dlerr()
 
 int sx_os_chdir(const char* path)
 {
-#if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_PLATFORM_ANDROID || \
-    Sx_PLATFORM_IOS
+#if SX_PLATFORM_PS4 || SX_PLATFORM_XBOXONE || SX_PLATFORM_WINRT || SX_PLATFORM_ANDROID || SX_PLATFORM_IOS
     sx_unused(path);
     return -1;
 #elif SX_PLATFORM_WINDOWS
-    return SetCurrentDirectory(path);
+    return SetCurrentDirectoryA(path);
 #else
     return chdir(path);
 #endif    // SX_COMPILER_
@@ -220,8 +220,6 @@ void sx_os_sleep(int ms)
 {
 #if SX_PLATFORM_WINDOWS
     Sleep(ms);
-#elif SX_PLATFORM_XBOXONE
-    sx_assert(0 && "Sleep not implemented");
 #else
     struct timespec req = { (time_t)ms / 1000, (long)((ms % 1000) * 1000000) };
     struct timespec rem = { 0, 0 };
@@ -276,7 +274,7 @@ sx_pinfo sx_os_exec(const char* const* argv)
     return pinfo;
 #else
     sx_unused(argv);
-    sx_assert(0 && "not implemented");
+    sx_assertf(0, "not implemented");
     return (sx_pinfo){ {0}, 0 };
 #endif    // SX_PLATFORM_
 }
@@ -306,7 +304,7 @@ bool sx_os_copy(const char* src, const char* dest)
     close(output);
     return result > -1;
 #else
-    sx_assert(0 && "not implemented");
+    sx_assert(0, "not implemented");
     return false;
 #endif
 }
@@ -360,7 +358,7 @@ char* sx_os_path_exepath(char* dst, int size)
 #else
     sx_unused(dst);
     sx_unused(size);
-    sx_assert(0 && "not implemented");
+    sx_assertf(0, "not implemented");
     return NULL;
 #endif
 }
@@ -390,7 +388,7 @@ sx_file_info sx_os_stat(const char* filepath)
     tm.HighPart = fad.ftLastWriteTime.dwHighDateTime;
     tm.LowPart = fad.ftLastWriteTime.dwLowDateTime;
     info.last_modified = (uint64_t)(tm.QuadPart / 10000000 - 11644473600LL);
-#else
+#else // if SX_PLATFORM_WINDOWS
     struct stat st;
     int32_t result = stat(filepath, &st);
     if (0 != result)
@@ -406,7 +404,7 @@ sx_file_info sx_os_stat(const char* filepath)
 #    else
     info.last_modified = st.st_mtim.tv_sec;
 #    endif
-#endif    // SX_COMPILER_MSVC
+#endif    // else SX_PLATFORM_WINDOWS
 
     return info;
 }
@@ -499,7 +497,7 @@ char* sx_os_path_dirname(char* dst, int size, const char* path)
             sx_strncpy(dst, size, path, o);
         }
     } else if (dst != path) {
-        sx_strcpy(dst, size, path);
+        *dst = '\0';
     }
     return dst;
 }

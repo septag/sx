@@ -46,11 +46,12 @@ typedef enum sx_cmdline_optype {
         name       - Long name of argument, set to NULL if only short name is valid.
         name_short - Short name of argument, set to 0 if only long name is valid.
         type       - Type of option, see <getopt_option_type>.
-        flag       - Pointer to flag to set if option is of flag-type, set to null NULL if option is
-   not of flag-type. value      - If option is of flag-type, this value will be set/and:ed/or:ed to
-   the flag, else it will be returned from GetOpt when option is found. desc       - Description of
-   option. value_desc - Short description of valid values to the option, will only be used when
-   generating help-text. example: "--my_option=<value_desc_goes_here>"
+        flag       - Pointer to flag to set if option is of flag-type, set to null NULL if option is not of flag-type. 
+        value      - If option is of flag-type, this value will be set/and:ed/or:ed to the flag, 
+                     else it will be returned from GetOpt when option is found. 
+        desc       - Description of option. 
+        value_desc - Short description of valid values to the option, will only be used when generating 
+                     help-text. example: "--my_option=<value_desc_goes_here>"
 */
 typedef struct sx_cmdline_opt_s {
     const char* name;

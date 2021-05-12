@@ -36,16 +36,16 @@ typedef struct sx_pinfo {
     void* win_thread_handle;
 } sx_pinfo;
 
-SX_API size_t sx_os_minstacksz();
-SX_API size_t sx_os_maxstacksz();
-SX_API size_t sx_os_pagesz();
+SX_API size_t sx_os_minstacksz(void);
+SX_API size_t sx_os_maxstacksz(void);
+SX_API size_t sx_os_pagesz(void);
 SX_API size_t sx_os_align_pagesz(size_t size);
-SX_API char sx_os_getch();
-SX_API size_t sx_os_processmem();
+SX_API char sx_os_getch(void);
+SX_API size_t sx_os_processmem(void);
 SX_API void* sx_os_dlopen(const char* filepath);
 SX_API void sx_os_dlclose(void* handle);
 SX_API void* sx_os_dlsym(void* handle, const char* symbol);
-SX_API const char* sx_os_dlerr();
+SX_API const char* sx_os_dlerr(void);
 SX_API int sx_os_chdir(const char* path);
 SX_API void sx_os_sleep(int ms);
 SX_API sx_pinfo sx_os_exec(const char* const* argv);
@@ -60,14 +60,12 @@ SX_API char* sx_os_path_unixpath(char* dst, int size, const char* path);
 SX_API char* sx_os_path_winpath(char* dst, int size, const char* path);
 SX_API char* sx_os_path_basename(char* dst, int size, const char* path);
 SX_API char* sx_os_path_dirname(char* dst, int size, const char* path);
-SX_API char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size,
-                                 const char* path);
+SX_API char* sx_os_path_splitext(char* ext, int ext_size, char* basename, int basename_size, const char* path);
 SX_API char* sx_os_path_ext(char* dst, int size, const char* path);
 SX_API char* sx_os_path_join(char* dst, int size, const char* path_a, const char* path_b);
 SX_API char* sx_os_path_normcase(char* dst, int size, const char* path);
 SX_API char* sx_os_path_normpath(char* dst, int size, const char* path);
-SX_API char* sx_os_path_relpath(char* dst, int size, const char* path,
-                                const char* start sx_default(NULL));
+SX_API char* sx_os_path_relpath(char* dst, int size, const char* path, const char* start sx_default(NULL));
 SX_API bool sx_os_path_exists(const char* path);
 SX_API bool sx_os_path_isfile(const char* path);
 SX_API bool sx_os_path_isdir(const char* path);

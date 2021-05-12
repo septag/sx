@@ -23,6 +23,8 @@ ipch
 __pycache__
 Thumbs.db
 .build*
+.clangd
+*.sublime-workspace
 
 # Gradle
 .gradle
@@ -32,7 +34,6 @@ Thumbs.db
 /build
 /build-*
 /captures
-
 
 # Generated files
 docs/Doxyfile

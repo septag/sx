@@ -23,6 +23,7 @@
 #pragma once
 
 #include "sx.h"
+#include "atomic.h"
 
 typedef struct sx_alloc sx_alloc;
 
@@ -90,3 +91,40 @@ SX_API bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data);
 SX_API bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc);
 SX_API bool sx_queue_spsc_full(const sx_queue_spsc* queue);
 
+// spinlock
+// interesting read: https://software.intel.com/en-us/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops
+typedef sx_align_decl(64, sx_atomic_int) sx_lock_t;
+
+#define SX__LOCK_PRESPIN 1023
+#define SX__LOCK_MAXTIME 300
+#ifndef sx_track_contention
+#   define sx_track_contention()
+#endif
+
+SX_FORCE_INLINE void sx_unlock(sx_lock_t* lock)
+{
+    int prev = sx_atomic_xchg(lock, 0);
+    sx_unused(prev);
+    sx_assert_always(prev == 1);
+}
+
+SX_FORCE_INLINE bool sx_trylock(sx_lock_t* lock)
+{
+    return *lock == 0 && sx_atomic_xchg(lock, 1) == 0;
+}
+
+SX_INLINE void sx_lock(sx_lock_t* lock)
+{
+    int counter = 0;
+    while (!sx_trylock(lock)) {
+        if ((++counter & SX__LOCK_PRESPIN) == 0) {
+            sx_track_contention();
+            sx_thread_yield();
+        } else {
+            uint64_t prev = sx_cycle_clock();
+            do {
+                sx_yield_cpu();
+            } while ((sx_cycle_clock() - prev) < SX__LOCK_MAXTIME);
+        }
+    }
+}

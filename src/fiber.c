@@ -15,7 +15,10 @@
 #if SX_PLATFORM_WINDOWS
 #    define VC_EXTRALEAN
 #    define WIN32_LEAN_AND_MEAN
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5105)
 #    include <windows.h>
+SX_PRAGMA_DIAGNOSTIC_POP()
 #elif SX_PLATFORM_POSIX
 #    include <sys/mman.h>
 #    include <unistd.h>
@@ -68,8 +71,9 @@ bool sx_fiber_stack_init(sx_fiber_stack* fstack, unsigned int size)
 void sx_fiber_stack_init_ptr(sx_fiber_stack* fstack, void* ptr, unsigned int size)
 {
     size_t page_sz = sx_os_pagesz();
-    sx_assert((uintptr_t)ptr % page_sz == 0 && "buffer size must be dividable to OS page size");
-    sx_assert(size % page_sz == 0 && "buffer size must be dividable to OS page size");
+    sx_unused(page_sz);
+    sx_assertf((uintptr_t)ptr % page_sz == 0, "buffer size must be dividable to OS page size");
+    sx_assertf(size % page_sz == 0, "buffer size must be dividable to OS page size");
 
     fstack->sptr = ptr;
     fstack->ssize = size;
@@ -122,10 +126,12 @@ typedef struct sx__coro_state {
     sx__coro_state_counter counter;
     struct sx__coro_state* next;
     struct sx__coro_state* prev;
+    bool init;
 } sx__coro_state;
 
 typedef struct sx_coro_context {
-    sx_pool* coro_pool;
+    const sx_alloc* alloc;
+    sx_pool* coro_pool;             // sx__coro_state
     sx__coro_state* run_list;
     sx__coro_state* run_list_last;
     sx__coro_state* cur_coro;
@@ -159,10 +165,10 @@ static inline void sx__coro_remove_list(sx__coro_state** pfirst, sx__coro_state*
     node->prev = node->next = NULL;
 }
 
-sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, int stack_sz)
+sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int num_initial_fibers, int stack_sz)
 {
-    sx_assert(max_fibers > 0);
-    sx_assert((size_t)stack_sz >= sx_os_minstacksz() && "stack size too small");
+    sx_assert(num_initial_fibers > 0);
+    sx_assertf((size_t)stack_sz >= sx_os_minstacksz(), "stack size too small");
 
     sx_coro_context* ctx = (sx_coro_context*)sx_malloc(alloc, sizeof(sx_coro_context));
     if (!ctx) {
@@ -171,49 +177,67 @@ sx_coro_context* sx_coro_create_context(const sx_alloc* alloc, int max_fibers, i
     }
     sx_memset(ctx, 0x0, sizeof(sx_coro_context));
 
-    ctx->coro_pool = sx_pool_create(alloc, sizeof(sx__coro_state), max_fibers);
+    ctx->alloc = alloc;
+
+    ctx->coro_pool = sx_pool_create(alloc, sizeof(sx__coro_state), num_initial_fibers);
     if (!ctx->coro_pool) {
         sx_out_of_memory();
         return NULL;
     }
-    sx_memset(ctx->coro_pool->pages->buff, 0x0, sizeof(sx__coro_state) * max_fibers);
     ctx->stack_sz = stack_sz;
 
     return ctx;
 }
 
-void sx_coro_destroy_context(sx_coro_context* ctx, const sx_alloc* alloc)
+void sx_coro_destroy_context(sx_coro_context* ctx)
 {
     sx_assert(ctx);
-    if (ctx->coro_pool)
+
+    const sx_alloc* alloc = ctx->alloc;
+    if (ctx->coro_pool) {
+        // TODO: release fiber's stack memory
+        sx__pool_page* page = ctx->coro_pool->pages;
+        int capacity = ctx->coro_pool->capacity;
+        while (page) {
+            for (int i = page->iter; i < capacity; i++) {
+                sx__coro_state* state = page->ptrs[i];
+                if (state->init) {
+                    sx_fiber_stack_release(&state->stack_mem);
+                }
+            }
+            page = page->next;
+        }
+
         sx_pool_destroy(ctx->coro_pool, alloc);
-
-    // TODO: release fiber's stack memory
-
-    sx_free(alloc, ctx);
+        sx_free(alloc, ctx);
+    }
 }
 
 void sx__coro_invoke(sx_coro_context* ctx, sx_fiber_cb* callback, void* user)
 {
-    sx__coro_state* fs = (sx__coro_state*)sx_pool_new(ctx->coro_pool);
-
-    if (fs) {
-        if (!fs->stack_mem.sptr) {
-            // Initialize stack memory
-            if (!sx_fiber_stack_init(&fs->stack_mem, ctx->stack_sz)) {
-                sx_out_of_memory();
-                return;
-            }
-        }
-        fs->fiber = sx_fiber_create(fs->stack_mem, callback);
-        fs->callback = callback;
-        fs->user = user;
-        // Add to the end of the list
-        sx__coro_add_list(&ctx->run_list, &ctx->run_list_last, fs);
-
-        ctx->cur_coro = fs;
-        fs->fiber = sx_fiber_switch(fs->fiber, user).from;
+    sx__coro_state* fs = sx_pool_new_and_grow(ctx->coro_pool, ctx->alloc);
+    if (!fs) {
+        sx_out_of_memory();
+        return;
     }
+
+    // Initialize stack memory if not initilized
+    if (!fs->init) {
+        if (!sx_fiber_stack_init(&fs->stack_mem, ctx->stack_sz)) {
+            sx_out_of_memory();
+            return;
+        }
+        fs->init = true;
+    }
+
+    fs->fiber = sx_fiber_create(fs->stack_mem, callback);
+    fs->callback = callback;
+    fs->user = user;
+    // Add to the end of the list
+    sx__coro_add_list(&ctx->run_list, &ctx->run_list_last, fs);
+
+    ctx->cur_coro = fs;
+    fs->fiber = sx_fiber_switch(fs->fiber, user).from;
 }
 
 void sx_coro_update(sx_coro_context* ctx, float dt)
@@ -243,7 +267,7 @@ void sx_coro_update(sx_coro_context* ctx, float dt)
             break;
         }
         default:
-            sx_assert(0 && "Invalid ret type in update loop");
+            sx_assertf(0, "Invalid ret type in update loop");
             break;
         }
 
@@ -260,6 +284,8 @@ bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
     sx__coro_state* fs = ctx->run_list;
     while (fs) {
         sx__coro_state* next = fs->next;
+
+        // just remove the fiber if the new callback is NULL
         if (fs->callback == callback) {
             if (new_callback) {
                 fs->callback = new_callback;
@@ -279,9 +305,9 @@ bool sx_coro_replace_callback(sx_coro_context* ctx, sx_fiber_cb* callback,
 static inline void sx__coro_return(sx_coro_context* ctx, sx_fiber_t* pfrom, sx_coro_ret_type type,
                                    int arg)
 {
-    sx_assert(ctx->cur_coro &&
+    sx_assertf(ctx->cur_coro,
               "You must call this function from within sx_fiber_cb invoked by sx_fiber_invoke");
-    sx_assert(type != CORO_RET_NONE && "Invalid enum for type");
+    sx_assertf(type != CORO_RET_NONE, "Invalid enum for type");
 
     sx__coro_state* fs = ctx->cur_coro;
 

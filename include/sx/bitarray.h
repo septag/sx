@@ -13,10 +13,10 @@ typedef struct sx_bitarray {
     int num_bits;
 } sx_bitarray;
 
-static inline bool sx_bitarray_init(sx_bitarray* bar, void* data, int data_size, bool init_val)
+SX_INLINE bool sx_bitarray_init(sx_bitarray* bar, void* data, int data_size, bool init_val)
 {
     if (data_size % sizeof(uint64_t) != 0) {
-        sx_assert(0 && "data_size must be a multiple of 8: sizeof(uint64)");
+        sx_assertf(0, "data_size must be a multiple of 8: sizeof(uint64)");
         return false;
     }
     sx_memset(data, init_val ? 0xff : 0x0, data_size);
@@ -25,7 +25,7 @@ static inline bool sx_bitarray_init(sx_bitarray* bar, void* data, int data_size,
     return true;
 }
 
-static inline sx_bitarray* sx_bitarray_create(const sx_alloc* alloc, int num_bits, bool init_val)
+SX_INLINE sx_bitarray* sx_bitarray_create(const sx_alloc* alloc, int num_bits, bool init_val)
 {
     int aligned_num = sx_align_mask(num_bits, 0x3f);
     size_t total_sz = sizeof(sx_bitarray) + (aligned_num/64)*sizeof(uint64_t);
@@ -40,24 +40,24 @@ static inline sx_bitarray* sx_bitarray_create(const sx_alloc* alloc, int num_bit
     return bar;
 }
 
-static inline void sx_bitarray_destroy(sx_bitarray* bar, const sx_alloc* alloc)
+SX_INLINE void sx_bitarray_destroy(sx_bitarray* bar, const sx_alloc* alloc)
 {
     sx_free(alloc, bar);
 }
 
-static inline void sx_bitarray_on(sx_bitarray* bar, int index)
+SX_INLINE void sx_bitarray_on(sx_bitarray* bar, int index)
 {
     sx_assert(index < bar->num_bits);
     bar->bits[index / 64] |= 1ull << (index & 0x3f);
 }
 
-static inline void sx_bitarray_off(sx_bitarray* bar, int index)
+SX_INLINE void sx_bitarray_off(sx_bitarray* bar, int index)
 {
     sx_assert(index < bar->num_bits);
     bar->bits[index / 64] &= ~(1ull << (index & 0x3f));
 }
 
-static inline void sx_bitarray_set(sx_bitarray* bar, int index, bool value)
+SX_INLINE void sx_bitarray_set(sx_bitarray* bar, int index, bool value)
 {
     if (value) {
         sx_bitarray_on(bar, index);
@@ -66,7 +66,7 @@ static inline void sx_bitarray_set(sx_bitarray* bar, int index, bool value)
     }
 }
 
-static inline bool sx_bitarray_get(sx_bitarray* bar, int index)
+SX_INLINE bool sx_bitarray_get(sx_bitarray* bar, int index)
 {
     sx_assert(index < bar->num_bits);
     return (bar->bits[index / 64] & (1ull << (index & 0x3f))) != 0;
