@@ -1,14 +1,9 @@
 #include "sx/allocator.h"
 #include "sx/jobs.h"
 #include "sx/os.h"
-#include "sx/rng.h"
 
 #include <stdio.h>
 #include <time.h>
-
-#define MAX_JOBS 32
-#define MAX_FIBERS 100
-#define STACK_SIZE 128 * 1024
 
 static sx_job_context* g_ctx = NULL;
 
