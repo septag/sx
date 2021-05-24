@@ -107,19 +107,19 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
 
 void sx_queue_spsc_destroy(sx_queue_spsc* queue, const sx_alloc* alloc)
 {
-    sx_assert(queue);
-
-    if (queue->grow_bins) {
-        sx__queue_spsc_bin* bin = queue->grow_bins;
-        while (bin) {
-            sx__queue_spsc_bin* next = bin->next;
-            sx__queue_spsc_destroy_bin(bin, alloc);
-            bin = next;
+    if (queue) {
+        if (queue->grow_bins) {
+            sx__queue_spsc_bin* bin = queue->grow_bins;
+            while (bin) {
+                sx__queue_spsc_bin* next = bin->next;
+                sx__queue_spsc_destroy_bin(bin, alloc);
+                bin = next;
+            }
         }
-    }
 
-    queue->capacity = queue->iter = 0;
-    sx_free(alloc, queue);
+        queue->capacity = queue->iter = 0;
+        sx_free(alloc, queue);
+    }
 }
 
 bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)

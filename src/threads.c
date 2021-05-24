@@ -398,6 +398,7 @@ bool sx_signal_wait(sx_signal* sig, int msecs)
     return ok;
 }
 
+
 // Semaphore (posix only)
 #    if !SX_PLATFORM_APPLE
 void sx_semaphore_init(sx_sem* sem)
@@ -723,3 +724,82 @@ uint32_t sx_thread_tid()
     sx_assertf(0, "Tid not implemented");
 #endif    // SX_PLATFORM_
 }
+
+#if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+#include "../3rdparty/c89atomic/c89atomic.h"
+
+typedef struct sx__padded_flag
+{
+    c89atomic_flag flag;
+    uint8_t padding[SX_CACHE_LINE_SIZE-1];
+} sx__padded_flag;
+
+typedef sx_align_decl(SX_CACHE_LINE_SIZE, struct) sx_anderson_lock
+{
+    sx_align_decl(SX_CACHE_LINE_SIZE, sx__padded_flag*) locked;
+    sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_free_idx;
+    sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_serving_idx;
+    int max_threads;
+} sx_anderson_lock;
+
+sx_anderson_lock* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads) 
+{
+    sx_assert(max_threads > 0);
+
+    sx_anderson_lock* l = sx_calloc(alloc, sizeof(sx_anderson_lock) + max_threads*sizeof(sx__padded_flag));
+    if (!l) {
+        return NULL;
+    }
+    l->max_threads = max_threads;
+    l->next_serving_idx = 1;
+
+    l->locked = (sx__padded_flag*)(l + 1);
+
+    for (int i = 1; i < max_threads; i++) {
+        l->locked[i].flag = 1;
+    }
+
+    return l;
+}
+
+void sx_anderson_lock_destroy(sx_anderson_lock* lock, const sx_alloc* alloc) 
+{
+    sx_free(alloc, lock);
+}
+
+void sx_anderson_lock_enter(sx_anderson_lock* lock) 
+{
+    const uint64_t index = c89atomic_fetch_add_64(&lock->next_free_idx, 1) % lock->max_threads;
+    c89atomic_flag* flag = &lock->locked[index].flag;
+
+    // ensure overflow never happens
+    if (index == 0) {
+        c89atomic_fetch_sub_64(&lock->next_free_idx, lock->max_threads);
+    }
+
+    // TODO: the LOCK_MAXTIME and LOCK_PRESPIN likely need more tweaking
+    // sx_yield_cpu apparantly has a lot of latency in modern cpus, so this loop is a workaround
+    // Reference: https://software.intel.com/content/www/us/en/develop/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops.html
+    int counter = 0;
+    while (*flag) {
+        if ((++counter & SX__LOCK_PRESPIN) == 0) {
+            sx_track_contention();
+            sx_thread_yield();  // too much waiting, relief control of the current thread
+        } else {
+            uint64_t prev = sx_cycle_clock();
+            do {
+                sx_yield_cpu();
+            } while ((sx_cycle_clock() - prev) < SX__LOCK_MAXTIME);
+        }
+    }
+
+    c89atomic_store_8(flag, 1);
+}
+
+void sx_anderson_lock_exit(sx_anderson_lock* lock) 
+{
+    const uint64_t index = c89atomic_fetch_add_64(&lock->next_serving_idx, 1);
+    c89atomic_store_8(&lock->locked[index%lock->max_threads].flag, 0);
+}
+
+#endif // SX_CONFIG_EXPERIMENTAL_SPINLOCK
