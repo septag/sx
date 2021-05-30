@@ -46,11 +46,11 @@
 //                                  processed.
 //                                  - count: The count of items in the work set
 //                                           This value will be divided by job system into threads
-//                                           For example, if you submit count as 100 and there are 
-//                                           10 worker cores, then each core will have a range of 10 
+//                                           For example, if you submit count as 100 and there are
+//                                           10 worker cores, then each core will have a range of 10
 //                                           values of work
-//                                  - callback: worker callback function. `range_start` and 
-//                                              `range_end` parameters are assigned for each thread 
+//                                  - callback: worker callback function. `range_start` and
+//                                              `range_end` parameters are assigned for each thread
 //                                              which is within the `count` value
 //                                  - user: user pointer to be passed to callback function
 //                                  - priority: job priority, see `sx_job_priority`
@@ -87,7 +87,7 @@
 //      use this wisely, because if job tag bits are not found in thread tags, the job will not be executed ever
 //      Example:
 //          Worker threads:
-//          thread #1 (tag = 0x7 (binary: 0111))        thread #2 (0x7 (binary: 0111))        thread #3 (0x7 (binary: 0111))
+//          thread #1 (tag = 0x7 (binary: 0111))        thread #2 (0x7 (binary: 0111))        thread #3 (0x7 (binary: 1000))
 //
 //          dispatch_job (with tag-bits = 0x4 (0100)) - runs on threads #1 and #2 because the tag bits match
 //          dispatch_job (with tag-bits = 0x8 (1000)) - only runs on thread #3
