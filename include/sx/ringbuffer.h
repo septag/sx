@@ -48,8 +48,7 @@ typedef sx_align_decl(16, struct) sx_ringbuffer
     int size;     // valid data size
     int start;    // read offset
     int end;      // write offset
-}
-sx_ringbuffer;
+} sx_ringbuffer;
 
 SX_API sx_ringbuffer* sx_ringbuffer_create(const sx_alloc* alloc, int capacity);
 SX_API void sx_ringbuffer_destroy(sx_ringbuffer* rb, const sx_alloc* alloc);

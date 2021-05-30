@@ -73,8 +73,13 @@ typedef struct sx_job_context {
     sx__job* waiting_list[SX_JOB_PRIORITY_COUNT];
     sx__job* waiting_list_last[SX_JOB_PRIORITY_COUNT];
     uint32_t* tags;      // count = num_threads + 1
-    sx_lock_t job_lk;    // used for 'job_pool', 'waiting_list' and 'pending' access
+    #if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+    sx_anderson_lock* job_lk;    // used for 'job_pool', 'waiting_list' and 'pending' access
+    sx_anderson_lock* counter_lk;
+    #else
+    sx_lock_t job_lk;
     sx_lock_t counter_lk;
+    #endif
     sx_tls thread_tls;
     int dummy_counter;
     sx_sem sem;
@@ -87,9 +92,9 @@ typedef struct sx_job_context {
 
 static void sx__del_job(sx_job_context* ctx, sx__job* job)
 {
-    sx_lock(&ctx->job_lk);
-    sx_pool_del(ctx->job_pool, job);
-    sx_unlock(&ctx->job_lk);
+    sx_lock_(ctx->job_lk) {
+        sx_pool_del(ctx->job_pool, job);
+    }
 }
 
 static void fiber_fn(sx_fiber_transfer transfer)
@@ -179,25 +184,24 @@ static sx__job_select_result sx__job_select(sx_job_context* ctx, uint32_t tid, u
 {
     sx__job_select_result r = { 0 };
     
-    sx_lock(&ctx->job_lk);
-    for (int pr = 0; pr < SX_JOB_PRIORITY_COUNT; pr++) {
-        sx__job* node = ctx->waiting_list[pr];
-        while (node) {
-            r.waiting_list_alive = true;
-            if (*node->wait_counter == 0) {    // job must not be waiting/depend on any jobs
-                if ((node->owner_tid == 0 || node->owner_tid == tid) &&
-                    (node->tags == 0 || (node->tags & tags))) {
-                    r.job = node;
-                    sx__job_remove_list(&ctx->waiting_list[pr], &ctx->waiting_list_last[pr], node);
-                    pr = SX_JOB_PRIORITY_COUNT; // break out of the outer loop
-                    break;
+    sx_lock_(ctx->job_lk) {
+        for (int pr = 0; pr < SX_JOB_PRIORITY_COUNT; pr++) {
+            sx__job* node = ctx->waiting_list[pr];
+            while (node) {
+                r.waiting_list_alive = true;
+                if (*node->wait_counter == 0) {    // job must not be waiting/depend on any jobs
+                    if ((node->owner_tid == 0 || node->owner_tid == tid) &&
+                        (node->tags == 0 || (node->tags & tags))) {
+                        r.job = node;
+                        sx__job_remove_list(&ctx->waiting_list[pr], &ctx->waiting_list_last[pr], node);
+                        pr = SX_JOB_PRIORITY_COUNT; // break out of the outer loop
+                        break;
+                    }
                 }
-            }
-            node = node->next;
-        }    // while(iterate nodes)
-    }        // foreach(priority)
-
-    sx_unlock(&ctx->job_lk);
+                node = node->next;
+            }    // while(iterate nodes)
+        }        // foreach(priority)
+    } // lock
 
     return r;
 }
@@ -309,9 +313,10 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
               "this amount of jobs at a time cannot be done. increase max_jobs");
 
     // Create a counter (job handle)
-    sx_lock(&ctx->counter_lk);
-    sx_job_t counter = (sx_job_t)sx_pool_new_and_grow(ctx->counter_pool, ctx->alloc);
-    sx_unlock(&ctx->counter_lk);
+    sx_job_t counter;
+    sx_lock_(ctx->counter_lk) {
+        counter = (sx_job_t)sx_pool_new_and_grow(ctx->counter_pool, ctx->alloc);
+    }
 
     if (!counter) {
         sx_assertf(0, "Maximum job instances exceeded");
@@ -327,38 +332,38 @@ sx_job_t sx_job_dispatch(sx_job_context* ctx, int count, sx_job_cb* callback, vo
         tdata->cur_job->wait_counter = counter;
 
     // Push jobs to the end of the list, so they can be collected by threads
-    sx_lock(&ctx->job_lk);
-    if (!sx_pool_fulln(ctx->job_pool, num_jobs)) {
-        int range_start = 0;
-        int range_end = range_size + (range_reminder > 0 ? 1 : 0);
-        --range_reminder;
-
-        for (int i = 0; i < num_jobs; i++) {
-            sx__job_add_list(&ctx->waiting_list[priority], &ctx->waiting_list_last[priority],
-                             sx__new_job(ctx, i, callback, user, range_start, range_end, counter,
-                                         tags, priority));
-            range_start = range_end;
-            range_end += (range_size + (range_reminder > 0 ? 1 : 0));
+    sx_lock_(ctx->job_lk) {
+        if (!sx_pool_fulln(ctx->job_pool, num_jobs)) {
+            int range_start = 0;
+            int range_end = range_size + (range_reminder > 0 ? 1 : 0);
             --range_reminder;
-        }
-        sx_assert(range_reminder <= 0);
 
-        // Post to semaphore to worker threads start cur_job
-        sx_semaphore_post(&ctx->sem, num_jobs);
-    } else {
-        SX_PRAGMA_DIAGNOSTIC_PUSH()
-        SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4204)     // nonstandard extension used: non-constant aggregate initializer
-        sx__job_pending pending = { .counter = counter,
-                                    .range_size = range_size,
-                                    .range_reminder = range_reminder,
-                                    .callback = callback,
-                                    .user = user,
-                                    .priority = priority,
-                                    .tags = tags };
-        sx_array_push(ctx->alloc, ctx->pending, pending);
-        SX_PRAGMA_DIAGNOSTIC_POP()   
-    }
-    sx_unlock(&ctx->job_lk);
+            for (int i = 0; i < num_jobs; i++) {
+                sx__job_add_list(&ctx->waiting_list[priority], &ctx->waiting_list_last[priority],
+                                 sx__new_job(ctx, i, callback, user, range_start, range_end, counter,
+                                             tags, priority));
+                range_start = range_end;
+                range_end += (range_size + (range_reminder > 0 ? 1 : 0));
+                --range_reminder;
+            }
+            sx_assert(range_reminder <= 0);
+
+            // Post to semaphore to worker threads start cur_job
+            sx_semaphore_post(&ctx->sem, num_jobs);
+        } else {
+            SX_PRAGMA_DIAGNOSTIC_PUSH()
+            SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4204)     // nonstandard extension used: non-constant aggregate initializer
+            sx__job_pending pending = { .counter = counter,
+                                        .range_size = range_size,
+                                        .range_reminder = range_reminder,
+                                        .callback = callback,
+                                        .user = user,
+                                        .priority = priority,
+                                        .tags = tags };
+            sx_array_push(ctx->alloc, ctx->pending, pending);
+            SX_PRAGMA_DIAGNOSTIC_POP()   
+        }
+    }   // lock
 
     return counter;
 }
@@ -396,30 +401,30 @@ static void sx__job_process_pending(sx_job_context* ctx)
 
 static void sx__job_process_pending_single(sx_job_context* ctx, int index)
 {
-    sx_lock(&ctx->job_lk);
-    // unlike sx__job_process_pending, only check the specific index to push into job-list
-    sx__job_pending pending = ctx->pending[index];
-    if (!sx_pool_fulln(ctx->job_pool, *pending.counter)) {
-        sx_array_pop(ctx->pending, index);
+    sx_lock_(ctx->job_lk) {
+        // unlike sx__job_process_pending, only check the specific index to push into job-list
+        sx__job_pending pending = ctx->pending[index];
+        if (!sx_pool_fulln(ctx->job_pool, *pending.counter)) {
+            sx_array_pop(ctx->pending, index);
 
-        int range_start = 0;
-        int range_end = pending.range_size + (pending.range_reminder > 0 ? 1 : 0);
-        --pending.range_reminder;
-
-        int count = *pending.counter;
-        for (int i = 0; i < count; i++) {
-            sx__job_add_list(
-                &ctx->waiting_list[pending.priority], &ctx->waiting_list_last[pending.priority],
-                sx__new_job(ctx, i, pending.callback, pending.user, range_start, range_end,
-                            pending.counter, pending.tags, pending.priority));
-
-            range_start = range_end;
-            range_end += (pending.range_size + (pending.range_reminder > 0 ? 1 : 0));
+            int range_start = 0;
+            int range_end = pending.range_size + (pending.range_reminder > 0 ? 1 : 0);
             --pending.range_reminder;
+
+            int count = *pending.counter;
+            for (int i = 0; i < count; i++) {
+                sx__job_add_list(
+                    &ctx->waiting_list[pending.priority], &ctx->waiting_list_last[pending.priority],
+                    sx__new_job(ctx, i, pending.callback, pending.user, range_start, range_end,
+                                pending.counter, pending.tags, pending.priority));
+
+                range_start = range_end;
+                range_end += (pending.range_size + (pending.range_reminder > 0 ? 1 : 0));
+                --pending.range_reminder;
+            }
+            sx_semaphore_post(&ctx->sem, count);
         }
-        sx_semaphore_post(&ctx->sem, count);
-    }
-    sx_unlock(&ctx->job_lk);
+    } // lock
 }
 
 void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
@@ -444,11 +449,11 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
             tdata->cur_job = NULL;
             cur_job->owner_tid = tdata->tid;
 
-            sx_lock(&ctx->job_lk);
-            int list_idx = cur_job->priority;
-            sx__job_add_list(&ctx->waiting_list[list_idx], &ctx->waiting_list_last[list_idx],
-                             cur_job);
-            sx_unlock(&ctx->job_lk);
+            sx_lock_(ctx->job_lk) {
+                int list_idx = cur_job->priority;
+                sx__job_add_list(&ctx->waiting_list[list_idx], &ctx->waiting_list_last[list_idx],
+                                 cur_job);
+            }
 
             if (!tdata->main_thrd)
                 sx_semaphore_post(&ctx->sem, 1);
@@ -469,14 +474,14 @@ void sx_job_wait_and_del(sx_job_context* ctx, sx_job_t job)
     }
 
     // All jobs are done, Delete the counter
-    sx_lock(&ctx->counter_lk);
-    sx_pool_del(ctx->counter_pool, (void*)job);
-    sx_unlock(&ctx->counter_lk);
+    sx_lock_(ctx->counter_lk) {
+        sx_pool_del(ctx->counter_pool, (void*)job);
+    }
 
     // auto-dispatch pending jobs
-    sx_lock(&ctx->job_lk);
-    sx__job_process_pending(ctx);
-    sx_unlock(&ctx->job_lk);
+    sx_lock_(ctx->job_lk) {
+        sx__job_process_pending(ctx);
+    }
 }
 
 bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job)
@@ -484,14 +489,14 @@ bool sx_job_test_and_del(sx_job_context* ctx, sx_job_t job)
     sx_compiler_read_barrier();
     if (*job == 0) {
         // All jobs are done, Delete the counter
-        sx_lock(&ctx->counter_lk);
-        sx_pool_del(ctx->counter_pool, (void*)job);
-        sx_unlock(&ctx->counter_lk);
+        sx_lock_(ctx->counter_lk) {
+            sx_pool_del(ctx->counter_pool, (void*)job);
+        }
 
         // auto-dispatch pending jobs
-        sx_lock(&ctx->job_lk);
-        sx__job_process_pending(ctx);
-        sx_unlock(&ctx->job_lk);
+        sx_lock_(ctx->job_lk) {
+            sx__job_process_pending(ctx);
+        }
         return true;
     }
 
@@ -574,6 +579,11 @@ sx_job_context* sx_job_create_context(const sx_alloc* alloc, const sx_job_contex
     ctx->thread_shutdown_cb = desc->thread_shutdown_cb;
     ctx->thread_user = desc->thread_user_data;
     int max_fibers = desc->max_fibers > 0 ? desc->max_fibers : DEFAULT_MAX_FIBERS;
+    #if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+    ctx->job_lk = sx_anderson_lock_create(alloc, ctx->num_threads > 0 ? (ctx->num_threads+1) : 1);
+    ctx->counter_lk = sx_anderson_lock_create(alloc, ctx->num_threads > 0 ? (ctx->num_threads+1) : 1);
+    sx_assert_always(ctx->job_lk && ctx->counter_lk);
+    #endif
 
     sx_semaphore_init(&ctx->sem);
 
@@ -634,6 +644,11 @@ void sx_job_destroy_context(sx_job_context* ctx, const sx_alloc* alloc)
     sx_pool_destroy(ctx->job_pool, alloc);
     sx_pool_destroy(ctx->counter_pool, alloc);
     sx_semaphore_release(&ctx->sem);
+
+    #if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+    sx_anderson_lock_destroy(ctx->job_lk, alloc);
+    sx_anderson_lock_destroy(ctx->counter_lk, alloc);
+    #endif
 
     sx_free(alloc, ctx->tags);
     sx_array_free(alloc, ctx->pending);

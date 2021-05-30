@@ -93,7 +93,7 @@ SX_API bool sx_queue_spsc_full(const sx_queue_spsc* queue);
 
 // spinlock
 // interesting read: https://software.intel.com/en-us/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops
-typedef sx_align_decl(64, sx_atomic_int) sx_lock_t;
+typedef sx_align_decl(SX_CACHE_LINE_SIZE, sx_atomic_int) sx_lock_t;
 
 #define SX__LOCK_PRESPIN 1023
 #define SX__LOCK_MAXTIME 300
@@ -128,3 +128,18 @@ SX_INLINE void sx_lock(sx_lock_t* lock)
         }
     }
 }
+
+#if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+
+typedef struct sx_anderson_lock sx_anderson_lock;
+
+SX_API sx_anderson_lock* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads);
+SX_API void sx_anderson_lock_destroy(sx_anderson_lock* lock, const sx_alloc* alloc);
+SX_API void sx_anderson_lock_enter(sx_anderson_lock* lock);
+SX_API void sx_anderson_lock_exit(sx_anderson_lock* lock);
+
+#define sx_lock_(_lock) sx_defer(sx_anderson_lock_enter(_lock), sx_anderson_lock_exit(_lock))
+
+#else
+#define sx_lock_(_lock) sx_defer(sx_lock(&_lock), sx_unlock(&_lock))
+#endif    // SX_CONFIG_EXPERIMENTAL_SPINLOCK

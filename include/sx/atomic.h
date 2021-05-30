@@ -42,7 +42,6 @@
 #       if !SX_COMPILER_MSVC
 #          include <x86intrin.h>
 #       endif
-#       include <emmintrin.h>    // _mm_xfence
 #    endif
 #    include <intrin.h>
 #    if SX_COMPILER_MSVC
@@ -70,6 +69,10 @@
 #   include <sys/time.h>
 #endif
 
+#if defined(__SSE2__)
+#    include <emmintrin.h>    // _mm_pause
+#endif
+
 SX_PRAGMA_DIAGNOSTIC_PUSH()
 SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-declarations")
 
@@ -81,12 +84,22 @@ SX_FORCE_INLINE void sx_yield_cpu()
 {
 #if SX_PLATFORM_WINDOWS
     _mm_pause();
-#else
-#    if SX_CPU_X86
-    __asm__ __volatile__("pause");
-#    elif SX_CPU_ARM && !SX_PLATFORM_RPI /* FIXME: didn't find a workaround for rpi */
-    __asm__ __volatile__("yield");
-#    endif
+#elif defined(__SSE2__)  // AMD and Intel
+    _mm_pause();
+#elif defined(__i386__) || defined(__x86_64__)
+    asm volatile("pause");
+#elif defined(__aarch64__)
+    asm volatile("wfe");
+#elif defined(__armel__) || defined(__ARMEL__)
+    asm volatile ("nop" ::: "memory");  // default operation - does nothing => Might lead to passive spinning.
+#elif defined(__arm__) || defined(__aarch64__) // arm big endian / arm64
+    __asm__ __volatile__ ("yield" ::: "memory");
+#elif defined(__ia64__)  // IA64
+    __asm__ __volatile__ ("hint @pause");
+#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC
+     __asm__ __volatile__ ("or 27,27,27" ::: "memory");
+#else  // everything else.
+     asm volatile ("nop" ::: "memory");  // default operation - does nothing => Might lead to passive spinning.
 #endif
 }
 
