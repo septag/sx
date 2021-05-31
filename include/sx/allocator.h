@@ -48,7 +48,7 @@ SX_API void sx_mem_set_fail_callback(sx_mem_fail_cb* callback);
 SX_API void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line);   // internal
 
 // Call this whenever memory allocation fails
-// you can override the callback function to 
+// you can override the callback function to
 #define sx_memory_fail()                                \
     do { sx__mem_run_fail_callback(__FILE__, __LINE__); sx_assert_alwaysf(0, "Out of memory"); } while (0)
 #define sx_out_of_memory() sx_memory_fail()
