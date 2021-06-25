@@ -119,9 +119,6 @@ These are also the macros that you can override in _config.h_ or add them to com
 - **sx_memcmp**: Memory compare replacement, default is clib's _memcmp_
 - **sx_memmove**: Memory move replacement, default is clib's _memmove_
 
-### Windows
-Some C feautures on MSVC's C-compiler is missing, the code can be compiled as cpp also (/TP). It's also compatible with *MSVC + clang_c2* toolset which in that case you have to add the ```-T v140_clang_c2``` switch to cmake command (vs2015)
-
 ### Emscripten
 
 It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some limitations:
@@ -129,6 +126,17 @@ It can be built on emscripten (using the _Emscripten.cmake_ toolchain) with some
 - _threads.h_: support is not yet implemented, blocking primitives like signals and semaphores doesn't seem to work on this platform. Support maybe added in future.
 - _fibers.h_: Emscripten doesn't seem to support boost's assembly fibers which I'm currently using, however it is possible to implement async functions using emscripten API, which I'll try to implement in the future.
 - _virtual-alloc.h_: Virtual memory allocation functions does not seem to be working, it works like normal malloc, where reserving just pre-allocates all required memory
+
+## Links
+Here are some other mini C system libraries (mostly single headers) that you might find useful:
+
+- [sokol](https://github.com/floooh/sokol): Simple STB-style cross-platform libraries for C and C++, written in C. (graphics, sound, application, etc)
+- [cj5](https://github.com/septag/cj5): Very minimal single header JSON5 parser in C99, derived from jsmn
+- [dmon](https://github.com/septag/dmon): dmon is a tiny C library that monitors changes in a directory. It provides a unified solution to multiple system APIs that exist for each OS. It can also monitor directories recursively.
+- [dds-ktx](https://github.com/septag/dds-ktx): Portable single header DDS/KTX reader for C/C++
+- [cr](https://github.com/fungos/cr): A single file header-only live reload solution for C
+- [stackwalkerc](https://github.com/septag/stackwalkerc): Windows single header stack walker in C 
+- [sjson](https://github.com/septag/sjson): Fast and portable C single header json Encoder/Decoder
 
 
 [License (BSD 2-clause)](https://github.com/septag/sx/blob/master/LICENSE)
