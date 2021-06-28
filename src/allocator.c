@@ -87,7 +87,6 @@ static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* f
 
 //
 // Leakchecker: https://raw.githubusercontent.com/nothings/stb/master/stb_leakcheck.h
-// TODO: make it thread-safe
 // stb_leakcheck.h - v0.4 - quick & dirty malloc leak-checking - public domain
 // LICENSE
 //
@@ -105,7 +104,7 @@ static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* f
 #include <stdlib.h>
 #include <string.h>
 typedef struct stb__leakcheck_malloc_info {
-    char file[32];
+    char file[128];
     char func[64];
     int line;
     size_t size;
@@ -121,17 +120,17 @@ static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func,
     if (mi == NULL)
         return mi;
 
-    sx_os_path_basename(mi->file, sizeof(mi->file), file);
+    sx_strcpy(mi->file, sizeof(mi->file), file);
     sx_strcpy(mi->func, sizeof(mi->func), func);
-    sx_lock(&mi_lock);
-    mi->line = line;
-    mi->next = mi_head;
-    if (mi_head)
-        mi->next->prev = mi;
-    mi->prev = NULL;
-    mi->size = (int)sz;
-    mi_head = mi;
-    sx_unlock(&mi_lock);
+    sx_lock_enter(&mi_lock);
+        mi->line = line;
+        mi->next = mi_head;
+        if (mi_head)
+            mi->next->prev = mi;
+        mi->prev = NULL;
+        mi->size = (int)sz;
+        mi_head = mi;
+    sx_lock_exit(&mi_lock);
     return mi + 1;
 }
 
@@ -140,23 +139,20 @@ static void stb_leakcheck_free(void* ptr)
     if (ptr != NULL) {
         stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         mi->size = ~mi->size;
-        sx_lock(&mi_lock);
-#ifndef STB_LEAKCHECK_SHOWALL
-        if (mi->prev == NULL) {
-            sx_assert(mi_head == mi);
-            mi_head = mi->next;
-        } else
-            mi->prev->next = mi->next;
-        if (mi->next)
-            mi->next->prev = mi->prev;
-#endif
-        sx_unlock(&mi_lock);
+        sx_lock_enter(&mi_lock);
+            if (mi->prev == NULL) {
+                sx_assert(mi_head == mi);
+                mi_head = mi->next;
+            } else
+                mi->prev->next = mi->next;
+            if (mi->next)
+                mi->next->prev = mi->prev;
+        sx_lock_exit(&mi_lock);
         free(mi);
     }
 }
 
-static void* stb_leakcheck_realloc(void* ptr, size_t sz, const char* file, const char* func,
-                                   int line)
+static void* stb_leakcheck_realloc(void* ptr, size_t sz, const char* file, const char* func, int line)
 {
     if (ptr == NULL) {
         return stb_leakcheck_malloc(sz, file, func, line);
@@ -165,14 +161,10 @@ static void* stb_leakcheck_realloc(void* ptr, size_t sz, const char* file, const
         return NULL;
     } else {
         stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
-        if (sz <= mi->size)
+        if (sz <= mi->size) {
             return ptr;
-        else {
-#ifdef STB_LEAKCHECK_REALLOC_PRESERVE_MALLOC_FILELINE
-            void* q = stb_leakcheck_malloc(sz, mi->file, mi->line);
-#else
+        } else {
             void* q = stb_leakcheck_malloc(sz, file, func, line);
-#endif
             if (q) {
                 sx_memcpy(q, ptr, mi->size);
                 stb_leakcheck_free(ptr);
@@ -186,18 +178,15 @@ static void stblkck_internal_print(sx_dump_leak_cb dump_leak_fn, const char* rea
                                    const char* file, const char* func, int line, size_t size,
                                    void* ptr)
 {
-    char filename[32];
-    char _func[64];
-    sx_os_path_basename(filename, sizeof(filename), file);
-    sx_strcpy(_func, sizeof(_func), func);
-
     char text[512];
-    sx_snprintf(text, sizeof(text), "%-6s: %s@%d: %s: %$.2d at 0x%p", reason, filename, line, func,
-                size, ptr);
-    if (dump_leak_fn)
-        dump_leak_fn(text, filename, func, line, size, ptr);
-    else
+    sx_snprintf(text, sizeof(text), "%-6s: %s@%d: %s: %$.2d at 0x%p", 
+                reason, file ? file : "[NA]", line, 
+                func ? func : "[NA]", size, ptr);
+    if (dump_leak_fn) {
+        dump_leak_fn(text, file, func, line, size, ptr);
+    } else {
         puts(text);
+    }
 }
 
 void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn)
@@ -205,8 +194,7 @@ void sx_dump_leaks(sx_dump_leak_cb dump_leak_fn)
     stb__leakcheck_malloc_info* mi = mi_head;
     while (mi) {
         if ((ptrdiff_t)mi->size >= 0) {
-            stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->func, mi->line, mi->size,
-                                   mi + 1);
+            stblkck_internal_print(dump_leak_fn, "LEAKED", mi->file, mi->func, mi->line, mi->size, mi + 1);
         }
         mi = mi->next;
     }

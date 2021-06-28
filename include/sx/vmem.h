@@ -27,6 +27,8 @@
 //                                          Parameters are same as commit functions
 //      sx_vmem_commit_size                 Returns total commited bytes. 
 //                                          Basically num_pages*page_size
+// TODO: implement SX_VMEM_WATCH flag
+//
 #pragma once
 
 #include "sx.h"

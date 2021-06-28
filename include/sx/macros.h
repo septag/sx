@@ -100,8 +100,7 @@
 #if SX_COMPILER_CLANG
 #    define SX_PRAGMA_DIAGNOSTIC_PUSH_CLANG_() _Pragma("clang diagnostic push")
 #    define SX_PRAGMA_DIAGNOSTIC_POP_CLANG_() _Pragma("clang diagnostic pop")
-#    define SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG(_x) \
-        _Pragma(sx_stringize(clang diagnostic ignored _x))
+#    define SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG(_x) _Pragma(sx_stringize(clang diagnostic ignored _x))
 #else
 #    define SX_PRAGMA_DIAGNOSTIC_PUSH_CLANG_()
 #    define SX_PRAGMA_DIAGNOSTIC_POP_CLANG_()

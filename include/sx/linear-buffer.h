@@ -105,10 +105,11 @@ SX_INLINE void sx__linear_buffer_add(sx_linear_buffer* buf, size_t size, int off
 #define sx_linear_buffer_addptr(_buf, _pptr, _type, _count, _align) \
     sx__linear_buffer_add((_buf), sizeof(_type) * (_count), -1, (void**)(_pptr), (_align))
 
-SX_INLINE void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_alloc* alloc)
+SX_INLINE void* sx__linear_buffer_calloc(const sx_linear_buffer* buf, const sx_alloc* alloc, 
+                                         const char* file, const char* func, uint32_t line)
 {
     void* mem = buf->parent_align <= SX_CONFIG_ALLOCATOR_NATURAL_ALIGNMENT
-                    ? sx_malloc(alloc, buf->size)
+                    ? sx__malloc(alloc, buf->size, 0, file, func, line)
                     : sx_aligned_malloc(alloc, buf->size, buf->parent_align);
     if (!mem) {
         sx_out_of_memory();
@@ -130,6 +131,8 @@ SX_INLINE void* sx_linear_buffer_calloc(const sx_linear_buffer* buf, const sx_al
 
     return mem;
 }
+
+#define sx_linear_buffer_calloc(_buf, _alloc) sx__linear_buffer_calloc((_buf), (_alloc), __FILE__, SX_FUNCTION, __LINE__)
 
 #ifdef __cplusplus
 template <typename _T>

@@ -98,78 +98,10 @@
 #   define SX_CONFIG_FORCE_INLINE_DEBUG 0
 #endif
 
-// This is a temp feature that enables experimental lock implementation along with it's integration in job system
-// in the future and after more thorough tests, I will probably remove this and make the feature permanent
-#ifndef SX_CONFIG_EXPERIMENTAL_LOCK 
-#   define SX_CONFIG_EXPERIMENTAL_LOCK 0
+#ifndef SX_CONFIG_INCLUDE_BANNED 
+#   define SX_CONFIG_INCLUDE_BANNED 0
 #endif
 
-#if defined(_MSC_VER) && 0
-// Macros for stdint.h definitions
-// There are some problems with intellisense+gcc and I had to define these (only works in editor,
-// the compiler defines them by default)
-// TODO: make some of them with cmake --config
-#    ifndef __INT32_TYPE__
-#        define __INT32_TYPE__ int
-#    endif
-
-#    ifndef __UINT32_TYPE__
-#        define __UINT32_TYPE__ unsigned int
-#    endif
-
-#    ifndef __INT64_TYPE__
-#        ifdef _MSC_VER
-#            define __INT64_TYPE__ __int64
-#        else
-#            define __INT64_TYPE__ long long
-#        endif
-#    endif
-
-#    ifndef __UINT64_TYPE__
-#        ifdef _MSC_VER
-#            define __UINT64_TYPE__ unsigned __int64
-#        else
-#            define __UINT64_TYPE__ unsigned long long
-#        endif
-#    endif
-
-#    ifndef __INT8_TYPE__
-#        define __INT8_TYPE__ char
-#    endif
-
-#    ifndef __UINT8_TYPE__
-#        define __UINT8_TYPE__ unsigned char
-#    endif
-
-#    ifndef __INT16_TYPE__
-#        define __INT16_TYPE__ short
-#    endif
-
-#    ifndef __UINT16_TYPE__
-#        define __UINT16_TYPE__ unsigned short
-#    endif
-
-#    ifndef __INTPTR_WIDTH__
-#        if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || \
-            defined(__64BIT__) || defined(__LP64__)
-#            define uintptr_t uint64_t
-#            define intptr_t int64_t
-#        else
-#            define uintptr_t uint32_t
-#            define intptr_t int32_t
-#        endif
-#    endif
-
-#    ifndef __INT_MAX__
-#        define __INT_MAX__ 2147483647
-#    endif
-
-#    ifndef __LONG_MAX__
-#        if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || \
-            defined(__64BIT__) || defined(__LP64__)
-#            define __LONG_MAX__ 9223372036854775807L
-#        else
-#            define __LONG_MAX__ 2147483647L
-#        endif
-#    endif
+#ifndef SX_CONFIG_OBSOLETE_CODE
+#   define SX_CONFIG_OBSOLETE_CODE 1
 #endif

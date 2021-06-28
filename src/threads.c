@@ -308,19 +308,19 @@ void sx_mutex_release(sx_mutex* mutex)
     pthread_mutex_destroy(&_m->handle);
 }
 
-void sx_mutex_lock(sx_mutex* mutex)
+void sx_mutex_enter(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     pthread_mutex_lock(&_m->handle);
 }
 
-void sx_mutex_unlock(sx_mutex* mutex)
+void sx_mutex_exit(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     pthread_mutex_unlock(&_m->handle);
 }
 
-bool sx_mutex_trylock(sx_mutex* mutex)
+bool sx_mutex_try(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     return pthread_mutex_trylock(&_m->handle) == 0;
@@ -501,19 +501,19 @@ void sx_mutex_release(sx_mutex* mutex)
     DeleteCriticalSection(&_m->handle);
 }
 
-void sx_mutex_lock(sx_mutex* mutex)
+void sx_mutex_enter(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     EnterCriticalSection(&_m->handle);
 }
 
-void sx_mutex_unlock(sx_mutex* mutex)
+void sx_mutex_exit(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     LeaveCriticalSection(&_m->handle);
 }
 
-bool sx_mutex_trylock(sx_mutex* mutex)
+bool sx_mutex_try(sx_mutex* mutex)
 {
     sx__mutex* _m = (sx__mutex*)mutex->data;
     return TryEnterCriticalSection(&_m->handle) == TRUE;
@@ -725,7 +725,7 @@ uint32_t sx_thread_tid()
 #endif    // SX_PLATFORM_
 }
 
-#if SX_CONFIG_EXPERIMENTAL_SPINLOCK
+// TODO: replace this for our current atomic functions in the future
 #include "../3rdparty/c89atomic/c89atomic.h"
 
 typedef struct sx__padded_flag
@@ -734,19 +734,19 @@ typedef struct sx__padded_flag
     uint8_t padding[SX_CACHE_LINE_SIZE-1];
 } sx__padded_flag;
 
-typedef sx_align_decl(SX_CACHE_LINE_SIZE, struct) sx_anderson_lock
+typedef sx_align_decl(SX_CACHE_LINE_SIZE, struct) sx_anderson_lock_t
 {
     sx_align_decl(SX_CACHE_LINE_SIZE, sx__padded_flag*) locked;
     sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_free_idx;
     sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_serving_idx;
     int max_threads;
-} sx_anderson_lock;
+} sx_anderson_lock_t;
 
-sx_anderson_lock* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads) 
+sx_anderson_lock_t* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads) 
 {
     sx_assert(max_threads > 0);
 
-    sx_anderson_lock* l = sx_calloc(alloc, sizeof(sx_anderson_lock) + max_threads*sizeof(sx__padded_flag));
+    sx_anderson_lock_t* l = sx_calloc(alloc, sizeof(sx_anderson_lock_t) + max_threads*sizeof(sx__padded_flag));
     if (!l) {
         return NULL;
     }
@@ -762,12 +762,12 @@ sx_anderson_lock* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads
     return l;
 }
 
-void sx_anderson_lock_destroy(sx_anderson_lock* lock, const sx_alloc* alloc) 
+void sx_anderson_lock_destroy(sx_anderson_lock_t* lock, const sx_alloc* alloc) 
 {
     sx_free(alloc, lock);
 }
 
-void sx_anderson_lock_enter(sx_anderson_lock* lock) 
+void sx_anderson_lock_enter(sx_anderson_lock_t* lock) 
 {
     const uint64_t index = c89atomic_fetch_add_64(&lock->next_free_idx, 1) % lock->max_threads;
     c89atomic_flag* flag = &lock->locked[index].flag;
@@ -796,10 +796,9 @@ void sx_anderson_lock_enter(sx_anderson_lock* lock)
     c89atomic_store_8(flag, 1);
 }
 
-void sx_anderson_lock_exit(sx_anderson_lock* lock) 
+void sx_anderson_lock_exit(sx_anderson_lock_t* lock) 
 {
     const uint64_t index = c89atomic_fetch_add_64(&lock->next_serving_idx, 1);
     c89atomic_store_8(&lock->locked[index%lock->max_threads].flag, 0);
 }
 
-#endif // SX_CONFIG_EXPERIMENTAL_SPINLOCK

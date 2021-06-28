@@ -84,9 +84,8 @@ typedef struct sx_alloc sx_alloc;
 #define sx__sbmaybegrow(_alloc, a, n) (sx__sbneedgrow(a, (n)) ? sx__sbgrow(_alloc, a, n) : 0)
 #define sx__sbgrow(_alloc, a, n)  (*((void**)&(a)) = sx__sbgrowf((a), (n), sizeof(*(a)), (_alloc), __FILE__, __FUNCTION__, __LINE__))
 
-// clang-format on
 SX_INLINE void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_alloc* alloc,
-                                const char* file, const char* func, int line)
+                            const char* file, const char* func, int line)
 {
     int new_count = arr ? (sx__sbm(arr) << 1) : 0;
     new_count = new_count > SX_CONFIG_ARRAY_INIT_SIZE ? new_count : SX_CONFIG_ARRAY_INIT_SIZE;
@@ -105,7 +104,6 @@ SX_INLINE void* sx__sbgrowf(void* arr, int increment, int itemsize, const sx_all
         return 0x0;    // NULL
     }
 }
-
 
 // cpp wrapper (minimal template)
 #ifdef __cplusplus
