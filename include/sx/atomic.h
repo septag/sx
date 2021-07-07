@@ -80,7 +80,7 @@ typedef int volatile sx_atomic_int;
 typedef void* volatile sx_atomic_ptr;
 typedef int64_t volatile sx_atomic_int64;
 
-SX_FORCE_INLINE void sx_yield_cpu()
+SX_FORCE_INLINE void sx_yield_cpu(void)
 {
 #if SX_PLATFORM_WINDOWS
     _mm_pause();

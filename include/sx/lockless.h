@@ -15,10 +15,8 @@ SX_API bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data);
 SX_API bool sx_queue_spsc_grow(sx_queue_spsc* queue, const sx_alloc* alloc);
 SX_API bool sx_queue_spsc_full(const sx_queue_spsc* queue);
 
-#define sx_queue_spsc_produce_and_grow(_queue, _data, _alloc) \
-    if (!sx_queue_spsc_produce((_queue), (_data))) {          \
-        if (sx_queue_spsc_grow((_queue), (_alloc)))           \
-            sx_queue_spsc_produce((_queue), (_data));         \
-    }
+#define sx_queue_spsc_produce_and_grow(_queue, _data, _alloc)             \
+    (sx_queue_spsc_full(_queue) ? sx_queue_spsc_grow(_queue, _alloc) : 0, sx_queue_spsc_produce(_queue, (_data)))
+
 
 

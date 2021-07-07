@@ -27,11 +27,12 @@
 //                                          Parameters are same as commit functions
 //      sx_vmem_commit_size                 Returns total commited bytes. 
 //                                          Basically num_pages*page_size
-// TODO: implement SX_VMEM_WATCH flag
 //
 #pragma once
 
 #include "sx.h"
+
+typedef struct sx_alloc sx_alloc;
 
 typedef enum sx_vmem_flag {
     SX_VMEM_WATCH = 0x1
@@ -45,6 +46,12 @@ typedef struct sx_vmem_context {
     int max_pages;
 } sx_vmem_context;
 
+typedef struct sx_vmem_watch_result {
+    void* ptrs;
+    int   num_ptrs;
+    const sx_alloc* alloc;
+} sx_vmem_watch_result;
+
 SX_API size_t sx_vmem_get_bytes(int num_pages);
 SX_API int sx_vmem_get_needed_pages(size_t bytes);
 
@@ -56,3 +63,6 @@ SX_API void* sx_vmem_commit_pages(sx_vmem_context* vmem, int start_page_id, int 
 SX_API void sx_vmem_free_pages(sx_vmem_context* vmem, int start_page_id, int num_pages);
 SX_API void* sx_vmem_get_page(sx_vmem_context* vmem, int page_id);
 SX_API size_t sx_vmem_commit_size(sx_vmem_context* vmem);
+
+SX_API sx_vmem_watch_result sx_vmem_watch_writes(sx_vmem_context* vmem, const sx_alloc* alloc, bool clear);
+SX_API void sx_vmem_watch_clear(sx_vmem_context* vmem);

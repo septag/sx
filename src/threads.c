@@ -781,7 +781,8 @@ void sx_anderson_lock_enter(sx_anderson_lock_t* lock)
     // sx_yield_cpu apparantly has a lot of latency in modern cpus, so this loop is a workaround
     // Reference: https://software.intel.com/content/www/us/en/develop/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops.html
     int counter = 0;
-    while (*flag) {
+    
+    while (c89atomic_load_explicit_8(flag, c89atomic_memory_order_acquire)) {
         if ((++counter & SX__LOCK_PRESPIN) == 0) {
             sx_track_contention();
             sx_thread_yield();  // too much waiting, relief control of the current thread
@@ -793,12 +794,12 @@ void sx_anderson_lock_enter(sx_anderson_lock_t* lock)
         }
     }
 
-    c89atomic_store_8(flag, 1);
+    c89atomic_store_explicit_8(flag, 1, c89atomic_memory_order_release);
 }
 
 void sx_anderson_lock_exit(sx_anderson_lock_t* lock) 
 {
     const uint64_t index = c89atomic_fetch_add_64(&lock->next_serving_idx, 1);
-    c89atomic_store_8(&lock->locked[index%lock->max_threads].flag, 0);
+    c89atomic_store_explicit_8(&lock->locked[index%lock->max_threads].flag, 0, c89atomic_memory_order_release);
 }
 

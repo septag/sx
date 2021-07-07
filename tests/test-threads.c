@@ -8,6 +8,7 @@
 #include "sx/atomic.h"
 #include "sx/os.h"
 #include "sx/threads.h"
+#include "sx/lockless.h"
 
 sx_sem g_sem;
 sx_queue_spsc* g_queue = NULL;
@@ -25,6 +26,7 @@ static int worker_thread_fn(void* user_data1, void* user_data2)
         work_item item;
         if (sx_queue_spsc_consume(g_queue, &item)) {
             printf("Received work: %d\n", item.id);
+            sx_os_sleep(100);
         }
         sx_semaphore_wait(&g_sem, -1);
     }
@@ -49,19 +51,20 @@ int main(int argc, char* argv[])
     puts("");
 
     while (!g_quit) {
-        char c = sx_os_getch();
-        if (c == 32) {
+        // char c = sx_os_getch();
+        // if (c == 32) {
             work_item item;
             item.id = id;
-            if (sx_queue_spsc_produce(g_queue, &item)) {
+            if (sx_queue_spsc_produce_and_grow(g_queue, &item, alloc)) {
                 id++;
                 sx_semaphore_post(&g_sem, 1);
             }
-        } else if (c == 27) {
+            sx_os_sleep(1);
+        /* } else if (c == 27) {
             puts("ESC");
             sx_semaphore_post(&g_sem, 1);
             g_quit = true;
-        }
+        }*/
     }
 
     sx_thread_destroy(thrd, alloc);
