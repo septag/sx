@@ -22,6 +22,7 @@
 
 // static_assert doesn't do anything in MSVC + C compiler, because we just don't have it !
 #ifndef __cplusplus
+#    include <assert.h>     // static_assert
 #    ifndef static_assert
 #        if SX_COMPILER_MSVC && (SX_COMPILER_MSVC < 1928)
 #            define static_assert(_e, _msg)

@@ -106,7 +106,7 @@ typedef struct sx_mem_block {
     int64_t size;
     int64_t start_offset;         // incremented offset. the actual *ptr would be (uint8_t*)ptr-offset
     int align;
-    int volatile refcount; 
+    uint32_t refcount; 
 } sx_mem_block;
 
 SX_API sx_mem_block* sx_mem_create_block(const sx_alloc* alloc, int64_t size,
@@ -223,7 +223,7 @@ typedef uint32_t sx_iff_flags;
 
 typedef struct sx_iff_file {
     sx_iff_type type;
-    sx_iff_chunk* chunks;    // sx_array: chunk_id's are references to this array (chunks[chunk_id])
+    sx_iff_chunk* SX_ARRAY chunks;    // chunk_id's are references to this array (chunks[chunk_id])
     const sx_alloc* alloc;
     union {
         sx_mem_reader* mread;

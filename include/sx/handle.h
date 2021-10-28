@@ -66,6 +66,13 @@
 //      sx_handle_destroy_pool(handles);
 //      delete[] myobjs;
 //
+//  C++ helpers:
+//      sx_handles_with_array: This is a helper that contains one arbitary-type array buffer for handles
+//                             It is because the pattern (handles+array) used so much. 
+//                             Each add operation, adds a POD struct to an array and returns it's handle
+//          - init/release
+//          - add/remove
+//
 #pragma once
 
 #include "sx.h"
@@ -168,3 +175,63 @@ SX_INLINE bool sx_handle_full(const sx_handle_pool* pool)
 
 #define sx_handle_new_and_grow(_pool, _alloc) \
     (sx_handle_full(_pool) ? sx_handle_grow_pool(&(_pool), _alloc) : 0, sx_handle_new(_pool))
+
+#ifdef __cplusplus
+template <typename _T>
+struct sx_handles_with_array {
+    const sx_alloc* alloc;
+    _T* SX_ARRAY array;
+    sx_handle_pool* handles;
+
+    sx_handles_with_array()
+    {
+        alloc = nullptr;
+        array = nullptr;
+        handles = nullptr;
+    }
+
+    bool init(const sx_alloc* _alloc, int _init_count = 0)
+    {
+        sx_assert(alloc);
+
+        alloc = _alloc;
+        handles = sx_handle_create_pool(_alloc, _init_count == 0 ? 32 : _init_count);
+        if (!handles) {
+            return false;
+        }
+
+        if (_init_count > 0) {
+            sx_array_reserve(_alloc, array, _init_count);
+        }
+
+        return true;
+    }
+
+    void release()
+    {
+        sx_handle_destroy_pool(handles, alloc);
+        sx_array_free(alloc, array);
+        alloc = array = handles = nullptr;
+    }
+
+    sx_handle_t add(const _T& _value)
+    {
+        sx_handle_t handle = sx_handle_new_and_grow(this->handles, this->alloc);
+        sx_assert(handle);
+
+        int index = sx_handle_index(handle);
+        if (index >= sx_array_count(this->array))
+            sx_array_push(this->alloc, this->array, _value);
+        else
+            g_http.https[index] = _value;
+        
+        return handle;
+    }
+
+    void remove(sx_handle_t _handle)
+    {
+        sx_handle_del(this->handles, _handle);
+    }
+};
+        
+#endif

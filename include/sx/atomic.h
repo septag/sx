@@ -31,12 +31,95 @@
 //                  ... // write some data
 //                  sx_unlock(lock);
 //              }
+// Note on compare-exchange:
+//      common use case:
+//          if (sx_atomic_cas(&var, y, x) == x)
+//          meaning: if I'm the one changing var from x to y
 //
 #pragma once
 
 #include "macros.h"
 #include <stdint.h>
 
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+SX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4505) // unreferenced function with internal linkage has been removed
+#   include "../../3rdparty/c89atomic/c89atomic.h"
+SX_PRAGMA_DIAGNOSTIC_PUSH()
+
+typedef c89atomic_uint32    sx_atomic_uint32;
+typedef c89atomic_uint64    sx_atomic_uint64;
+#if SX_ARCH_32BIT
+    typedef c89atomic_uint32    sx_atomic_ptr;
+#elif SX_ARCH_64BIT
+    typedef c89atomic_uint64    sx_atomic_ptr;
+#endif
+
+#define sx_atomic_order_c11_value(_o) = c89atomic_##_o
+
+
+typedef enum sx_atomic_memory_order
+{
+    SX_ATOMIC_MEMORYORDER_RELAXED sx_atomic_order_c11_value(memory_order_relaxed),
+    SX_ATOMIC_MEMORYORDER_CONSUME sx_atomic_order_c11_value(memory_order_consume),
+    SX_ATOMIC_MEMORYORDER_ACQUIRE sx_atomic_order_c11_value(memory_order_acquire),
+    SX_ATOMIC_MEMORYORDER_RELEASE sx_atomic_order_c11_value(memory_order_release),
+    SX_ATOMIC_MEMORYORDER_ACQREL sx_atomic_order_c11_value(memory_order_acq_rel),
+    SX_ATOMIC_MEMORYORDER_SEQCST sx_atomic_order_c11_value(memory_order_seq_cst)
+} sx_atomic_memory_order;
+
+SX_FORCE_INLINE void sx_relax_cpu(void);
+SX_FORCE_INLINE uint64_t sx_cycle_clock(void);
+
+SX_FORCE_INLINE void sx_atomic_thread_fence(sx_atomic_memory_order order);
+SX_FORCE_INLINE void sx_atomic_signal_fence(sx_atomic_memory_order order);
+
+SX_FORCE_INLINE uint32_t sx_atomic_load32(sx_atomic_uint32* a);
+SX_FORCE_INLINE uint64_t sx_atomic_load64(sx_atomic_uint64* a);
+SX_FORCE_INLINE void sx_atomic_store32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE void sx_atomic_store64(sx_atomic_uint64* a, uint64_t b);
+
+SX_FORCE_INLINE uint32_t sx_atomic_load32_explicit(sx_atomic_uint32* a, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_load64_explicit(sx_atomic_uint64* a, sx_atomic_memory_order order);
+SX_FORCE_INLINE void sx_atomic_store32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE void sx_atomic_store64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_add32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_sub32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_or32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_and32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE uint32_t sx_atomic_exchange32(sx_atomic_uint32* a, uint32_t b);
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_weak(sx_atomic_uint32* a, uint32_t* expected, uint32_t desired);
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_strong(sx_atomic_uint32* a, uint32_t* expected, uint32_t desired);
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_add32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_sub32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_or32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_and32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint32_t sx_atomic_exchange32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_weak_explicit(sx_atomic_uint32* a, uint32_t* expected, uint32_t desired, 
+                                                                    sx_atomic_memory_order success, sx_atomic_memory_order fail);
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_strong_explicit(sx_atomic_uint32* a, uint32_t* expected, uint32_t desired, 
+                                                                      sx_atomic_memory_order success, sx_atomic_memory_order fail);
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_add64(sx_atomic_uint64* a, uint64_t b);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_sub64(sx_atomic_uint64* a, uint64_t b);
+SX_FORCE_INLINE uint64_t sx_atomic_exchange64(sx_atomic_uint64* a, uint64_t b);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_or64(sx_atomic_uint64* a, uint64_t b);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_and64(sx_atomic_uint64* a, uint64_t b);
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_weak(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired);
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_strong(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired);
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_add64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_sub64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_exchange64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_or64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_and64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order);
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_weak_explicit(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired, 
+                                                                    sx_atomic_memory_order success, sx_atomic_memory_order fail);
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_strong_explicit(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired, 
+                                                                      sx_atomic_memory_order success, sx_atomic_memory_order fail);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 #if SX_PLATFORM_WINDOWS
 #    if SX_ARCH_32BIT && SX_CPU_X86
 #       if !SX_COMPILER_MSVC
@@ -46,19 +129,6 @@
 #    include <intrin.h>
 #    if SX_COMPILER_MSVC
 #        pragma intrinsic(_mm_pause)
-#        pragma intrinsic(_mm_mfence)
-#        pragma intrinsic(_mm_lfence)
-#        pragma intrinsic(_mm_sfence)
-#        pragma intrinsic(_ReadWriteBarrier)
-#        pragma intrinsic(_ReadBarrier)
-#        pragma intrinsic(_WriteBarrier)
-#        pragma intrinsic(_InterlockedExchangeAdd)
-#        pragma intrinsic(_InterlockedIncrement)
-#        pragma intrinsic(_InterlockedDecrement)
-#        pragma intrinsic(_InterlockedExchange)
-#        pragma intrinsic(_InterlockedCompareExchange)
-#        pragma intrinsic(_InterlockedExchangePointer)
-#        pragma intrinsic(_InterlockedCompareExchangePointer)
 #        pragma intrinsic(__rdtsc)
 #    endif
 #elif SX_PLATFORM_APPLE
@@ -73,14 +143,7 @@
 #    include <emmintrin.h>    // _mm_pause
 #endif
 
-SX_PRAGMA_DIAGNOSTIC_PUSH()
-SX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-declarations")
-
-typedef int volatile sx_atomic_int;
-typedef void* volatile sx_atomic_ptr;
-typedef int64_t volatile sx_atomic_int64;
-
-SX_FORCE_INLINE void sx_yield_cpu(void)
+SX_FORCE_INLINE void sx_relax_cpu(void)
 {
 #if SX_PLATFORM_WINDOWS
     _mm_pause();
@@ -104,7 +167,7 @@ SX_FORCE_INLINE void sx_yield_cpu(void)
 }
 
 // https://github.com/google/benchmark/blob/v1.1.0/src/cycleclock.h
-SX_FORCE_INLINE uint64_t sx_cycle_clock()
+SX_FORCE_INLINE uint64_t sx_cycle_clock(void)
 {
 #if SX_PLATFORM_APPLE
     return mach_absolute_time();
@@ -148,207 +211,230 @@ SX_FORCE_INLINE uint64_t sx_cycle_clock()
 #endif
 }
 
-SX_FORCE_INLINE void sx_memory_barrier()
+SX_FORCE_INLINE void sx_atomic_thread_fence(sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    _mm_mfence();
-#else
-    __sync_synchronize();
-#endif
+    c89atomic_thread_fence(order);
 }
 
-SX_FORCE_INLINE void sx_memory_read_barrier()
+SX_FORCE_INLINE void sx_atomic_signal_fence(sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    _mm_lfence();
-#else
-    __sync_synchronize();
-#endif
+    c89atomic_signal_fence(order);
 }
 
-SX_FORCE_INLINE void sx_memory_write_barrier()
+SX_FORCE_INLINE uint32_t sx_atomic_load32(sx_atomic_uint32* a)
 {
-#if SX_PLATFORM_WINDOWS
-    _mm_sfence();
-#else
-    __sync_synchronize();
-#endif
+    return c89atomic_load_32(a);
 }
 
-SX_FORCE_INLINE void sx_compiler_barrier()
+SX_FORCE_INLINE uint64_t sx_atomic_load64(sx_atomic_uint64* a)
 {
-#if SX_PLATFORM_WINDOWS
-    _ReadWriteBarrier();
-#else
-#endif
+    return c89atomic_load_64(a);
 }
 
-SX_FORCE_INLINE void sx_compiler_read_barrier()
+SX_FORCE_INLINE void sx_atomic_store32(sx_atomic_uint32* a, uint32_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    _ReadBarrier();
-#else
-#endif
+    c89atomic_store_32(a, b);
 }
 
-SX_FORCE_INLINE void sx_compiler_write_barrier()
+SX_FORCE_INLINE void sx_atomic_store64(sx_atomic_uint64* a, uint64_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    _WriteBarrier();
-#else
-#endif
+    c89atomic_store_64(a, b); 
 }
 
-// int atomic
-SX_FORCE_INLINE int sx_atomic_fetch_add(sx_atomic_int* a, int b)
+SX_FORCE_INLINE uint32_t sx_atomic_load32_explicit(sx_atomic_uint32* a, sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd((long volatile*)a, b);
-#else
-    return __sync_fetch_and_add(a, b);
-#endif
+    return c89atomic_load_explicit_32(a, order);
 }
 
-SX_FORCE_INLINE int sx_atomic_add_fetch(sx_atomic_int* a, int b)
+SX_FORCE_INLINE uint64_t sx_atomic_load64_explicit(sx_atomic_uint64* a, sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd((long volatile*)a, b) + b;
-#else
-    return __sync_add_and_fetch(a, b);
-#endif
+    return c89atomic_load_explicit_64(a, order);
 }
 
-SX_FORCE_INLINE int sx_atomic_incr(sx_atomic_int* a)
+SX_FORCE_INLINE void sx_atomic_store32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedIncrement((long volatile*)a);
-#else
-    return __sync_add_and_fetch(a, 1);
-#endif
+    c89atomic_store_explicit_32(a, b, order);
 }
 
-SX_FORCE_INLINE int sx_atomic_decr(sx_atomic_int* a)
+SX_FORCE_INLINE void sx_atomic_store64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedDecrement((long volatile*)a);
-#else
-    return __sync_sub_and_fetch(a, 1);
-#endif
+    c89atomic_store_explicit_64(a, b, order);
 }
 
-SX_FORCE_INLINE int sx_atomic_xchg(sx_atomic_int* a, int b)
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_add32(sx_atomic_uint32* a, uint32_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedExchange((long volatile*)a, b);
-#else
-    return __sync_lock_test_and_set(a, b);
-#endif
+    return c89atomic_fetch_add_32(a, b);
 }
 
-// common use:
-// if (sx_atomic_cas(&var, y, x) == x)
-// means: if I'm the one changing var from x to y
-SX_FORCE_INLINE int sx_atomic_cas(sx_atomic_int* a, int xchg, int comparand)
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_sub32(sx_atomic_uint32* a, uint32_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedCompareExchange((long volatile*)a, xchg, comparand);
-#else
-    return __sync_val_compare_and_swap(a, comparand, xchg);
-#endif
+    return c89atomic_fetch_sub_32(a, b);
 }
 
-// pointer
-SX_FORCE_INLINE void* sx_atomic_xchg_ptr(sx_atomic_ptr* a, void* b)
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_or32(sx_atomic_uint32* a, uint32_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangePointer((void* volatile*)a, b);
-#else
-    return __sync_lock_test_and_set(a, b);
-#endif
+    return c89atomic_fetch_or_32(a, b);
 }
 
-SX_FORCE_INLINE void* sx_atomic_cas_ptr(sx_atomic_ptr* a, void* xchg, void* comparand)
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_and32(sx_atomic_uint32* a, uint32_t b)
 {
-#if SX_PLATFORM_WINDOWS
-    return _InterlockedCompareExchangePointer((void* volatile*)a, xchg, comparand);
-#else
-    return __sync_val_compare_and_swap(a, comparand, xchg);
-#endif
+    return c89atomic_fetch_and_32(a, b);
 }
 
-// Int64 atomic
+SX_FORCE_INLINE uint32_t sx_atomic_exchange32(sx_atomic_uint32* a, uint32_t b)
+{
+    return c89atomic_exchange_32(a, b);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_weak(sx_atomic_uint32* a, uint32_t* desired, uint32_t expected)
+{
+    return c89atomic_compare_exchange_weak_32(a, desired, expected);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_strong(sx_atomic_uint32* a, uint32_t* desired, uint32_t expected)
+{
+    return c89atomic_compare_exchange_strong_32(a, desired, expected);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_add32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_add_explicit_32(a, b, order);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_sub32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_sub_explicit_32(a, b, order);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_or32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_or_explicit_32(a, b, order);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_fetch_and32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_and_explicit_32(a, b, order);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_exchange32_explicit(sx_atomic_uint32* a, uint32_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_exchange_explicit_32(a, b, order);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_weak_explicit(sx_atomic_uint32* a, uint32_t* desired, uint32_t expected, sx_atomic_memory_order success, sx_atomic_memory_order fail)
+{
+    return c89atomic_compare_exchange_weak_explicit_32(a, desired, expected, success, fail);
+}
+
+SX_FORCE_INLINE uint32_t sx_atomic_compare_exchange32_strong_explicit(sx_atomic_uint32* a, uint32_t* desired, uint32_t expected, sx_atomic_memory_order success, sx_atomic_memory_order fail)
+{
+    return c89atomic_compare_exchange_strong_explicit_32(a, desired, expected, success, fail);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_add64(sx_atomic_uint64* a, uint64_t b)
+{
+    return c89atomic_fetch_add_64(a, b);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_sub64(sx_atomic_uint64* a, uint64_t b)
+{
+    return c89atomic_fetch_sub_64(a, b);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_exchange64(sx_atomic_uint64* a, uint64_t b)
+{
+    return c89atomic_exchange_64(a, b);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_or64(sx_atomic_uint64* a, uint64_t b)
+{
+    return c89atomic_fetch_or_64(a, b);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_and64(sx_atomic_uint64* a, uint64_t b)
+{
+    return c89atomic_fetch_and_64(a, b);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_weak(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired)
+{
+    return c89atomic_compare_exchange_weak_64(a, expected, desired);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_strong(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired)
+{
+    return c89atomic_compare_exchange_strong_64(a, expected, desired);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_add64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_add_explicit_64(a, b, order);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_sub64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_sub_explicit_64(a, b, order);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_exchange64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_exchange_explicit_64(a, b, order);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_or64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_or_explicit_64(a, b, order);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_fetch_and64_explicit(sx_atomic_uint64* a, uint64_t b, sx_atomic_memory_order order)
+{
+    return c89atomic_fetch_and_explicit_64(a, b, order);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_weak_explicit(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired, sx_atomic_memory_order success, sx_atomic_memory_order fail)
+{
+    return c89atomic_compare_exchange_weak_explicit_64(a, expected, desired, success, fail);
+}
+
+SX_FORCE_INLINE uint64_t sx_atomic_compare_exchange64_strong_explicit(sx_atomic_uint64* a, unsigned long long* expected, uint64_t desired, sx_atomic_memory_order success, sx_atomic_memory_order fail)
+{
+    return c89atomic_compare_exchange_strong_explicit_64(a, expected, desired, success, fail);
+}
+
 #if SX_ARCH_64BIT
-SX_FORCE_INLINE int64_t sx_atomic_fetch_add64(sx_atomic_int64* a, int64_t b)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd64(a, b);
-#    else
-    return __sync_fetch_and_add(a, b);
-#    endif
-}
-
-SX_FORCE_INLINE int64_t sx_atomic_add_fetch64(sx_atomic_int64* a, int64_t b)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedExchangeAdd64(a, b) + b;
-#    else
-    return __sync_add_and_fetch(a, b);
-#    endif
-}
-
-SX_FORCE_INLINE int64_t sx_atomic_incr64(sx_atomic_int64* a)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedIncrement64(a);
-#    else
-    return __sync_add_and_fetch(a, 1);
-#    endif
-}
-
-SX_FORCE_INLINE int64_t sx_atomic_decr64(sx_atomic_int64* a)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedDecrement64(a);
-#    else
-    return __sync_sub_and_fetch(a, 1);
-#    endif
-}
-
-SX_FORCE_INLINE int64_t sx_atomic_xchg64(sx_atomic_int64* a, int64_t b)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedExchange64(a, b);
-#    else
-    return __sync_lock_test_and_set(a, b);
-#    endif
-}
-
-SX_FORCE_INLINE int64_t sx_atomic_cas64(sx_atomic_int64* a, int64_t xchg, int64_t comparand)
-{
-#    if SX_PLATFORM_WINDOWS
-    return _InterlockedCompareExchange64(a, xchg, comparand);
-#    else
-    return __sync_val_compare_and_swap(a, comparand, xchg);
-#    endif
-}
-#endif    // SX_ARCH_64BIT
-
-#if SX_ARCH_64BIT
-typedef sx_atomic_int64 sx_atomic_size;
-#    define sx_atomic_fetch_add_size sx_atomic_fetch_add64
-#    define sx_atomic_add_fetch_size sx_atomic_add_fetch64
-#    define sx_atomic_incr_size sx_atomic_incr64
-#    define sx_atomic_decr_size sx_atomic_decr64
-#    define sx_atomic_xchg_size sx_atomic_xchg64
-#    define sx_atomic_cas_size sx_atomic_cas64
+#    define sx_atomic_loadptr                               sx_atomic_load64
+#    define sx_atomic_storeptr                              sx_atomic_store64
+#    define sx_atomic_loadptr_explicit                      sx_atomic_load64_explicit
+#    define sx_atomic_storeptr_explicit                     sx_atomic_store64_explicit
+#    define sx_atomic_fetch_addptr                          sx_atomic_fetch_add64
+#    define sx_atomic_fetch_subptr                          sx_atomic_fetch_sub64
+#    define sx_atomic_fetch_orptr                           sx_atomic_fetch_or64
+#    define sx_atomic_exchangeptr                           sx_atomic_exchange64
+#    define sx_atomic_compare_exchangeptr_weak              sx_atomic_compare_exchange64_weak
+#    define sx_atomic_compare_exchangeptr_strong            sx_atomic_compare_exchange64_strong
+#    define sx_atomic_fetch_addptr_explicit                 sx_atomic_fetch_add64_explicit
+#    define sx_atomic_fetch_subptr_explicit                 sx_atomic_fetch_sub64_explicit
+#    define sx_atomic_fetch_orptr_explicit                  sx_atomic_fetch_or64_explicit
+#    define sx_atomic_fetch_andptr_explicit                 sx_atomic_fetch_and64_explicit
+#    define sx_atomic_exchangeptr_explicit                  sx_atomic_exchange64_explicit
+#    define sx_atomic_compare_exchangeptr_weak_explicit     sx_atomic_compare_exchange64_weak_explicit
+#    define sx_atomic_compare_exchangeptr_strong_explicit   sx_atomic_compare_exchange64_strong_explicit
 #else
-typedef sx_atomic_int sx_atomic_size;
-#    define sx_atomic_fetch_add_size sx_atomic_fetch_add
-#    define sx_atomic_add_fetch_size sx_atomic_add_fetch
-#    define sx_atomic_incr_size sx_atomic_incr
-#    define sx_atomic_decr_size sx_atomic_decr
-#    define sx_atomic_xchg_size sx_atomic_xchg
-#    define sx_atomic_cas_size sx_atomic_cas
-#endif    // SX_ARCH_64BIT
-
-SX_PRAGMA_DIAGNOSTIC_POP()
+#    define sx_atomic_loadptr                               sx_atomic_load32
+#    define sx_atomic_storeptr                              sx_atomic_store32
+#    define sx_atomic_loadptr_explicit                      sx_atomic_load32_explicit
+#    define sx_atomic_storeptr_explicit                     sx_atomic_store32_explicit
+#    define sx_atomic_fetch_addptr                          sx_atomic_fetch_add32
+#    define sx_atomic_fetch_subptr                          sx_atomic_fetch_sub32
+#    define sx_atomic_fetch_orptr                           sx_atomic_fetch_or32
+#    define sx_atomic_exchangeptr                           sx_atomic_exchange32
+#    define sx_atomic_compare_exchangeptr_weak              sx_atomic_compare_exchange32_weak
+#    define sx_atomic_compare_exchangeptr_strong            sx_atomic_compare_exchange32_strong
+#    define sx_atomic_fetch_addptr_explicit                 sx_atomic_fetch_add32_explicit
+#    define sx_atomic_fetch_subptr_explicit                 sx_atomic_fetch_sub32_explicit
+#    define sx_atomic_fetch_orptr_explicit                  sx_atomic_fetch_or32_explicit
+#    define sx_atomic_fetch_andptr_explicit                 sx_atomic_fetch_and32_explicit
+#    define sx_atomic_exchangeptr_explicit                  sx_atomic_exchange32_explicit
+#    define sx_atomic_compare_exchangeptr_weak_explicit     sx_atomic_compare_exchange32_weak_explicit
+#    define sx_atomic_compare_exchangeptr_strong_explicit   sx_atomic_compare_exchange32_strong_explicit#endif    // SX_ARCH_64BIT
+#endif

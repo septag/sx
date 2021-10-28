@@ -87,6 +87,9 @@
 #       define SX_INLINE static inline  
 #    endif
 #    define SX_NO_VTABLE __declspec(novtable)
+#    ifndef __cplusplus
+#       define _Thread_local __declspec(thread)
+#    endif // __cplusplus
 #else
 #    error "Unknown SX_COMPILER_?"
 #endif
@@ -174,6 +177,10 @@
 #    define SX_CONSTEXPR 
 #endif
 
+// see array.h
+#ifndef SX_ARRAY
+#   define SX_ARRAY
+#endif 
 
 // Idea: https://www.youtube.com/watch?v=QpAhX-gsHMs&t=967s
 // sx_defer and scope can be used to mimick the behavior of go and zig's defer 

@@ -374,18 +374,18 @@ SX_FORCE_INLINE sx_mat4 sx_mat4f(float m11, float m12, float m13, float m14,
                                  float m41, float m42, float m43, float m44);
 SX_FORCE_INLINE sx_mat4 sx_mat4fv(const float* _col1, const float* _col2, const float* _col3, const float* _col4);
 SX_FORCE_INLINE sx_mat4 sx_mat4v(sx_vec4 _col1, sx_vec4 _col2, sx_vec4 _col3, sx_vec4 _col4);
-SX_FORCE_INLINE sx_mat4 sx_mat4_ident();
+SX_FORCE_INLINE sx_mat4 sx_mat4_ident(void);
 
 SX_FORCE_INLINE sx_mat3 sx_mat3f(float m11, float m12, float m13, 
                                  float m21, float m22, float m23,
                                  float m31, float m32, float m33);
 SX_FORCE_INLINE sx_mat3 sx_mat3fv(const float* _col1, const float* _col2, const float* _col3);
 SX_FORCE_INLINE sx_mat3 sx_mat3v(sx_vec3 _col1, sx_vec3 _col2, sx_vec3 _col3);
-SX_FORCE_INLINE sx_mat3 sx_mat3_ident();
+SX_FORCE_INLINE sx_mat3 sx_mat3_ident(void);
 
 SX_FORCE_INLINE sx_quat sx_quat4f(float _x, float _y, float _z, float _w);
 SX_FORCE_INLINE sx_quat sx_quat4fv(const float* _f);
-SX_FORCE_INLINE sx_quat sx_quat_ident();
+SX_FORCE_INLINE sx_quat sx_quat_ident(void);
 
 SX_FORCE_INLINE sx_color sx_color4u(unsigned char _r, unsigned char _g, unsigned char _b,
                                     unsigned char _a sx_default(255));
@@ -396,7 +396,7 @@ SX_FORCE_INLINE sx_aabb sx_aabbf(float xmin, float ymin, float zmin,
                                  float xmax, float ymax, float zmax);
 SX_FORCE_INLINE sx_aabb sx_aabbv(sx_vec3 vmin, sx_vec3 vmax);
 SX_FORCE_INLINE sx_aabb sx_aabbwhd(float w, float h, float d);
-SX_FORCE_INLINE sx_aabb sx_aabb_empty();
+SX_FORCE_INLINE sx_aabb sx_aabb_empty(void);
 
 SX_FORCE_INLINE sx_rect sx_rectf(float _xmin, float _ymin, float _xmax, float _ymax);
 SX_FORCE_INLINE sx_rect sx_rectwh(float _x, float _y, float _w, float _h);
@@ -592,7 +592,7 @@ SX_FORCE_INLINE sx_quat sx_quat4fv(const float* _f)
 #endif
 }
 
-SX_FORCE_INLINE sx_quat sx_quat_ident()
+SX_FORCE_INLINE sx_quat sx_quat_ident(void)
 {
     return sx_quat4f(0, 0, 0, 1.0f);
 }
@@ -636,7 +636,7 @@ SX_FORCE_INLINE sx_mat4 sx_mat4v(sx_vec4 _col1, sx_vec4 _col2, sx_vec4 _col3, sx
 #endif
 }
 
-SX_FORCE_INLINE sx_mat4 sx_mat4_ident()
+SX_FORCE_INLINE sx_mat4 sx_mat4_ident(void)
 {
     return sx_mat4f(1.0f, 0.0f, 0.0f, 0.0f, 
                     0.0f, 1.0f, 0.0f, 0.0f, 
@@ -681,7 +681,7 @@ SX_FORCE_INLINE sx_mat3 sx_mat3v(sx_vec3 _col1, sx_vec3 _col2, sx_vec3 _col3)
 #endif
 }
 
-SX_FORCE_INLINE sx_mat3 sx_mat3_ident()
+SX_FORCE_INLINE sx_mat3 sx_mat3_ident(void)
 {
     return sx_mat3f(1.0f, 0.0f, 0.0f, 
                     0.0f, 1.0f, 0.0f, 
@@ -765,7 +765,7 @@ SX_FORCE_INLINE sx_aabb sx_aabbwhd(float w, float h, float d)
     return sx_aabbf(-hw, -hh, -hd, hw, hh, hd);
 }
 
-SX_FORCE_INLINE sx_aabb sx_aabb_empty()
+SX_FORCE_INLINE sx_aabb sx_aabb_empty(void)
 {
     return sx_aabbf(SX_FLOAT_MAX, SX_FLOAT_MAX, SX_FLOAT_MAX, 
                     -SX_FLOAT_MAX, -SX_FLOAT_MAX, -SX_FLOAT_MAX);

@@ -256,8 +256,8 @@ void sx_linalloc_growable_reset(sx_linalloc_growable* linalloc)
         sx_free(linalloc->main_alloc, page);
         page = page->next;
     }
+    
     linalloc->pages->next = NULL;
-
     linalloc->pages->offset = 0;
     linalloc->pages->last_ptr_offset = 0;
     linalloc->allocated_size = 0;

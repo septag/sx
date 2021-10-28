@@ -70,7 +70,8 @@ SX_API bool sx_os_path_exists(const char* path);
 SX_API bool sx_os_path_isfile(const char* path);
 SX_API bool sx_os_path_isdir(const char* path);
 SX_API char* sx_os_path_exepath(char* dst, int size);
+SX_API uint32_t sx_os_getpid(void);
 
 SX_API sx_file_info sx_os_stat(const char* filepath);
 
-SX_API int sx_os_numcores();
+SX_API int sx_os_numcores(void);

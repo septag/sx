@@ -15,12 +15,12 @@ SX_PRAGMA_DIAGNOSTIC_POP()
 
 #include "sx/timer.h"
 
-void sx_tm_init()
+void sx_tm_init(void)
 {
     stm_setup();
 }
 
-uint64_t sx_tm_now()
+uint64_t sx_tm_now(void)
 {
     return stm_now();
 }

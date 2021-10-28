@@ -141,6 +141,7 @@ SX_API          sx_vec3 sx_quat_toeuler(sx_quat _quat);
 SX_API          sx_quat sx_quat_fromeular(sx_vec3 _vec3);
 
 SX_FORCE_INLINE sx_vec4  sx_color_vec4(sx_color c);
+SX_API          sx_color sx_color_blend(sx_color _a, sx_color _b, float _t);
 SX_API          sx_vec4  sx_color_vec4_tosrgb(sx_vec4 cf);
 SX_API          sx_vec4  sx_color_vec4_tolinear(sx_vec4 c);
 SX_API          void     sx_color_RGBtoHSV(float _hsv[3], const float _rgb[3]);

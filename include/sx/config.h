@@ -103,5 +103,5 @@
 #endif
 
 #ifndef SX_CONFIG_OBSOLETE_CODE
-#   define SX_CONFIG_OBSOLETE_CODE 1
+#   define SX_CONFIG_OBSOLETE_CODE 0
 #endif

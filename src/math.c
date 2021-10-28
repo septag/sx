@@ -782,6 +782,19 @@ void sx_color_HSVtoRGB(float _rgb[3], const float _hsv[3])
     _rgb[2] = vv * sx_lerp(1.0f, sx_saturate(pz - 1.0f), ss);
 }
 
+sx_color sx_color_blend(sx_color _a, sx_color _b, float _t)
+{
+    sx_vec4 c1 = sx_color_vec4(_a);
+    sx_vec4 c2 = sx_color_vec4(_b);
+
+    return sx_color4f(
+        sx_lerp(c1.x, c2.x, _t),
+        sx_lerp(c1.y, c2.y, _t),
+        sx_lerp(c1.z, c2.z, _t),
+        sx_lerp(c1.w, c2.w, _t)
+    );
+}
+
 // https://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformation
 sx_vec4 sx_color_vec4_tolinear(sx_vec4 c)
 {

@@ -144,7 +144,7 @@ bool sx_semaphore_wait(sx_sem* sem, int msecs)
 #if SX_PLATFORM_POSIX
 
 // Tls
-sx_tls sx_tls_create()
+sx_tls sx_tls_create(void)
 {
     pthread_key_t key;
     int r = pthread_key_create(&key, NULL);
@@ -283,10 +283,11 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
 #    endif
 }
 
-void sx_thread_yield()
+void sx_thread_yield(void)
 {
     sched_yield();
 }
+
 
 // Mutex
 void sx_mutex_init(sx_mutex* mutex)
@@ -647,6 +648,7 @@ sx_thread* sx_thread_create(const sx_alloc* alloc, sx_thread_cb* callback, void*
 
 int sx_thread_destroy(sx_thread* thrd, const sx_alloc* alloc)
 {
+    sx_assert(thrd);
     sx_assertf(thrd->running, "Thread is not running!");
 
     DWORD exit_code;
@@ -706,7 +708,7 @@ void sx_thread_setname(sx_thread* thrd, const char* name)
 #    error "Not implemented for this platform"
 #endif
 
-uint32_t sx_thread_tid()
+uint32_t sx_thread_tid(void)
 {
 #if SX_PLATFORM_WINDOWS
     return GetCurrentThreadId();
@@ -723,83 +725,5 @@ uint32_t sx_thread_tid()
 #else
     sx_assertf(0, "Tid not implemented");
 #endif    // SX_PLATFORM_
-}
-
-// TODO: replace this for our current atomic functions in the future
-#include "../3rdparty/c89atomic/c89atomic.h"
-
-typedef struct sx__padded_flag
-{
-    c89atomic_flag flag;
-    uint8_t padding[SX_CACHE_LINE_SIZE-1];
-} sx__padded_flag;
-
-typedef sx_align_decl(SX_CACHE_LINE_SIZE, struct) sx_anderson_lock_t
-{
-    sx_align_decl(SX_CACHE_LINE_SIZE, sx__padded_flag*) locked;
-    sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_free_idx;
-    sx_align_decl(SX_CACHE_LINE_SIZE, c89atomic_uint64) next_serving_idx;
-    int max_threads;
-} sx_anderson_lock_t;
-
-sx_anderson_lock_t* sx_anderson_lock_create(const sx_alloc* alloc, int max_threads) 
-{
-    sx_assert(max_threads > 0);
-
-    sx_anderson_lock_t* l = sx_calloc(alloc, sizeof(sx_anderson_lock_t) + max_threads*sizeof(sx__padded_flag));
-    if (!l) {
-        return NULL;
-    }
-    l->max_threads = max_threads;
-    l->next_serving_idx = 1;
-
-    l->locked = (sx__padded_flag*)(l + 1);
-
-    for (int i = 1; i < max_threads; i++) {
-        l->locked[i].flag = 1;
-    }
-
-    return l;
-}
-
-void sx_anderson_lock_destroy(sx_anderson_lock_t* lock, const sx_alloc* alloc) 
-{
-    sx_free(alloc, lock);
-}
-
-void sx_anderson_lock_enter(sx_anderson_lock_t* lock) 
-{
-    const uint64_t index = c89atomic_fetch_add_64(&lock->next_free_idx, 1) % lock->max_threads;
-    c89atomic_flag* flag = &lock->locked[index].flag;
-
-    // ensure overflow never happens
-    if (index == 0) {
-        c89atomic_fetch_sub_64(&lock->next_free_idx, lock->max_threads);
-    }
-
-    // TODO: the LOCK_MAXTIME and LOCK_PRESPIN likely need more tweaking
-    // sx_yield_cpu apparantly has a lot of latency in modern cpus, so this loop is a workaround
-    // Reference: https://software.intel.com/content/www/us/en/develop/articles/a-common-construct-to-avoid-the-contention-of-threads-architecture-agnostic-spin-wait-loops.html
-    int counter = 0;
-    
-    while (c89atomic_load_explicit_8(flag, c89atomic_memory_order_acquire)) {
-        if ((++counter & SX__LOCK_PRESPIN) == 0) {
-            sx_track_contention();
-            sx_thread_yield();  // too much waiting, relief control of the current thread
-        } else {
-            uint64_t prev = sx_cycle_clock();
-            do {
-                sx_yield_cpu();
-            } while ((sx_cycle_clock() - prev) < SX__LOCK_MAXTIME);
-        }
-    }
-
-    c89atomic_store_explicit_8(flag, 1, c89atomic_memory_order_release);
-}
-
-void sx_anderson_lock_exit(sx_anderson_lock_t* lock) 
-{
-    const uint64_t index = c89atomic_fetch_add_64(&lock->next_serving_idx, 1);
-    c89atomic_store_explicit_8(&lock->locked[index%lock->max_threads].flag, 0, c89atomic_memory_order_release);
 }
 

@@ -7,9 +7,9 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-#include "sx/threads.h"
 #include "sx/os.h"
 #include "sx/string.h"
+#include "sx/lockless.h"
 
 static void* sx__malloc_cb(void* ptr, size_t size, uint32_t align, const char* file,
                            const char* func, uint32_t line, void* user_data);
@@ -32,12 +32,12 @@ void sx__mem_run_fail_callback(const char* sourcefile, uint32_t line)
     }
 }
 
-const sx_alloc* sx_alloc_malloc()
+const sx_alloc* sx_alloc_malloc(void)
 {
     return &g_alloc_malloc;
 }
 
-const sx_alloc* sx_alloc_malloc_leak_detect()
+const sx_alloc* sx_alloc_malloc_leak_detect(void)
 {
     return &g_alloc_malloc_leakd;
 }
@@ -122,7 +122,7 @@ static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func,
 
     sx_strcpy(mi->file, sizeof(mi->file), file);
     sx_strcpy(mi->func, sizeof(mi->func), func);
-    sx_lock_enter(&mi_lock);
+    sx_lock(mi_lock) {
         mi->line = line;
         mi->next = mi_head;
         if (mi_head)
@@ -130,7 +130,7 @@ static void* stb_leakcheck_malloc(size_t sz, const char* file, const char* func,
         mi->prev = NULL;
         mi->size = (int)sz;
         mi_head = mi;
-    sx_lock_exit(&mi_lock);
+    }
     return mi + 1;
 }
 
@@ -139,7 +139,7 @@ static void stb_leakcheck_free(void* ptr)
     if (ptr != NULL) {
         stb__leakcheck_malloc_info* mi = (stb__leakcheck_malloc_info*)ptr - 1;
         mi->size = ~mi->size;
-        sx_lock_enter(&mi_lock);
+        sx_lock(mi_lock) {
             if (mi->prev == NULL) {
                 sx_assert(mi_head == mi);
                 mi_head = mi->next;
@@ -147,7 +147,7 @@ static void stb_leakcheck_free(void* ptr)
                 mi->prev->next = mi->next;
             if (mi->next)
                 mi->next->prev = mi->prev;
-        sx_lock_exit(&mi_lock);
+        }
         free(mi);
     }
 }

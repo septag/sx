@@ -212,16 +212,16 @@ SX_FORCE_INLINE float sx_easein_back(float t)
 SX_FORCE_INLINE float sx_easeout_back(float t)
 {
     const float s = 1.70158f;
-    return --t, 1.0f * (t * t * ((s + 1.0f) * t + s) + 1.0f);
+    return ((void)--t, 1.0f * (t * t * ((s + 1.0f) * t + s) + 1.0f));
 }
 
 SX_FORCE_INLINE float sx_easeinout_back(float t)
 {
     const float s = 2.5949095f;
     if (t < 0.5f) {
-        return t *= 2.0f, 0.5f * t * t * (t * s + t - s);
+        return ((void)(t *= 2.0f), 0.5f * t * t * (t * s + t - s));
     } else {
-        return t = t * 2.0f - 2.0f, 0.5f * (2.0f + t * t * (t * s + t + s));
+        return ((void)(t = t * 2.0f - 2.0f), 0.5f * (2.0f + t * t * (t * s + t + s)));
     }
 }
 

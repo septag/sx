@@ -4,9 +4,9 @@
 //
 #include "sx/io.h"
 #include "sx/allocator.h"
-#include "sx/atomic.h"
 #include "sx/os.h"
 #include "sx/array.h"
+#include "sx/atomic.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -73,7 +73,7 @@ void sx_mem_destroy_block(sx_mem_block* mem)
     sx_assert(mem);
     sx_assert(mem->refcount >= 1);
 
-    if (sx_atomic_decr(&mem->refcount) == 0) {
+    if (sx_atomic_fetch_sub32_explicit(&mem->refcount, 1, SX_ATOMIC_MEMORYORDER_ACQUIRE) == 1) {
         if (mem->alloc) {
             sx_free(mem->alloc, mem);
         }
@@ -82,7 +82,7 @@ void sx_mem_destroy_block(sx_mem_block* mem)
 
 void sx_mem_addref(sx_mem_block* mem)
 {
-    sx_atomic_incr(&mem->refcount);
+    sx_atomic_fetch_add32(&mem->refcount, 1);
 }
 
 void sx_mem_addoffset(sx_mem_block* mem, int64_t offset)

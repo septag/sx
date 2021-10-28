@@ -26,8 +26,8 @@ typedef struct sx_queue_spsc {
     int buff_size;
 
     sx__queue_spsc_node* first;
-    sx_align_decl(SX_CACHE_LINE_SIZE, sx_atomic_ptr) last;
-    sx_align_decl(SX_CACHE_LINE_SIZE, sx_atomic_ptr) divider;
+    sx_atomic_ptr last;
+    sx_atomic_ptr divider;
 
     sx__queue_spsc_bin* grow_bins;    // linked-list of bins, if queue is grown
 } sx_queue_spsc;
@@ -98,7 +98,7 @@ sx_queue_spsc* sx_queue_spsc_create(const sx_alloc* alloc, int item_sz, int capa
     sx__queue_spsc_node* node = queue->ptrs[--queue->iter];
     node->next = NULL;
     queue->first = node;
-    queue->divider = queue->last = node;
+    queue->divider = queue->last = (uintptr_t)node;
     queue->grow_bins = NULL;
 
     return queue;
@@ -143,13 +143,11 @@ bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
         sx_memcpy(node + 1, data, queue->stride);
         node->next = NULL;
 
-        sx__queue_spsc_node* last = (sx__queue_spsc_node*)queue->last;
+        sx__queue_spsc_node* last = (sx__queue_spsc_node*)sx_atomic_exchangeptr(&queue->last, (uintptr_t)node);
         last->next = node;
 
-        sx_atomic_xchg_ptr(&queue->last, node);
-
-        // trim/remove un-used nodes
-        while (queue->first != queue->divider) {
+        // trim/remove un-used nodes up to the divider
+        while ((uintptr_t)queue->first != sx_atomic_loadptr_explicit(&queue->divider, SX_ATOMIC_MEMORYORDER_ACQUIRE)) {
             sx__queue_spsc_node* first = (sx__queue_spsc_node*)queue->first;
             queue->first = first->next;
 
@@ -179,12 +177,12 @@ bool sx_queue_spsc_produce(sx_queue_spsc* queue, const void* data)
 
 bool sx_queue_spsc_consume(sx_queue_spsc* queue, void* data)
 {
-    if (queue->divider != queue->last) {
+    if (queue->divider != sx_atomic_loadptr_explicit(&queue->last, SX_ATOMIC_MEMORYORDER_ACQUIRE)) {
         sx__queue_spsc_node* divider = (sx__queue_spsc_node*)queue->divider;
         sx_assert(divider->next);
         sx_memcpy(data, divider->next + 1, queue->stride);
 
-        sx_atomic_xchg_ptr(&queue->divider, divider->next);
+        sx_atomic_storeptr_explicit(&queue->divider, (uintptr_t)divider->next, SX_ATOMIC_MEMORYORDER_RELEASE);
         return true;
     }
 
