@@ -50,9 +50,8 @@ SX_API void sx_set_assert_callback(sx_assert_cb* callback);
 SX_API void sx__debug_message(const char* sourcefile, uint32_t line, const char* fmt, ...);
 
 #if SX_CONFIG_ENABLE_ASSERT
-#   define sx_assert(_e) if (!(_e)) { sx__debug_message(__FILE__, __LINE__, #_e); sx_hwbreak(); }
-#   define sx_assertf(_e, ...) \
-        if (!(_e)) { sx__debug_message(__FILE__, __LINE__, __VA_ARGS__); sx_hwbreak(); }
+#   define sx_assert(_e) do { if (!(_e)) { sx__debug_message(__FILE__, __LINE__, #_e); sx_hwbreak(); }} while(0)
+#   define sx_assertf(_e, ...) do { if (!(_e)) { sx__debug_message(__FILE__, __LINE__, __VA_ARGS__); sx_hwbreak(); }} while(0)
 #else
 #   define sx_assert(_e)
 #   define sx_assertf(_e, ...)
@@ -64,10 +63,9 @@ SX_API void sx__debug_message(const char* sourcefile, uint32_t line, const char*
 #    define sx_assert_always sx_assert_rel
 #    define sx_assert_alwaysf(_e, ...)
 #else
-#    define sx_assert_rel(_e) if (!(_e)) { sx__debug_message(__FILE__, __LINE__, #_e); sx_hwbreak(); }
+#    define sx_assert_rel(_e) do { if (!(_e)) { sx__debug_message(__FILE__, __LINE__, #_e); sx_hwbreak(); }} while(0)
 #    define sx_assert_always sx_assert_rel
-#    define sx_assert_alwaysf(_e, ...) \
-        if (!(_e)) { sx__debug_message(__FILE__, __LINE__, __VA_ARGS__); sx_hwbreak(); }
+#    define sx_assert_alwaysf(_e, ...) do { if (!(_e)) { sx__debug_message(__FILE__, __LINE__, __VA_ARGS__); sx_hwbreak(); }} while(0)
 #endif
 
 #define sx_unreachable() sx_assert_alwaysf(0, "unreachable code");
