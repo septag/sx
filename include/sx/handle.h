@@ -223,7 +223,7 @@ struct sx_handles_with_array {
         if (index >= sx_array_count(this->array))
             sx_array_push(this->alloc, this->array, _value);
         else
-            g_http.https[index] = _value;
+           this->array[index] = _value;
         
         return handle;
     }
