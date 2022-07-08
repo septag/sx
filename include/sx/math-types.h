@@ -264,8 +264,8 @@ typedef union sx_irect {
     };
 
     struct {
-        int vmin[3];
-        int vmax[3];
+        int vmin[2];
+        int vmax[2];
     };
 
     int n[4];
